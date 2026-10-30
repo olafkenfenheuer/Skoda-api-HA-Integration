@@ -6,7 +6,7 @@ from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
+from .coordinator import WAKE_STOP_COMMANDS, SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .entity import SkodaVehicleEntity
 
 
@@ -20,7 +20,9 @@ async def async_setup_entry(
     entities: list[SkodaVehicleEntity] = []
     for vin, vehicle in coordinator.data.vehicles.items():
         entities.append(SkodaRefreshButton(coordinator, vin))
-        if vehicle.supports("setChargeMode"):
+        if vehicle.supports("setChargeMode") or any(
+            vehicle.lists(operation) for operation, *_ in WAKE_STOP_COMMANDS
+        ):
             entities.append(SkodaWakeButton(coordinator, vin))
     async_add_entities(entities)
 

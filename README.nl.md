@@ -124,7 +124,10 @@ wanneer de integratie voor het laatst gegevens ophaalde.
 
 De API heeft geen wake-up-aanroep. De knop **Voertuig wakker maken** stuurt daarom de huidige laadmodus
 opnieuw, een commando dat niets verandert maar het voertuig moet bereiken; het voertuig meldt zich meestal
-binnen een minuut. Het getal **Ladend voertuig wekken na (0 = uit)** doet dit automatisch zolang een
+binnen een minuut. Een voertuig zonder laadmodus (zoals een verbrandingsmotor) krijgt in plaats daarvan
+een stopcommando, en wel voor de eerste functie van airco, standkachel en actieve ventilatie die het als
+operatie vermeldt en die niet draait; een draaiende functie wordt nooit gestopt. Dit is niet getest: alleen
+het opnieuw sturen van de laadmodus laat een voertuig aantoonbaar melden. Het getal **Ladend voertuig wekken na (0 = uit)** doet dit automatisch zolang een
 voertuig laadt en zich het opgegeven aantal minuten niet heeft gemeld (standaard uit, minimaal 10). Elke
 wekpoging kost twee verzoeken van het quotum; ze wordt overgeslagen tijdens een rate-limitpauze en als er
 minder dan 6 verzoeken over zijn. Beide zijn niet beschikbaar in de alleen-lezenmodus.

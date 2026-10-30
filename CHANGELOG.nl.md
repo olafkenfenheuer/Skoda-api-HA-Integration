@@ -7,6 +7,12 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.4.5]
+
+### Toegevoegd
+
+- Een voertuig zonder laadmodus (zoals een verbrandingsmotor) kan nu ook worden gewekt: het wekken stuurt een stopcommando voor de eerste functie van airco, standkachel en actieve ventilatie die het voertuig als operatie vermeldt en die niet draait. Een draaiende functie wordt nooit gestopt, en een voertuig dat zijn operaties niet vermeldt wordt niet geraden. Voertuigen met een laadmodus worden zoals voorheen gewekt. Dit is niet getest: alleen het opnieuw sturen van de laadmodus laat een voertuig aantoonbaar melden. De knop "Voertuig wakker maken" verschijnt nu ook voor deze voertuigen, en het parkeeralarm kan hem gebruiken.
+
 ## [0.4.4]
 
 ### Toegevoegd
