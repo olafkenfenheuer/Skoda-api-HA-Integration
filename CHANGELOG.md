@@ -7,6 +7,16 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.4]
+
+### Added
+
+- The parking alert writes to the logbook of the **Parked unsecured** sensor: each wake-up to confirm an incident (or why it was skipped or failed) and each alert sent, so you can see afterwards why an alert came when it did. The log messages about the wake-up now name the vehicle.
+
+### Fixed
+
+- Parking alert never sent when the incident began on an older report and the vehicle could not be confirmed. The wake-up that should bring a fresh report needs a known charge mode, so it always failed for vehicles without one (such as most combustion vehicles), and it was skipped in read-only mode, during a rate limit pause and with little quota left. The alert then waited until the vehicle reported on its own, which a parked vehicle may not do for hours, and if that report showed it secured no alert was ever sent. Now the alert is sent anyway, ending with "Not confirmed: last report at …", when the wake-up is skipped or fails or when the vehicle does not report within 5 minutes of it. A wake-up only counts as done once the vehicle accepted it.
+
 ## [0.4.3]
 
 ### Added

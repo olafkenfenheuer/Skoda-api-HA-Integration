@@ -7,6 +7,16 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.4.4]
+
+### Toegevoegd
+
+- Het parkeeralarm schrijft in het logboek van de sensor **Geparkeerd, niet beveiligd**: elke wekpoging om een incident te bevestigen (of waarom die werd overgeslagen of mislukte) en elke verstuurde melding, zodat je achteraf ziet waarom een melding kwam wanneer ze kwam. De logberichten over het wekken noemen nu het voertuig.
+
+### Opgelost
+
+- Parkeeralarm werd nooit verstuurd als het incident op een oudere melding begon en het voertuig niet bevestigd kon worden. Het wekken dat een verse melding moet opleveren heeft een bekende laadmodus nodig, en mislukte dus altijd bij voertuigen zonder (zoals de meeste verbrandingsmotoren); in alleen-lezen-modus, tijdens een rate-limit-pauze en bij weinig quotum werd het overgeslagen. De melding wachtte dan tot het voertuig zich uit zichzelf meldde, wat een geparkeerd voertuig urenlang niet kan doen, en toonde die melding het voertuig beveiligd, dan werd er nooit een alarm verstuurd. Nu wordt het alarm toch verstuurd, eindigend met "Not confirmed: last report at …", als het wekken wordt overgeslagen of mislukt of als het voertuig zich niet binnen 5 minuten daarna meldt. Een wekpoging telt pas als gedaan zodra het voertuig die heeft geaccepteerd.
+
 ## [0.4.3]
 
 ### Toegevoegd

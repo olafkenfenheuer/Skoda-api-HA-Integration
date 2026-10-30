@@ -189,10 +189,15 @@ misschien niet dat de auto intussen vergrendeld is. Een net geparkeerd voertuig 
 keer en slaapt dan; omdat die melding het incident begint, is ze genoeg voor de melding. Is er aan het eind van de wachttijd geen zulke
 melding, dan wekt de integratie het voertuig één keer per incident, net als de knop **Voertuig
 wakker maken** (twee verzoeken van het quotum), en beslist op de melding die volgt. Het wekken wordt
-overgeslagen in alleen-lezen-modus, tijdens een rate-limit-pauze, als er minder dan 6 verzoeken van
-het uurquotum over zijn en bij voertuigen zonder bekende laadmodus; de melding wacht dan tot het
-voertuig zich uit zichzelf meldt. Afgezien daarvan leest de melding alleen gegevens die de polls al
-hebben opgehaald en kost ze geen verzoeken.
+Meldt het voertuig zich niet binnen 5 minuten na het wekken, mislukt het wekken of wordt het
+overgeslagen (in alleen-lezen-modus, tijdens een rate-limit-pauze, als er minder dan 6 verzoeken van
+het uurquotum over zijn en bij voertuigen zonder bekende laadmodus, zoals de meeste
+verbrandingsmotoren), dan wordt de melding toch verstuurd en eindigt ze met "Not confirmed: last
+report at …": een voertuig dat stil blijft, mag de melding niet voorgoed tegenhouden. Afgezien
+daarvan leest de melding alleen gegevens die de polls al hebben opgehaald en kost ze geen verzoeken.
+
+Elke wekpoging (of waarom die werd overgeslagen of mislukte) en elke melding komt in het logboek van
+de sensor **Geparkeerd, niet beveiligd** te staan, zodat je achteraf ziet waarom een melding kwam wanneer ze kwam.
 
 ### Rate limits
 

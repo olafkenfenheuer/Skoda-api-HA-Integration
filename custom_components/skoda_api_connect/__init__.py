@@ -37,9 +37,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: SkodaConfigEntry) -> boo
 
     entry.runtime_data = coordinator
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-    await SkodaParkingAlert(hass, entry, coordinator).async_start()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # After the platforms, so the logbook entries of the alert find the "Parked
+    # unsecured" sensor even on the first setup.
+    await SkodaParkingAlert(hass, entry, coordinator).async_start()
 
     return True
 

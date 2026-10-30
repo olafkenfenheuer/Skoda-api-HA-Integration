@@ -7,6 +7,7 @@ import time
 from datetime import timedelta
 from unittest.mock import AsyncMock, patch
 
+from homeassistant.components.logbook import EVENT_LOGBOOK_ENTRY
 from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
@@ -14,11 +15,17 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
+    async_capture_events,
     async_fire_time_changed,
     async_mock_service,
 )
 
-from custom_components.skoda_api_connect.api import SkodaRateLimitError, SkodaVehicle
+from custom_components.skoda_api_connect.api import (
+    RateLimitInfo,
+    SkodaApiError,
+    SkodaRateLimitError,
+    SkodaVehicle,
+)
 from custom_components.skoda_api_connect.const import (
     CONF_API_KEY,
     CONF_CHARGING_SCAN_INTERVAL,
@@ -32,7 +39,7 @@ from custom_components.skoda_api_connect.const import (
 from custom_components.skoda_api_connect.diagnostics import (
     async_get_config_entry_diagnostics,
 )
-from custom_components.skoda_api_connect.parking_alert import unsecured_reasons
+from custom_components.skoda_api_connect.parking_alert import _last_report, unsecured_reasons
 
 from .conftest import VIN
 
@@ -582,22 +589,141 @@ async def test_stale_data_secured_after_wake(hass: HomeAssistant, freezer) -> No
             p.stop()
 
 
-async def test_stale_data_without_wake(hass: HomeAssistant) -> None:
+async def test_stale_data_read_only_alerts_unconfirmed(hass: HomeAssistant) -> None:
     calls = async_mock_service(hass, "notify", "mobile_app_phone")
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={CONF_API_KEY: "key", CONF_VINS: [VIN]},
         options={**_entry(targets=[PHONE]).options, CONF_READ_ONLY: True},
     )
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
     with patch(SET_MODE, new=AsyncMock()) as set_mode:
         api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
         try:
-            # Read-only mode sends no commands, so the alert waits for a report.
-            assert calls == []
+            # Read-only mode sends no commands, so the alert cannot be confirmed.
             set_mode.assert_not_awaited()
+            assert len(calls) == 1
+            assert calls[0].data["message"].startswith(
+                "Parked, but: Doors: OPEN, Windows: OPEN. Not confirmed: last report at "
+            )
+            assert [event.data["message"] for event in logbook] == [
+                "was not woken to confirm the parking alert: read-only mode",
+                _unconfirmed_entry(api),
+            ]
             api.fresh = True
             await _poll(hass, entry)
+            assert len(calls) == 1  # one alert per incident
+        finally:
+            p.stop()
+
+
+async def test_vehicle_that_cannot_be_woken_alerts_unconfirmed(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
+    stale = _stale(UNSECURED)
+    del stale["charging"]  # e.g. a combustion vehicle: no charge mode to re-send
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, stale, fresh=False)
+        try:
+            set_mode.assert_not_awaited()
             assert len(calls) == 1
+            assert "Not confirmed: last report at " in calls[0].data["message"]
+            sensor = er.async_get(hass).async_get_entity_id(
+                "binary_sensor", DOMAIN, f"{VIN}_parked_unsecured"
+            )
+            assert [(e.data["entity_id"], e.data["name"]) for e in logbook] == [
+                (sensor, "Car 1"),
+                (sensor, "Car 1"),
+            ]
+            assert logbook[0].data["message"] == (
+                "was not woken to confirm the parking alert: "
+                "the current charge mode of the vehicle is unknown"
+            )
+        finally:
+            p.stop()
+
+
+async def test_low_quota_alerts_unconfirmed(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
+    with (
+        patch(SET_MODE, new=AsyncMock()) as set_mode,
+        patch(
+            "custom_components.skoda_api_connect.coordinator.SkodaDataUpdateCoordinator"
+            ".wake_blocked_reason",
+            return_value="only 3 requests of the quota left",
+        ),
+    ):
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            set_mode.assert_not_awaited()
+            assert len(calls) == 1
+            assert logbook[0].data["message"] == (
+                "was not woken to confirm the parking alert: only 3 requests of the quota left"
+            )
+        finally:
+            p.stop()
+
+
+async def test_failed_wake_alerts_unconfirmed(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
+    error = SkodaApiError("vehicle unreachable", status=500)
+    with patch(SET_MODE, new=AsyncMock(side_effect=error)) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            set_mode.assert_awaited_once()
+            assert len(calls) == 1
+            assert "Not confirmed" in calls[0].data["message"]
+            assert logbook[0].data["message"].startswith(
+                "could not be woken to confirm the parking alert: "
+            )
+            await _poll(hass, entry)
+            assert set_mode.await_count == 1 and len(calls) == 1
+        finally:
+            p.stop()
+
+
+async def test_no_report_after_wake_alerts_unconfirmed(hass: HomeAssistant, freezer) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            assert logbook[0].data["message"] == (
+                "was woken to confirm that it is parked but not secured"
+            )
+            await _tick(hass, freezer, 4)  # the follow-up refresh brings no new report
+            assert calls == []
+            await _tick(hass, freezer, 1)
+            assert set_mode.await_count == 1
+            assert len(calls) == 1
+            assert "Not confirmed" in calls[0].data["message"]
+            assert [event.data["message"] for event in logbook][1:] == [
+                "did not report after the wake-up",
+                _unconfirmed_entry(api),
+            ]
+        finally:
+            p.stop()
+
+
+async def test_report_after_wake_alerts_at_once(hass: HomeAssistant, freezer) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
+    with patch(SET_MODE, new=AsyncMock()):
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            # The vehicle reports in time for the follow-up refresh, still not secured.
+            api.fresh = True
+            await _tick(hass, freezer, 1)
+            assert len(calls) == 1
+            assert calls[0].data["message"] == "Parked, but: Doors: OPEN, Windows: OPEN"
+            assert logbook[-1].data["message"].startswith("parking alert sent (last report at ")
         finally:
             p.stop()
 
@@ -641,16 +767,110 @@ async def test_report_older_than_interval_still_wakes(hass: HomeAssistant, freez
             p.stop()
 
 
-async def test_restart_keeps_wake_state(hass: HomeAssistant, hass_storage) -> None:
+async def test_restart_keeps_wake_state(hass: HomeAssistant, hass_storage, freezer) -> None:
     calls = async_mock_service(hass, "notify", "mobile_app_phone")
     entry = _entry(targets=[PHONE])
     key, stored = _stored(entry, dt_util.utcnow() - timedelta(minutes=10), notified=False)
-    stored["data"][VIN]["woken"] = True
+    woken_at = dt_util.utcnow() - timedelta(minutes=2)
+    stored["data"][VIN].update(woken=True, woken_at=woken_at.isoformat())
     hass_storage[key] = stored
     with patch(SET_MODE, new=AsyncMock()) as set_mode:
         api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
         try:
             set_mode.assert_not_awaited()  # already woken for this incident
+            assert calls == []  # still waiting for the report
+            await _tick(hass, freezer, 3)
+            assert len(calls) == 1
+            assert "Not confirmed" in calls[0].data["message"]
+            data = hass_storage[key]["data"][VIN]
+            assert data["notified"] and data["woken"]
+            assert data["woken_at"] == woken_at.isoformat()
+        finally:
+            p.stop()
+
+
+async def test_restart_with_wake_state_of_older_version(hass: HomeAssistant, hass_storage) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    key, stored = _stored(entry, dt_util.utcnow() - timedelta(minutes=10), notified=False)
+    stored["data"][VIN]["woken"] = True  # no wake-up time: woken long ago
+    hass_storage[key] = stored
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            set_mode.assert_not_awaited()
+            assert len(calls) == 1
+            assert "Not confirmed" in calls[0].data["message"]
+        finally:
+            p.stop()
+
+
+def _unconfirmed_entry(api: _Api) -> str:
+    reported = dt_util.parse_datetime(api.data["status"]["carCapturedTimestamp"])
+    return f"parking alert sent, not confirmed ({_last_report(reported)})"
+
+
+def test_last_report(freezer) -> None:
+    freezer.move_to("2026-10-30 12:00:00+00:00")
+    assert _last_report(None) == "time of the last report unknown"
+    hour_ago = dt_util.utcnow() - timedelta(hours=1)
+    assert _last_report(hour_ago) == f"last report at {dt_util.as_local(hour_ago):%H:%M}"
+    yesterday = dt_util.utcnow() - timedelta(days=1)
+    assert _last_report(yesterday) == (
+        f"last report at {dt_util.as_local(yesterday):%Y-%m-%d %H:%M}"
+    )
+
+
+async def test_wake_blocked_reason(hass: HomeAssistant) -> None:
+    entry = _entry()
+    api, p = await _setup(hass, entry, SECURED)
+    try:
+        coordinator = entry.runtime_data
+        assert coordinator.wake_blocked_reason(VIN) is None
+        now = dt_util.utcnow()
+        coordinator.api.rate_limits[VIN] = RateLimitInfo(20, 6, None, now)
+        assert coordinator.wake_blocked_reason(VIN) is None
+        coordinator.api.rate_limits[VIN] = RateLimitInfo(20, 5, None, now)
+        assert coordinator.wake_blocked_reason(VIN) == "only 5 requests of the quota left"
+        coordinator._paused_until[VIN] = time.monotonic() + 60
+        assert coordinator.wake_blocked_reason(VIN) == "rate limit pause"
+        coordinator.read_only = True
+        assert coordinator.wake_blocked_reason(VIN) == "read-only mode"
+        assert not coordinator.can_wake(VIN)
+    finally:
+        p.stop()
+
+
+async def test_secured_while_waking(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
+    api = None
+
+    async def _locked_meanwhile(vin, mode) -> None:
+        # A poll during the command shows the vehicle locked: the incident ends.
+        api.data, api.fresh = _stale(SECURED), True
+        await _poll(hass, entry)
+
+    with patch(SET_MODE, new=AsyncMock(side_effect=_locked_meanwhile)) as set_mode:
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            set_mode.assert_awaited_once()
             assert calls == []
+            assert [event.data["message"] for event in logbook] == []
+        finally:
+            p.stop()
+
+
+async def test_unexpected_wake_error_does_not_hold_alert_back(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    with patch(SET_MODE, new=AsyncMock(side_effect=RuntimeError("boom"))):
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        try:
+            assert calls == []
+            api.fresh = True  # the vehicle reports on its own later
+            await _poll(hass, entry)
+            assert len(calls) == 1
         finally:
             p.stop()

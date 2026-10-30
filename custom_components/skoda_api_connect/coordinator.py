@@ -425,12 +425,32 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
 
     def can_wake(self, vin: str) -> bool:
         """Return whether an automatic wake-up may spend requests of the quota now."""
-        if self.read_only or time.monotonic() < self._paused_until.get(vin, 0):
-            return False
+        return self.wake_blocked_reason(vin) is None
+
+    def wake_blocked_reason(self, vin: str) -> str | None:
+        """Return why an automatic wake-up may not spend requests now, or None if it may."""
+        if self.read_only:
+            return "read-only mode"
+        if time.monotonic() < self._paused_until.get(vin, 0):
+            return "rate limit pause"
         limit = self.api.rate_limits.get(vin)
-        return limit is None or limit.remaining is None or (
-            limit.remaining >= AUTO_WAKE_MIN_REQUESTS_REMAINING
-        )
+        if (
+            limit is not None
+            and limit.remaining is not None
+            and limit.remaining < AUTO_WAKE_MIN_REQUESTS_REMAINING
+        ):
+            return f"only {limit.remaining} requests of the quota left"
+        return None
+
+    def supports_wake(self, vin: str) -> bool:
+        """Return whether ``async_wake_vehicle`` can work: it needs the current charge mode."""
+        return self._wake_charge_mode(vin) is not None
+
+    def _wake_charge_mode(self, vin: str) -> str | None:
+        """Return the charge mode ``async_wake_vehicle`` re-sends, or None if unknown."""
+        vehicle = self.data.vehicles.get(vin) if self.data else None
+        mode = vehicle.get("charging", "settings", "preferredChargeMode") if vehicle else None
+        return mode or None
 
     def _should_auto_wake(self, vin: str) -> bool:
         """Return whether a charging vehicle has been silent long enough to be woken."""
@@ -458,8 +478,8 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         The public API has no wake-up call. A command has to reach the vehicle, so this
         sends one that changes nothing; the follow-up refresh picks up what it reported.
         """
-        mode = self.data.vehicles[vin].get("charging", "settings", "preferredChargeMode")
-        if not mode:
+        mode = self._wake_charge_mode(vin)
+        if mode is None:
             raise HomeAssistantError("The current charge mode of the vehicle is unknown")
         await self.async_command(vin, self.api.set_charge_mode(vin, mode))
 

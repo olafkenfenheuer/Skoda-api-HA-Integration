@@ -198,10 +198,15 @@ last report, however old. So the alert is only sent on data the vehicle reported
 car was locked meanwhile. A vehicle that was just parked usually reports once and then sleeps; since
 that report starts the incident, it is enough for the alert. If there is no such report when the grace period ends, the integration
 wakes the vehicle once per incident, the same way as the **Wake vehicle** button (two requests of
-the quota), and decides on the report that follows. The wake-up is skipped in read-only mode, during
-a rate limit pause, when fewer than 6 requests of the hourly quota are left and for vehicles without
-a known charge mode; the alert then waits until the vehicle reports on its own. Apart from that
-wake-up the alert only reads data the polls already fetched and costs no requests.
+the quota), and decides on the report that follows. If the vehicle does not report within 5 minutes
+of the wake-up, the wake-up fails, or it is skipped (in read-only mode, during a rate limit pause, when
+fewer than 6 requests of the hourly quota are left and for vehicles without a known charge mode, such
+as most combustion vehicles), the alert is sent anyway and ends with "Not confirmed: last report at
+…": a vehicle that stays silent must not hold the alert back for good. Apart from that wake-up the
+alert only reads data the polls already fetched and costs no requests.
+
+Each wake-up (or why it was skipped or failed) and each alert is written to the logbook of the
+**Parked unsecured** sensor, so you can see afterwards why an alert came when it did.
 
 ### Rate limits
 

@@ -207,10 +207,15 @@ weiß womöglich nicht, dass das Auto inzwischen verriegelt wurde. Ein gerade ge
 sich meist einmal und schläft dann; da diese Meldung den Vorfall beginnt, reicht sie für den Alarm. Liegt beim Ende der Wartezeit keine
 solche Meldung vor, weckt die Integration das Fahrzeug einmal pro Vorfall, genauso wie der
 Button **Fahrzeug aufwecken** (zwei Anfragen des Kontingents), und entscheidet anhand der
-folgenden Meldung. Das Aufwecken entfällt im Nur-Lesen-Modus, während einer Ratenlimit-Pause, wenn
-weniger als 6 Anfragen des Stundenkontingents übrig sind, und bei Fahrzeugen ohne bekannten Lademodus;
-der Alarm wartet dann, bis sich das Fahrzeug von selbst meldet. Abgesehen davon liest der Alarm nur
-Daten, die die Abfragen ohnehin geholt haben, und kostet keine Anfragen.
+folgenden Meldung. Meldet sich das Fahrzeug nicht innerhalb von 5 Minuten nach dem Aufwecken,
+schlägt das Aufwecken fehl oder entfällt es (im Nur-Lesen-Modus, während einer Ratenlimit-Pause, wenn
+weniger als 6 Anfragen des Stundenkontingents übrig sind, und bei Fahrzeugen ohne bekannten Lademodus,
+etwa den meisten Verbrennern), wird der Alarm trotzdem gesendet und endet mit „Not confirmed: last
+report at …“: Ein Fahrzeug, das stumm bleibt, darf den Alarm nicht dauerhaft zurückhalten. Abgesehen
+davon liest der Alarm nur Daten, die die Abfragen ohnehin geholt haben, und kostet keine Anfragen.
+
+Jedes Aufwecken (oder warum es entfiel oder fehlschlug) und jeder Alarm wird im Logbuch des Sensors
+**Geparkt, nicht gesichert** vermerkt, sodass sich später nachvollziehen lässt, warum ein Alarm wann kam.
 
 ### Ratenlimit
 

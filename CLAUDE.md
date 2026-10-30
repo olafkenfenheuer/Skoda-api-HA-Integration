@@ -20,7 +20,10 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
     are kept in their own `Store` so restarts/reloads do not re-alert; an incident begins at the status report
     showing it if that is at most one polling interval old (`_incident_start`), else at the poll; only alerts on a
     status report captured when or after the incident began, otherwise wakes the vehicle once per incident (`coordinator.can_wake()`, the same
-    quota guard as the automatic wake-up)
+    quota guard as the automatic wake-up; `coordinator.supports_wake()` needs a known charge mode) and waits up to
+    `WAKE_CONFIRM_TIMEOUT` for a newer report; if the wake-up is skipped or fails, or no report follows, it sends the alert
+    anyway, marked "Not confirmed"; wake-ups and alerts go to the logbook of the `{vin}_parked_unsecured` sensor
+    (`async_log_entry`, hence `after_dependencies: ["logbook"]`)
   - `entity.py` - `SkodaVehicleEntity` base; platforms: `sensor`, `binary_sensor`, `button`, `device_tracker`,
     `climate`, `switch`, `number`, `select`; `diagnostics.py`
   - `strings.json` is a copy of `translations/en.json`; translations exist for en/de/nl/fr/cs/sk/es/lb

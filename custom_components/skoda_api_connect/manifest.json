@@ -1,6 +1,9 @@
 {
   "domain": "skoda_api_connect",
   "name": "Škoda API Connect",
+  "after_dependencies": [
+    "logbook"
+  ],
   "codeowners": [
     "@olafkenfenheuer"
   ],
@@ -12,5 +15,5 @@
   "issue_tracker": "https://github.com/olafkenfenheuer/Skoda-api-HA-Integration/issues",
   "loggers": [],
   "requirements": [],
-  "version": "0.4.3"
+  "version": "0.4.4"
 }
