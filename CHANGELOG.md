@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.5]
+
+### Added
+
+- A vehicle without a charge mode (such as a combustion vehicle) can now be woken too: the wake-up sends a stop command for the first of air conditioning, auxiliary heating and active ventilation that the vehicle lists as an operation and that is not running. A running function is never stopped, and a vehicle that does not list its operations is not guessed at. Vehicles with a charge mode are woken as before. This is untested: only re-sending the charge mode is known to make a vehicle report. The "Wake vehicle" button now appears for these vehicles as well, and the parking alert can use it.
+
 ## [0.4.4]
 
 ### Added

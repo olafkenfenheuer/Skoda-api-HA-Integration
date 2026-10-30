@@ -638,7 +638,7 @@ async def test_vehicle_that_cannot_be_woken_alerts_unconfirmed(hass: HomeAssista
             ]
             assert logbook[0].data["message"] == (
                 "was not woken to confirm the parking alert: "
-                "the current charge mode of the vehicle is unknown"
+                "no command to wake the vehicle is available"
             )
         finally:
             p.stop()

@@ -20,7 +20,7 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
     are kept in their own `Store` so restarts/reloads do not re-alert; an incident begins at the status report
     showing it if that is at most one polling interval old (`_incident_start`), else at the poll; only alerts on a
     status report captured when or after the incident began, otherwise wakes the vehicle once per incident (`coordinator.can_wake()`, the same
-    quota guard as the automatic wake-up; `coordinator.supports_wake()` needs a known charge mode) and waits up to
+    quota guard as the automatic wake-up; `coordinator.supports_wake()` needs a wake command, see `_wake_command`) and waits up to
     `WAKE_CONFIRM_TIMEOUT` for a newer report; if the wake-up is skipped or fails, or no report follows, it sends the alert
     anyway, marked "Not confirmed"; wake-ups and alerts go to the logbook of the `{vin}_parked_unsecured` sensor
     (`async_log_entry`, hence `after_dependencies: ["logbook"]`)
@@ -51,7 +51,7 @@ python -m compileall -q custom_components           # quick syntax check
 - Enum values may gain new members - never assume an exhaustive list; treat `UNKNOWN`/`UNSUPPORTED` as
   unknown.
 - There is **no vehicle list**, so VINs are entered by the user. There is **no lock/unlock, honk/flash,
-  wakeup (the button "Wake vehicle" is only a workaround that re-sends the current charge mode), window heating, battery care, reduced current**; do not re-add entities for them.
+  wakeup (the button "Wake vehicle" is only a workaround: it re-sends the current charge mode, or stops an idle function if there is no charge mode, see `coordinator._wake_command`), window heating, battery care, reduced current**; do not re-add entities for them.
 - Errors are RFC 9457 `application/problem+json`; the type suffix (e.g. `api-key-expired`) is kept in
   `SkodaApiError.problem`. 401 -> reauth, 429 -> backoff via `Retry-After`.
 

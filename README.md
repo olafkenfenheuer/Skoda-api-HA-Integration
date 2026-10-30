@@ -134,7 +134,10 @@ shows when the car last reported; **Last poll** only shows when the integration 
 
 The API has no wake-up call. The button **Wake vehicle** therefore re-sends the current charge mode,
 a command that changes nothing but has to reach the vehicle; the vehicle usually reports within a minute.
-The number **Wake charging vehicle after (0 = off)** does this automatically while a vehicle is charging
+A vehicle without a charge mode (such as a combustion vehicle) gets a stop command instead, for the
+first of air conditioning, auxiliary heating and active ventilation that it lists as an operation and
+that is not running; a running function is never stopped. This is untested: only re-sending the charge
+mode is known to make a vehicle report. The number **Wake charging vehicle after (0 = off)** does this automatically while a vehicle is charging
 and has not reported for the given number of minutes (off by default, minimum 10). Each wake-up uses two
 requests of the quota; it is skipped during a rate limit pause and when fewer than 6 requests are left.
 Both are unavailable in read-only mode.

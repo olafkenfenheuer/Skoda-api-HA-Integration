@@ -138,7 +138,10 @@ Integration zuletzt Daten geholt hat.
 
 Die API hat keinen Wake-up-Aufruf. Der Button **Fahrzeug aufwecken** sendet deshalb den aktuellen
 Lademodus erneut, einen Befehl, der nichts ändert, aber das Fahrzeug erreichen muss; das Fahrzeug meldet
-sich meist innerhalb einer Minute. Die Zahl **Ladendes Fahrzeug wecken nach (0 = aus)** macht das
+sich meist innerhalb einer Minute. Ein Fahrzeug ohne Lademodus (etwa ein Verbrenner) bekommt stattdessen
+einen Stop-Befehl, und zwar für die erste Funktion aus Klimaanlage, Standheizung und aktiver Belüftung,
+die es als Operation nennt und die nicht läuft; eine laufende Funktion wird nie gestoppt. Das ist nicht
+erprobt: Nur das erneute Senden des Lademodus bringt nachweislich ein Fahrzeug zum Melden. Die Zahl **Ladendes Fahrzeug wecken nach (0 = aus)** macht das
 automatisch, solange ein Fahrzeug lädt und sich die angegebene Zahl von Minuten nicht gemeldet hat
 (standardmäßig aus, Minimum 10). Jedes Wecken verbraucht zwei Anfragen des Kontingents; es entfällt
 während einer Rate-Limit-Pause und wenn weniger als 6 Anfragen übrig sind. Beides gibt es im

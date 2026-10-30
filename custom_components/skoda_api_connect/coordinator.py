@@ -5,9 +5,10 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from functools import partial
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -57,6 +58,15 @@ MAX_RATE_LIMIT_BACKOFF = timedelta(hours=1)
 # A vehicle counts as due slightly early so scheduler jitter never skips a whole tick.
 DUE_TOLERANCE_SECONDS = 10
 
+
+# Commands that change nothing when the function they stop is not running, but have to reach
+# the vehicle. Tried, in this order, for a vehicle without a charge mode to re-send:
+# (operation, section of the vehicle data, states meaning "not running", API method).
+WAKE_STOP_COMMANDS: tuple[tuple[str, str, tuple[str, ...], str], ...] = (
+    ("stopAirConditioning", "airConditioning", ("OFF", "COMPLETED"), "stop_air_conditioning"),
+    ("stopAuxiliaryHeating", "auxiliaryHeating", ("OFF",), "stop_auxiliary_heating"),
+    ("stopActiveVentilation", "activeVentilation", ("OFF",), "stop_active_ventilation"),
+)
 
 # airConditioning.state / activeVentilation.state values while the climate runs.
 CLIMATE_ACTIVE_STATES = ("COOLING", "HEATING", "HEATING_AUXILIARY", "VENTILATION")
@@ -443,14 +453,27 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         return None
 
     def supports_wake(self, vin: str) -> bool:
-        """Return whether ``async_wake_vehicle`` can work: it needs the current charge mode."""
-        return self._wake_charge_mode(vin) is not None
+        """Return whether ``async_wake_vehicle`` has a command to send for the vehicle now."""
+        return self._wake_command(vin) is not None
 
-    def _wake_charge_mode(self, vin: str) -> str | None:
-        """Return the charge mode ``async_wake_vehicle`` re-sends, or None if unknown."""
+    def _wake_command(self, vin: str) -> Callable[[], Awaitable[None]] | None:
+        """Return the command that wakes the vehicle, or None if there is none now.
+
+        The charge mode is re-sent if it is known and can be set. A vehicle without it
+        (such as a combustion vehicle) gets a stop command for a function that is not
+        running, but only if it lists that operation: a vehicle that does not list its
+        operations is not guessed at.
+        """
         vehicle = self.data.vehicles.get(vin) if self.data else None
-        mode = vehicle.get("charging", "settings", "preferredChargeMode") if vehicle else None
-        return mode or None
+        if vehicle is None:
+            return None
+        mode = vehicle.get("charging", "settings", "preferredChargeMode")
+        if mode and vehicle.supports("setChargeMode"):
+            return partial(self.api.set_charge_mode, vin, mode)
+        for operation, section, idle, method in WAKE_STOP_COMMANDS:
+            if vehicle.lists(operation) and vehicle.get(section, "state") in idle:
+                return partial(getattr(self.api, method), vin)
+        return None
 
     def _should_auto_wake(self, vin: str) -> bool:
         """Return whether a charging vehicle has been silent long enough to be woken."""
@@ -473,15 +496,19 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
             _LOGGER.warning("Could not wake a vehicle: %s", err)
 
     async def async_wake_vehicle(self, vin: str) -> None:
-        """Try to make the vehicle report by re-sending its current charge mode.
+        """Try to make the vehicle report by sending it a command that changes nothing.
 
         The public API has no wake-up call. A command has to reach the vehicle, so this
-        sends one that changes nothing; the follow-up refresh picks up what it reported.
+        re-sends the current charge mode, or stops a function that is not running (see
+        ``_wake_command``); the follow-up refresh picks up what the vehicle reported.
         """
-        mode = self._wake_charge_mode(vin)
-        if mode is None:
-            raise HomeAssistantError("The current charge mode of the vehicle is unknown")
-        await self.async_command(vin, self.api.set_charge_mode(vin, mode))
+        command = self._wake_command(vin)
+        if command is None:
+            raise HomeAssistantError(
+                "No command to wake the vehicle is available: its charge mode is unknown "
+                "and it has no idle air conditioning, auxiliary heating or ventilation to stop"
+            )
+        await self.async_command(vin, command())
 
     @staticmethod
     def _rate_limit_backoff(err: SkodaRateLimitError) -> timedelta:

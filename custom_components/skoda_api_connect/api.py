@@ -186,6 +186,14 @@ class SkodaVehicle:
             return True
         return any(op.get("name") == operation for op in operations)
 
+    def lists(self, operation: str) -> bool:
+        """Return whether the vehicle explicitly lists the given remote operation.
+
+        Unlike ``supports`` this is False when the list of operations is unknown.
+        """
+        operations = self.data.get("operations")
+        return operations is not None and any(op.get("name") == operation for op in operations)
+
 
 class SkodaApi:
     """Thin async client for the MyŠkoda Public API."""
@@ -310,6 +318,10 @@ class SkodaApi:
     async def stop_air_conditioning(self, vin: str) -> None:
         """Stop air conditioning."""
         await self._command("POST", vin, "air-conditioning/stop")
+
+    async def stop_auxiliary_heating(self, vin: str) -> None:
+        """Stop the auxiliary heating."""
+        await self._command("POST", vin, "auxiliary-heating/stop")
 
     async def start_active_ventilation(self, vin: str) -> None:
         """Start active ventilation."""

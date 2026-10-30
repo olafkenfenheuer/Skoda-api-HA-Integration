@@ -289,7 +289,7 @@ class SkodaParkingAlert:
     def _async_wake_once(self, vin: str, incident: _Incident) -> None:
         coordinator = self._coordinator
         if not coordinator.supports_wake(vin):
-            blocked: str | None = "the current charge mode of the vehicle is unknown"
+            blocked: str | None = "no command to wake the vehicle is available"
         else:
             blocked = coordinator.wake_blocked_reason(vin)
         if blocked is not None:
