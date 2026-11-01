@@ -22,7 +22,7 @@ externe client-bibliotheek.
 | `switch` | Laden starten/stoppen |
 | `button` | API nu opvragen (vraagt de MyŠkoda-API direct op voor het voertuig; kost één verzoek van het API-quotum en wordt geweigerd tijdens een rate limit), Voertuig wakker maken (zie hieronder) |
 | `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden), automatisch wekken van een ladend voertuig, wachttijd parkeeralarm |
-| `select` | Laadmodus |
+| `select` | Laadmodus (alleen als het voertuig zijn beschikbare laadmodi meldt) |
 
 Sensoren en bediening worden alleen aangemaakt voor de gegevens en acties die jouw voertuig
 meldt. In de opties kun je de **alleen-lezen-modus** inschakelen om alle bediening uit te
@@ -194,8 +194,8 @@ melding, dan wekt de integratie het voertuig één keer per incident, net als de
 wakker maken** (twee verzoeken van het quotum), en beslist op de melding die volgt. Het wekken wordt
 Meldt het voertuig zich niet binnen 5 minuten na het wekken, mislukt het wekken of wordt het
 overgeslagen (in alleen-lezen-modus, tijdens een rate-limit-pauze, als er minder dan 6 verzoeken van
-het uurquotum over zijn en bij voertuigen zonder bekende laadmodus, zoals de meeste
-verbrandingsmotoren), dan wordt de melding toch verstuurd en eindigt ze met "Not confirmed: last
+het uurquotum over zijn en als er geen commando is om het voertuig te wekken: geen
+bekende laadmodus en geen airco, standkachel of ventilatie die het voertuig vermeldt en die niet draait), dan wordt de melding toch verstuurd en eindigt ze met "Not confirmed: last
 report at …": een voertuig dat stil blijft, mag de melding niet voorgoed tegenhouden. Afgezien
 daarvan leest de melding alleen gegevens die de polls al hebben opgehaald en kost ze geen verzoeken.
 

@@ -26,7 +26,7 @@ Options-Flow, Reauthentifizierung und Diagnose-Download.
 | `switch` | Laden starten/stoppen |
 | `button` | API jetzt abrufen (ruft die MyŠkoda-API für das Fahrzeug sofort ab; kostet eine Anfrage des API-Kontingents und wird bei aktivem Rate-Limit abgelehnt), Fahrzeug aufwecken (siehe unten) |
 | `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs, Parkalarm-Wartezeit |
-| `select` | Lademodus |
+| `select` | Lademodus (nur wenn das Fahrzeug seine verfügbaren Lademodi meldet) |
 
 Sensoren und Steuerungen werden nur für die Daten und Fernbedienungen angelegt, die dein
 Fahrzeug tatsächlich meldet. Die Entitätenliste passt sich also an dein Auto an (Elektro, Plug-in-Hybrid
@@ -212,8 +212,9 @@ solche Meldung vor, weckt die Integration das Fahrzeug einmal pro Vorfall, genau
 Button **Fahrzeug aufwecken** (zwei Anfragen des Kontingents), und entscheidet anhand der
 folgenden Meldung. Meldet sich das Fahrzeug nicht innerhalb von 5 Minuten nach dem Aufwecken,
 schlägt das Aufwecken fehl oder entfällt es (im Nur-Lesen-Modus, während einer Ratenlimit-Pause, wenn
-weniger als 6 Anfragen des Stundenkontingents übrig sind, und bei Fahrzeugen ohne bekannten Lademodus,
-etwa den meisten Verbrennern), wird der Alarm trotzdem gesendet und endet mit „Not confirmed: last
+weniger als 6 Anfragen des Stundenkontingents übrig sind, und wenn es keinen Befehl zum Aufwecken gibt:
+kein bekannter Lademodus und keine Klimaanlage, Standheizung oder Belüftung, die das Fahrzeug nennt und
+die nicht läuft), wird der Alarm trotzdem gesendet und endet mit „Not confirmed: last
 report at …“: Ein Fahrzeug, das stumm bleibt, darf den Alarm nicht dauerhaft zurückhalten. Abgesehen
 davon liest der Alarm nur Daten, die die Abfragen ohnehin geholt haben, und kostet keine Anfragen.
 
