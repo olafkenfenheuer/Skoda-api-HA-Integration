@@ -25,7 +25,7 @@ an options flow, reauthentication support, and a diagnostics download.
 | `switch` | Start/stop charging |
 | `button` | Poll API now (queries the MyŠkoda API for the vehicle immediately; costs one request of the API quota and is refused while the API is rate limited), Wake vehicle (see below) |
 | `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle, parking alert grace period |
-| `select` | Charge mode |
+| `select` | Charge mode (only if the vehicle reports its available charge modes) |
 
 Sensors and controls are only created for the data and remote operations your specific vehicle
 reports, so the entity list adapts to your car (EV, PHEV, or combustion).
@@ -203,8 +203,9 @@ that report starts the incident, it is enough for the alert. If there is no such
 wakes the vehicle once per incident, the same way as the **Wake vehicle** button (two requests of
 the quota), and decides on the report that follows. If the vehicle does not report within 5 minutes
 of the wake-up, the wake-up fails, or it is skipped (in read-only mode, during a rate limit pause, when
-fewer than 6 requests of the hourly quota are left and for vehicles without a known charge mode, such
-as most combustion vehicles), the alert is sent anyway and ends with "Not confirmed: last report at
+fewer than 6 requests of the hourly quota are left and when there is no command to wake the vehicle with:
+no known charge mode, and no air conditioning, auxiliary heating or ventilation that the vehicle lists and
+that is not running), the alert is sent anyway and ends with "Not confirmed: last report at
 …": a vehicle that stays silent must not hold the alert back for good. Apart from that wake-up the
 alert only reads data the polls already fetched and costs no requests.
 
