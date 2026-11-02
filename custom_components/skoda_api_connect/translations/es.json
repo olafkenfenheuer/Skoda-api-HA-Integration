@@ -138,6 +138,33 @@
       },
       "poll_interval": {
         "name": "Intervalo de consulta actual"
+      },
+      "charge_type": {
+        "name": "Tipo de carga"
+      },
+      "fully_charged_at": {
+        "name": "Carga completa a las"
+      },
+      "battery_care_target": {
+        "name": "Objetivo de cuidado de la batería"
+      },
+      "max_charge_current_ac": {
+        "name": "Corriente de carga máxima (vehículo)"
+      },
+      "max_charge_current_ac_ampere": {
+        "name": "Corriente de carga máxima en amperios"
+      },
+      "air_conditioning_reach": {
+        "name": "Temperatura objetivo alcanzada a las"
+      },
+      "aux_heating_reach": {
+        "name": "Calefacción auxiliar: objetivo alcanzado a las"
+      },
+      "fuel_car_type": {
+        "name": "Tipo de vehículo"
+      },
+      "license_plate": {
+        "name": "Matrícula"
       }
     },
     "binary_sensor": {
@@ -178,6 +205,30 @@
             "name": "Motivos"
           }
         }
+      },
+      "charging_care_mode": {
+        "name": "Carga cuidadosa"
+      },
+      "vehicle_auto_unlock": {
+        "name": "Desbloqueo del enchufe tras la carga (vehículo)"
+      },
+      "window_heating_front": {
+        "name": "Calefacción del parabrisas"
+      },
+      "window_heating_rear": {
+        "name": "Calefacción de la luneta trasera"
+      },
+      "window_heating_enabled": {
+        "name": "Calefacción de lunas activada"
+      },
+      "air_conditioning_at_unlock": {
+        "name": "Climatización al desbloquear"
+      },
+      "air_conditioning_without_external_power": {
+        "name": "Climatización sin alimentación externa"
+      },
+      "sunroof_open": {
+        "name": "Techo solar"
       }
     },
     "button": {

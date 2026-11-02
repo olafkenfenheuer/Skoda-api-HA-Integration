@@ -138,6 +138,33 @@
       },
       "poll_interval": {
         "name": "Aktuelles Abrufintervall"
+      },
+      "charge_type": {
+        "name": "Ladeart"
+      },
+      "fully_charged_at": {
+        "name": "Voll geladen um"
+      },
+      "battery_care_target": {
+        "name": "Ziel Batterieschonung"
+      },
+      "max_charge_current_ac": {
+        "name": "Maximaler Ladestrom (Fahrzeug)"
+      },
+      "max_charge_current_ac_ampere": {
+        "name": "Maximaler Ladestrom in Ampere"
+      },
+      "air_conditioning_reach": {
+        "name": "Zieltemperatur erreicht um"
+      },
+      "aux_heating_reach": {
+        "name": "Standheizung: Ziel erreicht um"
+      },
+      "fuel_car_type": {
+        "name": "Fahrzeugtyp"
+      },
+      "license_plate": {
+        "name": "Kennzeichen"
       }
     },
     "binary_sensor": {
@@ -178,6 +205,30 @@
             "name": "Gründe"
           }
         }
+      },
+      "charging_care_mode": {
+        "name": "Schonendes Laden"
+      },
+      "vehicle_auto_unlock": {
+        "name": "Stecker entriegeln nach dem Laden (Fahrzeug)"
+      },
+      "window_heating_front": {
+        "name": "Frontscheibenheizung"
+      },
+      "window_heating_rear": {
+        "name": "Heckscheibenheizung"
+      },
+      "window_heating_enabled": {
+        "name": "Scheibenheizung aktiviert"
+      },
+      "air_conditioning_at_unlock": {
+        "name": "Klima beim Entriegeln"
+      },
+      "air_conditioning_without_external_power": {
+        "name": "Klima ohne externe Stromversorgung"
+      },
+      "sunroof_open": {
+        "name": "Schiebedach"
       }
     },
     "button": {

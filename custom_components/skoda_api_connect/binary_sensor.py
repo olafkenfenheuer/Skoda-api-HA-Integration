@@ -12,6 +12,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import SkodaVehicle
@@ -39,6 +40,21 @@ def _is(*path: str, value: str) -> Callable[[SkodaVehicle], bool | None]:
 
 def _reported(*path: str) -> Callable[[SkodaVehicle], bool]:
     return lambda vehicle: vehicle.has(*path)
+
+
+def _supported(*path: str) -> Callable[[SkodaVehicle], bool]:
+    """Return a function that is true if the vehicle reports a value other than UNSUPPORTED."""
+    return lambda vehicle: vehicle.get(*path) not in (None, "UNSUPPORTED")
+
+
+def _flag(*path: str) -> Callable[[SkodaVehicle], bool | None]:
+    """Return a function reading a boolean at ``path`` (None if it is not one)."""
+
+    def read(vehicle: SkodaVehicle) -> bool | None:
+        value = vehicle.get(*path)
+        return value if isinstance(value, bool) else None
+
+    return read
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -130,6 +146,63 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[SkodaBinarySensorEntityDescription, ...] = (
         icon="mdi:home-map-marker",
         value_fn=lambda v: v.get("charging", "isVehicleInSavedLocation"),
         exists_fn=_reported("charging", "isVehicleInSavedLocation"),
+    ),
+    # Settings of the vehicle and states the API only reports, none of them can be changed through it.
+    SkodaBinarySensorEntityDescription(
+        key="charging_care_mode",
+        translation_key="charging_care_mode",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_is("charging", "settings", "chargingCareMode", value="ACTIVATED"),
+        exists_fn=_reported("charging", "settings", "chargingCareMode"),
+    ),
+    SkodaBinarySensorEntityDescription(
+        key="vehicle_auto_unlock",
+        translation_key="vehicle_auto_unlock",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_is("charging", "settings", "autoUnlockPlugWhenCharged", value="PERMANENT"),
+        exists_fn=_reported("charging", "settings", "autoUnlockPlugWhenCharged"),
+    ),
+    SkodaBinarySensorEntityDescription(
+        key="window_heating_front",
+        translation_key="window_heating_front",
+        device_class=BinarySensorDeviceClass.HEAT,
+        value_fn=_is("airConditioning", "windowHeating", "front", value="ON"),
+        exists_fn=_supported("airConditioning", "windowHeating", "front"),
+    ),
+    SkodaBinarySensorEntityDescription(
+        key="window_heating_rear",
+        translation_key="window_heating_rear",
+        device_class=BinarySensorDeviceClass.HEAT,
+        value_fn=_is("airConditioning", "windowHeating", "rear", value="ON"),
+        exists_fn=_supported("airConditioning", "windowHeating", "rear"),
+    ),
+    SkodaBinarySensorEntityDescription(
+        key="window_heating_enabled",
+        translation_key="window_heating_enabled",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_flag("airConditioning", "windowHeating", "enabled"),
+        exists_fn=_reported("airConditioning", "windowHeating", "enabled"),
+    ),
+    SkodaBinarySensorEntityDescription(
+        key="air_conditioning_at_unlock",
+        translation_key="air_conditioning_at_unlock",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_flag("airConditioning", "airConditioningAtUnlock"),
+        exists_fn=_reported("airConditioning", "airConditioningAtUnlock"),
+    ),
+    SkodaBinarySensorEntityDescription(
+        key="air_conditioning_without_external_power",
+        translation_key="air_conditioning_without_external_power",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_flag("airConditioning", "airConditioningWithoutExternalPower"),
+        exists_fn=_reported("airConditioning", "airConditioningWithoutExternalPower"),
+    ),
+    SkodaBinarySensorEntityDescription(
+        key="sunroof_open",
+        translation_key="sunroof_open",
+        device_class=BinarySensorDeviceClass.OPENING,
+        value_fn=_is("status", "detail", "sunroof", value="OPEN"),
+        exists_fn=_supported("status", "detail", "sunroof"),
     ),
     SkodaBinarySensorEntityDescription(
         # The parking alert condition; like the alert, it ignores data cached before a restart.

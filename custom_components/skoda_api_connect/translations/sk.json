@@ -138,6 +138,33 @@
       },
       "poll_interval": {
         "name": "Aktuálny interval dopytovania"
+      },
+      "charge_type": {
+        "name": "Typ nabíjania"
+      },
+      "fully_charged_at": {
+        "name": "Plne nabité o"
+      },
+      "battery_care_target": {
+        "name": "Cieľ šetrného nabíjania"
+      },
+      "max_charge_current_ac": {
+        "name": "Maximálny nabíjací prúd (vozidlo)"
+      },
+      "max_charge_current_ac_ampere": {
+        "name": "Maximálny nabíjací prúd v A"
+      },
+      "air_conditioning_reach": {
+        "name": "Cieľová teplota dosiahnutá o"
+      },
+      "aux_heating_reach": {
+        "name": "Nezávislé kúrenie: cieľ dosiahnutý o"
+      },
+      "fuel_car_type": {
+        "name": "Typ vozidla"
+      },
+      "license_plate": {
+        "name": "EČV"
       }
     },
     "binary_sensor": {
@@ -178,6 +205,30 @@
             "name": "Dôvody"
           }
         }
+      },
+      "charging_care_mode": {
+        "name": "Šetrné nabíjanie"
+      },
+      "vehicle_auto_unlock": {
+        "name": "Odomknutie zástrčky po nabití (vozidlo)"
+      },
+      "window_heating_front": {
+        "name": "Vyhrievanie čelného skla"
+      },
+      "window_heating_rear": {
+        "name": "Vyhrievanie zadného okna"
+      },
+      "window_heating_enabled": {
+        "name": "Vyhrievanie okien zapnuté"
+      },
+      "air_conditioning_at_unlock": {
+        "name": "Klimatizácia pri odomknutí"
+      },
+      "air_conditioning_without_external_power": {
+        "name": "Klimatizácia bez externého napájania"
+      },
+      "sunroof_open": {
+        "name": "Strešné okno"
       }
     },
     "button": {

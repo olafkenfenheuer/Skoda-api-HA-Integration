@@ -36,6 +36,12 @@ class SkodaDeviceTracker(SkodaVehicleEntity, TrackerEntity):
         self._attr_unique_id = f"{vin}_location"
 
     @property
+    def entity_picture(self) -> str | None:
+        """Return the render of the vehicle, shown as its marker on the map."""
+        url = self.vehicle.get("renderUrl")
+        return url if isinstance(url, str) and url.startswith("https://") else None
+
+    @property
     def source_type(self) -> SourceType:
         """Return the source type of the device tracker."""
         return SourceType.GPS

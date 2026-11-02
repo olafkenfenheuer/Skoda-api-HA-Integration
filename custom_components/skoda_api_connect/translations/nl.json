@@ -138,6 +138,33 @@
       },
       "poll_interval": {
         "name": "Huidig pollinginterval"
+      },
+      "charge_type": {
+        "name": "Laadtype"
+      },
+      "fully_charged_at": {
+        "name": "Volledig geladen om"
+      },
+      "battery_care_target": {
+        "name": "Doel accuzorg"
+      },
+      "max_charge_current_ac": {
+        "name": "Maximale laadstroom (voertuig)"
+      },
+      "max_charge_current_ac_ampere": {
+        "name": "Maximale laadstroom in ampère"
+      },
+      "air_conditioning_reach": {
+        "name": "Doeltemperatuur bereikt om"
+      },
+      "aux_heating_reach": {
+        "name": "Standkachel: doel bereikt om"
+      },
+      "fuel_car_type": {
+        "name": "Voertuigtype"
+      },
+      "license_plate": {
+        "name": "Kenteken"
       }
     },
     "binary_sensor": {
@@ -178,6 +205,30 @@
             "name": "Redenen"
           }
         }
+      },
+      "charging_care_mode": {
+        "name": "Zorgvol laden"
+      },
+      "vehicle_auto_unlock": {
+        "name": "Stekker ontgrendelen na het laden (voertuig)"
+      },
+      "window_heating_front": {
+        "name": "Voorruitverwarming"
+      },
+      "window_heating_rear": {
+        "name": "Achterruitverwarming"
+      },
+      "window_heating_enabled": {
+        "name": "Ruitverwarming ingeschakeld"
+      },
+      "air_conditioning_at_unlock": {
+        "name": "Airco bij ontgrendelen"
+      },
+      "air_conditioning_without_external_power": {
+        "name": "Airco zonder externe stroom"
+      },
+      "sunroof_open": {
+        "name": "Schuifdak"
       }
     },
     "button": {
