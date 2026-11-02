@@ -139,21 +139,24 @@ times stay as they are. A change costs two requests of the quota plus the follow
   sensor **Charging location** (attribute `profiles`) lists what the API reports; as long as the list is
   empty there is nothing to show. A vehicle without saved charging locations has no profiles and therefore none
   of these entities.
-- The entities of a profile are created **when the integration is set up**, so a new profile only gets them
-  after the integration is **reloaded** (Settings > Devices & services > Škoda API Connect > the three dots >
-  Reload) or Home Assistant is restarted. The name of an entity is taken at that moment too: a profile renamed
-  in the app keeps its old name in the entities until the next reload (the sensor **Charging location**
-  shows the current name).
+- The entities of a profile are created when the integration is set up, so the integration **reloads itself**
+  when the profiles of a vehicle change: a profile that was added, deleted or renamed (the names of the
+  entities are taken at setup). A change has to show in **two polls in a row**, so an answer that is wrong
+  for a moment does not cause a reload; with the normal polling interval that takes 10 to 20 minutes. Only
+  vehicles that list `updateChargingProfile` are watched. You can also reload by hand (Settings > Devices &
+  services > Škoda API Connect > the three dots > Reload).
 
 **When a profile is deleted in the vehicle or the app**
 
 - Its entities become **unavailable** as soon as the vehicle no longer reports the profile. Nothing is sent
-  to the vehicle for a profile that is gone: the action `update_charging_profile` refuses it ("does not report this charging profile (any more)") before it writes anything.
-- After the next reload or restart no entities are created for it, but the old ones stay in Home Assistant as
-  unavailable entities. They are not removed automatically, because the API may also report an empty list
-  for a moment; delete them under Settings > Devices & services > Entities when the profile is really gone.
+  to the vehicle for a profile that is gone: the action `update_charging_profile` refuses it ("The vehicle does
+  not report this charging profile (any more)") before it writes anything.
+- The integration reloads itself, and no entities are created for the deleted profile any more, but the old ones
+  **stay in Home Assistant** as unavailable entities. They are not removed automatically, because they may
+  carry your own settings (name, area, history); delete them under Settings > Devices & services >
+  Entities when the profile is really gone.
 - If you create a new profile afterwards it may get the id of the deleted one. Its entities are then the old
-  ones again (the same ids), with the old name, until you reload.
+  ones again (the same ids), under the name taken at the reload.
 
 Timers and preferred charging times are not entities (a profile has up to 4 preferred charging times and 3
 timers). The sensor **Charging location** shows those of the profile the vehicle is at as attributes, and the

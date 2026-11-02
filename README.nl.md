@@ -128,22 +128,25 @@ blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het
   **API nu opvragen**. De sensor **Laadlocatie** (attribuut `profiles`) toont wat de API meldt; zolang de lijst
   leeg is, valt er niets te tonen. Een voertuig zonder opgeslagen laadlocaties heeft geen profielen en dus geen
   van deze entiteiten.
-- De entiteiten van een profiel worden **bij het instellen van de integratie** aangemaakt. Een nieuw profiel
-  krijgt ze dus pas na het **herladen** van de integratie (Instellingen > Apparaten en diensten > Škoda API
-  Connect > de drie puntjes > Opnieuw laden) of een herstart van Home Assistant. Ook de naam van een entiteit
-  wordt op dat moment overgenomen: een in de app hernoemd profiel behoudt in de entiteiten zijn oude naam tot
-  het volgende herladen (de sensor **Laadlocatie** toont de actuele naam).
+- De entiteiten van een profiel worden bij het instellen van de integratie aangemaakt, daarom **herlaadt de
+  integratie zichzelf** als de profielen van een voertuig veranderen: een profiel is toegevoegd, verwijderd of
+  hernoemd (de namen van de entiteiten worden bij het instellen overgenomen). Een wijziging moet in **twee
+  polls achter elkaar** voorkomen, zodat een even foutief antwoord geen herlaad veroorzaakt; bij het normale
+  pollinginterval duurt dat 10 tot 20 minuten. Alleen voertuigen die `updateChargingProfile` vermelden worden
+  bewaakt. Je kunt ook handmatig herladen (Instellingen > Apparaten en diensten > Škoda API Connect > de drie
+  puntjes > Opnieuw laden).
 
 **Als een profiel in het voertuig of de app wordt verwijderd**
 
 - De entiteiten worden **niet beschikbaar** zodra het voertuig het profiel niet meer meldt. Voor een verdwenen
-  profiel wordt niets naar het voertuig gestuurd: de actie `update_charging_profile` weigert het ("does not report this charging profile (any more)") voordat ze iets schrijft.
-- Na het volgende herladen of de volgende herstart worden er geen entiteiten meer voor aangemaakt, maar de oude
-  blijven als niet-beschikbare entiteiten in Home Assistant staan. Ze worden niet automatisch verwijderd, omdat
-  de API ook even een lege lijst kan melden; verwijder ze onder Instellingen > Apparaten en diensten >
-  Entiteiten als het profiel echt weg is.
+  profiel wordt niets naar het voertuig gestuurd: de actie `update_charging_profile` weigert het ("The vehicle
+  does not report this charging profile (any more)") voordat ze iets schrijft.
+- De integratie herlaadt zichzelf, en voor het verwijderde profiel worden geen entiteiten meer aangemaakt, maar
+  de oude **blijven in Home Assistant** staan als niet-beschikbare entiteiten. Ze worden niet automatisch
+  verwijderd, omdat ze eigen instellingen kunnen dragen (naam, gebied, geschiedenis); verwijder ze onder
+  Instellingen > Apparaten en diensten > Entiteiten als het profiel echt weg is.
 - Maak je daarna een nieuw profiel aan, dan kan het het id van het verwijderde krijgen. Zijn entiteiten zijn dan
-  weer de oude (dezelfde id's), met de oude naam, tot je herlaadt.
+  weer de oude (dezelfde id's), met de naam die bij het herladen is overgenomen.
 
 Timers en voorkeurslaadtijden zijn geen entiteiten (een profiel heeft tot 4 voorkeurslaadtijden en 3 timers). De
 sensor **Laadlocatie** toont die van het profiel waar het voertuig staat als attributen, en de actie
