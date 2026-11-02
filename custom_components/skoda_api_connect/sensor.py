@@ -15,6 +15,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import (
     PERCENTAGE,
+    UnitOfElectricCurrent,
     UnitOfTime,
     UnitOfLength,
     UnitOfPower,
@@ -68,6 +69,31 @@ def _path(*path: str) -> Callable[[Vehicle], StateType]:
 
 def _exists(*path: str) -> Callable[[Vehicle], bool]:
     return lambda vehicle: vehicle.has(*path)
+
+
+def _datetime(*path: str) -> Callable[[Vehicle], datetime | None]:
+    """Return a function reading an ISO 8601 timestamp at ``path`` as a datetime."""
+
+    def read(vehicle: Vehicle) -> datetime | None:
+        value = vehicle.get(*path)
+        if not isinstance(value, str):
+            return None
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    return read
+
+
+def _fully_charged_at(vehicle: Vehicle) -> datetime | None:
+    """Return when the vehicle is expected to be fully charged, only while it charges.
+
+    The API reports a time for the other states as well, which means nothing then.
+    """
+    if vehicle.get("charging", "status", "state") != "CHARGING":
+        return None
+    return _datetime("charging", "status", "fullyChargedAt")(vehicle)
 
 
 def _charging_location_profile(vehicle: Vehicle) -> StateType:
@@ -243,6 +269,76 @@ SENSOR_DESCRIPTIONS: tuple[SkodaSensorEntityDescription, ...] = (
         translation_key="parking_state",
         value_fn=_path("parkingPosition", "state"),
         exists_fn=_exists("parkingPosition", "state"),
+    ),
+    # Values the API reports that only matter for a closer look: diagnostics, or settings
+    # of the vehicle that cannot be changed through the public API. Like the lock values they
+    # are plain text, since the API may add values.
+    SkodaSensorEntityDescription(
+        key="charge_type",
+        translation_key="charge_type",
+        value_fn=_path("charging", "status", "chargeType"),
+        exists_fn=_exists("charging", "status", "chargeType"),
+    ),
+    SkodaSensorEntityDescription(
+        key="fully_charged_at",
+        translation_key="fully_charged_at",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=_fully_charged_at,
+        exists_fn=_exists("charging", "status", "fullyChargedAt"),
+    ),
+    SkodaSensorEntityDescription(
+        key="battery_care_target",
+        translation_key="battery_care_target",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        native_unit_of_measurement=PERCENTAGE,
+        value_fn=_path("charging", "settings", "batteryCareModeTargetValueInPercent"),
+        exists_fn=_exists("charging", "settings", "batteryCareModeTargetValueInPercent"),
+    ),
+    SkodaSensorEntityDescription(
+        key="max_charge_current_ac",
+        translation_key="max_charge_current_ac",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_path("charging", "settings", "maxChargeCurrentAc"),
+        exists_fn=_exists("charging", "settings", "maxChargeCurrentAc"),
+    ),
+    SkodaSensorEntityDescription(
+        key="max_charge_current_ac_ampere",
+        translation_key="max_charge_current_ac_ampere",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        device_class=SensorDeviceClass.CURRENT,
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        value_fn=_path("charging", "settings", "maxChargeCurrentAcAmpere"),
+        exists_fn=_exists("charging", "settings", "maxChargeCurrentAcAmpere"),
+    ),
+    SkodaSensorEntityDescription(
+        key="air_conditioning_reach",
+        translation_key="air_conditioning_reach",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=_datetime("airConditioning", "estimatedReachOfTargetTemperatureAt"),
+        exists_fn=_exists("airConditioning", "estimatedReachOfTargetTemperatureAt"),
+    ),
+    SkodaSensorEntityDescription(
+        key="aux_heating_reach",
+        translation_key="aux_heating_reach",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=_datetime("auxiliaryHeating", "estimatedReachOfTargetTemperatureAt"),
+        exists_fn=_exists("auxiliaryHeating", "estimatedReachOfTargetTemperatureAt"),
+    ),
+    SkodaSensorEntityDescription(
+        key="fuel_car_type",
+        translation_key="fuel_car_type",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_path("fuelStatus", "carType"),
+        exists_fn=_exists("fuelStatus", "carType"),
+    ),
+    SkodaSensorEntityDescription(
+        # Personal data: off by default, and redacted in the diagnostics.
+        key="license_plate",
+        translation_key="license_plate",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_path("licensePlate"),
+        exists_fn=_exists("licensePlate"),
     ),
     SkodaSensorEntityDescription(
         key="charging_location_profile",

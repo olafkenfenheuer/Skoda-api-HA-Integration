@@ -138,6 +138,33 @@
       },
       "poll_interval": {
         "name": "Aktuellen Ofrointervall"
+      },
+      "charge_type": {
+        "name": "Luedaart"
+      },
+      "fully_charged_at": {
+        "name": "Voll gelueden um"
+      },
+      "battery_care_target": {
+        "name": "Zil Batterieschount"
+      },
+      "max_charge_current_ac": {
+        "name": "Maximale Luedstroum (Gefier)"
+      },
+      "max_charge_current_ac_ampere": {
+        "name": "Maximale Luedstroum an Ampere"
+      },
+      "air_conditioning_reach": {
+        "name": "Zieltemperatur erreecht um"
+      },
+      "aux_heating_reach": {
+        "name": "Standheizung: Zil erreecht um"
+      },
+      "fuel_car_type": {
+        "name": "Gefiertyp"
+      },
+      "license_plate": {
+        "name": "Kennzeechen"
       }
     },
     "binary_sensor": {
@@ -178,6 +205,30 @@
             "name": "Grënn"
           }
         }
+      },
+      "charging_care_mode": {
+        "name": "Schounend Lueden"
+      },
+      "vehicle_auto_unlock": {
+        "name": "Stecker entriegelen nom Lueden (Gefier)"
+      },
+      "window_heating_front": {
+        "name": "Frontscheibenheizung"
+      },
+      "window_heating_rear": {
+        "name": "Heckscheibenheizung"
+      },
+      "window_heating_enabled": {
+        "name": "Scheibenheizung aktivéiert"
+      },
+      "air_conditioning_at_unlock": {
+        "name": "Klima beim Entriegelen"
+      },
+      "air_conditioning_without_external_power": {
+        "name": "Klima ouni externe Stroumversuergung"
+      },
+      "sunroof_open": {
+        "name": "Schiebedaach"
       }
     },
     "button": {

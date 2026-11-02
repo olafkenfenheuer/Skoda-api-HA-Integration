@@ -7,6 +7,16 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.1]
+
+### Toegevoegd
+
+- Alle waarden die de API meldt en die nog ontbraken, elk alleen als het voertuig ze meldt:
+  - sensoren: laadtype, volledig geladen om (alleen tijdens het laden), doel van de accuzorg, maximale laadstroom van het voertuig (tekst en ampère), doeltemperatuur bereikt om (airco en standkachel), voertuigtype en het kenteken (standaard uit, geanonimiseerd in de diagnostiek);
+  - binaire sensoren: zorgvol laden, stekker ontgrendelen na het laden (de instelling van het voertuig), voor- en achterruitverwarming, ruitverwarming ingeschakeld, airco bij ontgrendelen, airco zonder externe stroom, schuifdak;
+  - de afbeelding van het voertuig is de afbeelding van de tracker voor de parkeerpositie.
+  Ze zijn niet te wijzigen via de publieke API.
+
 ## [0.5.0]
 
 ### Toegevoegd

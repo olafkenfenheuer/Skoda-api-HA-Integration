@@ -138,6 +138,33 @@
       },
       "poll_interval": {
         "name": "Intervalle d'interrogation actuel"
+      },
+      "charge_type": {
+        "name": "Type de charge"
+      },
+      "fully_charged_at": {
+        "name": "Entièrement chargé à"
+      },
+      "battery_care_target": {
+        "name": "Objectif de préservation de la batterie"
+      },
+      "max_charge_current_ac": {
+        "name": "Courant de charge maximal (véhicule)"
+      },
+      "max_charge_current_ac_ampere": {
+        "name": "Courant de charge maximal en ampères"
+      },
+      "air_conditioning_reach": {
+        "name": "Température cible atteinte à"
+      },
+      "aux_heating_reach": {
+        "name": "Chauffage auxiliaire : cible atteinte à"
+      },
+      "fuel_car_type": {
+        "name": "Type de véhicule"
+      },
+      "license_plate": {
+        "name": "Plaque d'immatriculation"
       }
     },
     "binary_sensor": {
@@ -178,6 +205,30 @@
             "name": "Raisons"
           }
         }
+      },
+      "charging_care_mode": {
+        "name": "Charge préservante"
+      },
+      "vehicle_auto_unlock": {
+        "name": "Déverrouillage de la prise après la charge (véhicule)"
+      },
+      "window_heating_front": {
+        "name": "Chauffage du pare-brise"
+      },
+      "window_heating_rear": {
+        "name": "Chauffage de la lunette arrière"
+      },
+      "window_heating_enabled": {
+        "name": "Chauffage des vitres activé"
+      },
+      "air_conditioning_at_unlock": {
+        "name": "Climatisation au déverrouillage"
+      },
+      "air_conditioning_without_external_power": {
+        "name": "Climatisation sans alimentation externe"
+      },
+      "sunroof_open": {
+        "name": "Toit ouvrant"
       }
     },
     "button": {

@@ -138,6 +138,33 @@
       },
       "poll_interval": {
         "name": "Current polling interval"
+      },
+      "charge_type": {
+        "name": "Charging type"
+      },
+      "fully_charged_at": {
+        "name": "Fully charged at"
+      },
+      "battery_care_target": {
+        "name": "Battery care target"
+      },
+      "max_charge_current_ac": {
+        "name": "Maximum charging current (vehicle)"
+      },
+      "max_charge_current_ac_ampere": {
+        "name": "Maximum charging current in ampere"
+      },
+      "air_conditioning_reach": {
+        "name": "Target temperature reached at"
+      },
+      "aux_heating_reach": {
+        "name": "Auxiliary heating: target reached at"
+      },
+      "fuel_car_type": {
+        "name": "Vehicle type"
+      },
+      "license_plate": {
+        "name": "License plate"
       }
     },
     "binary_sensor": {
@@ -178,6 +205,30 @@
             "name": "Reasons"
           }
         }
+      },
+      "charging_care_mode": {
+        "name": "Charging care mode"
+      },
+      "vehicle_auto_unlock": {
+        "name": "Plug unlock after charging (vehicle)"
+      },
+      "window_heating_front": {
+        "name": "Front window heating"
+      },
+      "window_heating_rear": {
+        "name": "Rear window heating"
+      },
+      "window_heating_enabled": {
+        "name": "Window heating enabled"
+      },
+      "air_conditioning_at_unlock": {
+        "name": "Climate at unlock"
+      },
+      "air_conditioning_without_external_power": {
+        "name": "Climate without external power"
+      },
+      "sunroof_open": {
+        "name": "Sunroof"
       }
     },
     "button": {

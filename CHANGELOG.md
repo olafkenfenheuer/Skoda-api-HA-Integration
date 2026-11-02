@@ -7,6 +7,16 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.1]
+
+### Added
+
+- All the values the API reports that were still missing, each only if the vehicle reports it:
+  - sensors: charging type, fully charged at (only while charging), battery care target, maximum charging current of the vehicle (text and ampere), target temperature reached at (air conditioning and auxiliary heating), vehicle type, and the license plate (off by default, redacted in the diagnostics);
+  - binary sensors: charging care mode, plug unlock after charging (the vehicle setting), front and rear window heating, window heating enabled, air conditioning at unlock, air conditioning without external power, sunroof;
+  - the render of the vehicle is the picture of the parking position tracker.
+  They cannot be changed through the public API.
+
 ## [0.5.0]
 
 ### Added
