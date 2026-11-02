@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import Any
 
 from homeassistant.components.diagnostics import REDACTED, async_redact_data
@@ -45,6 +46,26 @@ def _redact_options(options: dict[str, Any], aliases: dict[str, str]) -> dict[st
     return redacted
 
 
+def _redact_vehicle_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Return the vehicle data without the user-typed names.
+
+    The name of the vehicle is typed in the MySkoda app, often a person's name. The name of
+    a charging profile (a saved charging location) is usually an address.
+    """
+    redacted = {**data, "name": REDACTED}
+    profiles = data.get("chargingProfiles")
+    if isinstance(profiles, dict):
+        profiles = copy.deepcopy(profiles)
+        for profile in profiles.get("profiles") or []:
+            if isinstance(profile, dict) and "name" in profile:
+                profile["name"] = REDACTED
+        current = profiles.get("currentVehiclePositionProfile")
+        if isinstance(current, dict) and "name" in current:
+            current["name"] = REDACTED
+        redacted["chargingProfiles"] = profiles
+    return redacted
+
+
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: SkodaConfigEntry
 ) -> dict[str, Any]:
@@ -60,8 +81,7 @@ async def async_get_config_entry_diagnostics(
         "vehicles": {
             aliases[vin]: async_redact_data(
                 {
-                    # The name is typed by the user in the MySkoda app, often a person's name.
-                    "data": {**vehicle.data, "name": REDACTED},
+                    "data": _redact_vehicle_data(vehicle.data),
                     "errors": vehicle.errors,
                 },
                 TO_REDACT,
