@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import logging
 import time
 from collections.abc import Awaitable, Callable
@@ -32,13 +33,16 @@ from .const import (
     AUTO_WAKE_MIN_REQUESTS_REMAINING,
     CONF_CHARGING_SCAN_INTERVAL,
     CONF_PLUGGED_IN_FAST_POLLING,
+    CONF_SPIN,
     CONF_VEHICLE_INTERVALS,
+    DEFAULT_AUX_DURATION_MINUTES,
     DEFAULT_ALERT_GRACE_MINUTES,
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DOMAIN,
     EXPECTED_STATE_MINUTES,
     KEY_ALERT_GRACE,
+    KEY_AUX_DURATION,
     KEY_AUTO_WAKE,
     KEY_PLUGGED_IN,
     MIN_AUTO_WAKE_MINUTES,
@@ -71,6 +75,8 @@ WAKE_STOP_COMMANDS: tuple[tuple[str, str, tuple[str, ...], str], ...] = (
 # airConditioning.state / activeVentilation.state values while the climate runs.
 CLIMATE_ACTIVE_STATES = ("COOLING", "HEATING", "HEATING_AUXILIARY", "VENTILATION")
 VENTILATION_ACTIVE_STATES = ("VENTILATION", "PREHEATING")
+# auxiliaryHeating.state values while the auxiliary heating runs.
+AUXILIARY_HEATING_ACTIVE_STATES = ("PREHEATING", "HEATING_AUXILIARY", "VENTILATION")
 
 STATUS_OK = "ok"
 STATUS_PARTIAL = "partial"
@@ -230,6 +236,7 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         return (
             vehicle.get("airConditioning", "state") in CLIMATE_ACTIVE_STATES
             or vehicle.get("activeVentilation", "state") in VENTILATION_ACTIVE_STATES
+            or vehicle.get("auxiliaryHeating", "state") in AUXILIARY_HEATING_ACTIVE_STATES
         )
 
     def uses_charging_interval(self, vin: str) -> bool:
@@ -552,6 +559,45 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         self._cancel_refresh = async_call_later(
             self.hass, POST_COMMAND_REFRESH_DELAY, self._async_delayed_refresh
         )
+
+    def spin(self) -> str:
+        """Return the S-PIN for the auxiliary heating, or raise if it is not set."""
+        spin = self.config_entry.options.get(CONF_SPIN)
+        if not spin:
+            raise HomeAssistantError(
+                "Set the S-PIN in the integration options to start the auxiliary heating"
+            )
+        return str(spin)
+
+    def aux_duration_minutes(self, vin: str) -> int:
+        """Return how long the auxiliary heating runs after it was started, in minutes."""
+        overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
+        return int(overrides.get(vin, {}).get(KEY_AUX_DURATION, DEFAULT_AUX_DURATION_MINUTES))
+
+    async def async_set_profile_setting(
+        self, vin: str, profile_id: int, key: str, setting: str, value: Any
+    ) -> None:
+        """Change one setting of a charging profile.
+
+        The vehicle applies a profile as a whole, so the profile is fetched again right
+        before it is sent: a copy cached from an earlier poll could undo a change made in
+        the app meanwhile (timers, preferred charging times). Costs two requests plus the
+        follow-up refresh.
+        """
+        await self.async_command(
+            vin,
+            self._update_profile(vin, profile_id, setting, value),
+            Expectation(f"profile_{profile_id}_{key}", value, "chargingProfiles"),
+        )
+
+    async def _update_profile(self, vin: str, profile_id: int, setting: str, value: Any) -> None:
+        fresh = await self.api.get_vehicle(vin, include=["chargingProfiles"])
+        profile = fresh.charging_profile(profile_id)
+        if profile is None:
+            raise HomeAssistantError("The vehicle does not report this charging profile (any more)")
+        body = copy.deepcopy(profile)
+        body.setdefault("settings", {})[setting] = value
+        await self.api.update_charging_profile(vin, profile_id, body)
 
     async def async_refresh_vehicle(self, vin: str) -> None:
         """Poll one vehicle now, regardless of its polling interval.

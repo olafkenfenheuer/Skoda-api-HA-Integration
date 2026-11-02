@@ -39,11 +39,14 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Škoda API Connect climate entity from a config entry."""
     coordinator = entry.runtime_data
-    async_add_entities(
-        SkodaClimate(coordinator, vin)
-        for vin, vehicle in coordinator.data.vehicles.items()
-        if vehicle.has("airConditioning") and vehicle.supports("startAirConditioning")
-    )
+    entities: list[ClimateEntity] = []
+    for vin, vehicle in coordinator.data.vehicles.items():
+        if vehicle.has("airConditioning") and vehicle.supports("startAirConditioning"):
+            entities.append(SkodaClimate(coordinator, vin))
+        # Only for vehicles that have it (and the S-PIN is needed to start it).
+        if vehicle.has_auxiliary_heating():
+            entities.append(SkodaAuxiliaryHeating(coordinator, vin))
+    async_add_entities(entities)
 
 
 class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
@@ -170,4 +173,119 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
 
     async def async_turn_off(self) -> None:
         """Turn the air conditioning off."""
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
+
+_AUX_STATE_TO_MODE = {
+    "PREHEATING": HVACMode.HEAT,
+    "HEATING_AUXILIARY": HVACMode.HEAT,
+    "VENTILATION": HVACMode.FAN_ONLY,
+}
+_AUX_STATE_TO_ACTION = {
+    "OFF": HVACAction.OFF,
+    "PREHEATING": HVACAction.HEATING,
+    "HEATING_AUXILIARY": HVACAction.HEATING,
+    "VENTILATION": HVACAction.FAN,
+}
+_AUX_MODE_TO_ACTION = {
+    HVACMode.OFF: HVACAction.OFF,
+    HVACMode.HEAT: HVACAction.HEATING,
+    HVACMode.FAN_ONLY: HVACAction.FAN,
+}
+_AUX_START_MODE = {HVACMode.HEAT: "HEATING", HVACMode.FAN_ONLY: "VENTILATION"}
+
+
+class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
+    """The auxiliary heating of a Škoda vehicle (fuel-operated or electric).
+
+    Starting it needs the S-PIN from the integration options. It runs for the time set with
+    the "Auxiliary heating duration" number. The target temperature is sent with the start.
+    """
+
+    _attr_translation_key = "auxiliary_heating"
+    _expected_key = "aux_mode"
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.FAN_ONLY]
+    _attr_supported_features = (
+        ClimateEntityFeature.TARGET_TEMPERATURE
+        | ClimateEntityFeature.TURN_OFF
+        | ClimateEntityFeature.TURN_ON
+    )
+    _attr_min_temp = 16
+    _attr_max_temp = 29.5
+    _attr_target_temperature_step = 0.5
+
+    def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
+        """Initialize the climate entity."""
+        super().__init__(coordinator, vin)
+        self._attr_unique_id = f"{vin}_auxiliary_heating"
+        # The API has no "set temperature" call: the target is sent when the heating starts.
+        self._requested_temperature: float | None = None
+
+    @property
+    def hvac_mode(self) -> HVACMode:
+        """Return the current mode."""
+        if (expected := self._expected()) is not None:
+            return expected
+        return _AUX_STATE_TO_MODE.get(
+            self.vehicle.get("auxiliaryHeating", "state"), HVACMode.OFF
+        )
+
+    @property
+    def hvac_action(self) -> HVACAction | None:
+        """Return what the auxiliary heating is doing."""
+        if (expected := self._expected()) is not None:
+            return _AUX_MODE_TO_ACTION.get(expected)
+        return _AUX_STATE_TO_ACTION.get(self.vehicle.get("auxiliaryHeating", "state"))
+
+    @property
+    def target_temperature(self) -> float | None:
+        """Return the target cabin temperature."""
+        if self._requested_temperature is not None:
+            return self._requested_temperature
+        return self.vehicle.get("auxiliaryHeating", "targetTemperature", "value")
+
+    async def async_set_temperature(self, **kwargs: Any) -> None:
+        """Remember the target temperature; it is sent the next time the heating starts."""
+        if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
+            return
+        self._requested_temperature = temperature
+        self.async_write_ha_state()
+
+    async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        """Start the auxiliary heating (heating or ventilation) or stop it."""
+        coordinator = self.coordinator
+        expect = Expectation(
+            "aux_mode",
+            hvac_mode,
+            "auxiliaryHeating",
+            timedelta(minutes=EXPECTED_CLIMATE_MINUTES),
+        )
+        if hvac_mode == HVACMode.OFF:
+            if self.hvac_mode == HVACMode.OFF:
+                return
+            await coordinator.async_command(
+                self.vin, coordinator.api.stop_auxiliary_heating(self.vin), expect
+            )
+            return
+        # Check the S-PIN before anything is sent: a wrong one could lock the S-PIN.
+        spin = coordinator.spin()
+        await coordinator.async_command(
+            self.vin,
+            coordinator.api.start_auxiliary_heating(
+                self.vin,
+                spin,
+                mode=_AUX_START_MODE[hvac_mode],
+                duration_seconds=coordinator.aux_duration_minutes(self.vin) * 60,
+                temperature=self.target_temperature or DEFAULT_TARGET_TEMPERATURE,
+            ),
+            expect,
+        )
+
+    async def async_turn_on(self) -> None:
+        """Start the auxiliary heating (heating)."""
+        await self.async_set_hvac_mode(HVACMode.HEAT)
+
+    async def async_turn_off(self) -> None:
+        """Stop the auxiliary heating."""
         await self.async_set_hvac_mode(HVACMode.OFF)

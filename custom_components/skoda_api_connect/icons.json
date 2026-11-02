@@ -49,6 +49,12 @@
       },
       "charge_limit": {
         "default": "mdi:battery-charging-high"
+      },
+      "aux_duration": {
+        "default": "mdi:timer-outline"
+      },
+      "profile_target_soc": {
+        "default": "mdi:battery-charging-high"
       }
     },
     "button": {
@@ -65,11 +71,22 @@
       },
       "charging": {
         "default": "mdi:ev-station"
+      },
+      "profile_auto_unlock": {
+        "default": "mdi:lock-open-variant"
       }
     },
     "select": {
       "charge_mode": {
         "default": "mdi:ev-plug-ccs2"
+      },
+      "profile_max_current": {
+        "default": "mdi:current-ac"
+      }
+    },
+    "climate": {
+      "auxiliary_heating": {
+        "default": "mdi:radiator"
       }
     }
   }

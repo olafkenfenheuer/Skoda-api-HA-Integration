@@ -21,11 +21,11 @@ an options flow, reauthentication support, and a diagnostics download.
 | `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, doors locked, reliable lock status and parking state (as reported by the API, e.g. `YES`, `TRUNK_OPENED`, `PARKED`), name of the charging location profile currently active, API status (result of the last poll, diagnostic), last API poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), API rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic), current polling interval (minutes, normal or charging interval, attribute `mode`, diagnostic) |
 | `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location, parked unsecured (see [Parking alert](#parking-alert)) |
 | `device_tracker` | Parking position (shows on the Map dashboard; unknown while driving) |
-| `climate` | Remote air conditioning (on/off, active ventilation if the vehicle supports it, target temperature) |
-| `switch` | Start/stop charging |
+| `climate` | Remote air conditioning (on/off, active ventilation if the vehicle supports it, target temperature), auxiliary heating (only for vehicles that have it, see [Auxiliary heating](#auxiliary-heating)) |
+| `switch` | Start/stop charging, unlock the plug after charging per charging profile (see [Charging profiles](#charging-profiles)) |
 | `button` | Poll API now (queries the MyŠkoda API for the vehicle immediately; costs one request of the API quota and is refused while the API is rate limited), Wake vehicle (see below) |
-| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle, parking alert grace period |
-| `select` | Charge mode (only if the vehicle reports its available charge modes) |
+| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle, parking alert grace period, auxiliary heating duration, target charge per charging profile |
+| `select` | Charge mode (only if the vehicle reports its available charge modes), charging current per charging profile |
 
 Sensors and controls are only created for the data and remote operations your specific vehicle
 reports, so the entity list adapts to your car (EV, PHEV, or combustion).
@@ -37,8 +37,8 @@ while keeping all sensors active.
 
 This integration uses only the public MyŠkoda API. The following are therefore not possible,
 because the public API has no endpoint for them: locking/unlocking, honk & flash, a real wake-up
-call (the button "Wake vehicle" is only a workaround, see below), window heating, battery care mode, reduced charging current, outside temperature and
-software version. The lock is a read-only `binary_sensor`.
+call (the button "Wake vehicle" is only a workaround, see below), window heating, battery care mode, outside temperature and software version. The maximum
+charging current can only be changed per charging profile (see below), not as a general setting. The lock is a read-only `binary_sensor`.
 
 ## Supported languages
 
@@ -115,6 +115,29 @@ without losing entity history.
 The integration only uses the documented endpoints under
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` and authenticates with the
 `X-API-Key` header. Data is refreshed by polling.
+
+### Charging profiles
+
+A charging profile is a saved charging location of the MyŠkoda app. For vehicles that list the operation
+`updateChargingProfile` and report at least one profile, every profile gets three controls, named after
+the profile: **charging current** (`MAXIMUM` or `REDUCED`), **target charge** (50 to 100 %) and
+**unlock plug after charging**. A vehicle applies a profile as a whole, so the integration fetches the
+profile again right before it sends it, with only the one setting changed; timers and preferred charging
+times stay as they are. A change costs two requests of the quota plus the follow-up refresh. New profiles
+only show up after the integration is reloaded. Untested; a vehicle without saved charging locations has
+no profiles and therefore none of these entities.
+
+### Auxiliary heating
+
+Vehicles with an auxiliary heating (the vehicle lists `startAuxiliaryHeating` and reports its state) get a
+`climate` entity **Auxiliary heating** (off, heat, fan only for ventilation), and a number **Auxiliary
+heating duration** (10 to 60 minutes, default 30). Vehicles without one get neither.
+
+The API only starts the heating with the **S-PIN** of your MyŠkoda account. Enter it under
+**Configure** (the field only appears if a vehicle has an auxiliary heating). It is stored in Home Assistant
+like the API key, redacted in the diagnostics and never logged. Without it, starting is refused before
+anything is sent. A wrong S-PIN can lock the S-PIN, so check it in the app first. The target temperature is
+sent with each start. Untested.
 
 ### Immediate feedback after commands
 

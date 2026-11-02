@@ -48,10 +48,12 @@
           "charging_scan_interval": "Interval dopytovania pri nabíjaní (minúty)",
           "plugged_in_fast_polling": "Použiť interval nabíjania aj pri zapojenom kábli",
           "read_only": "Režim iba na čítanie (vypne všetko diaľkové ovládanie)",
-          "notify_targets": "Príjemcovia upozornenia na parkovanie"
+          "notify_targets": "Príjemcovia upozornenia na parkovanie",
+          "spin": "S-PIN (pre nezávislé kúrenie)"
         },
         "data_description": {
-          "notify_targets": "Služby notify, ktoré dostanú kritické upozornenie, keď vozidlo parkuje, ale nie je zamknuté a zatvorené, napr. notify.mobile_app_moj_telefon. Nechajte prázdne, ak upozornenia nechcete. Oneskorenie sa nastavuje pre každé vozidlo posuvníkom „Oneskorenie upozornenia na parkovanie“."
+          "notify_targets": "Služby notify, ktoré dostanú kritické upozornenie, keď vozidlo parkuje, ale nie je zamknuté a zatvorené, napr. notify.mobile_app_moj_telefon. Nechajte prázdne, ak upozornenia nechcete. Oneskorenie sa nastavuje pre každé vozidlo posuvníkom „Oneskorenie upozornenia na parkovanie“.",
+          "spin": "Bezpečnostný PIN vášho účtu MyŠkoda. Potrebný len na spustenie nezávislého kúrenia. Ukladá sa v Home Assistante rovnako ako kľúč API. Ak ho nepoužívate, nechajte prázdne."
         }
       }
     },
@@ -192,6 +194,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Klimatizácia"
+      },
+      "auxiliary_heating": {
+        "name": "Nezávislé kúrenie"
       }
     },
     "switch": {
@@ -200,6 +205,9 @@
       },
       "poll_when_plugged_in": {
         "name": "Rýchle dopytovanie pri zapojenom kábli"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: odomknúť zástrčku po nabití"
       }
     },
     "number": {
@@ -217,11 +225,20 @@
       },
       "parking_alert_grace": {
         "name": "Oneskorenie upozornenia na parkovanie"
+      },
+      "aux_duration": {
+        "name": "Nezávislé kúrenie: doba chodu"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: cieľové nabitie"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Režim nabíjania"
+      },
+      "profile_max_current": {
+        "name": "{profile}: nabíjací prúd"
       }
     }
   }

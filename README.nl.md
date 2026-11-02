@@ -18,11 +18,11 @@ externe client-bibliotheek.
 | `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, deuren vergrendeld, betrouwbare vergrendelingsstatus en parkeerstatus (zoals de API ze meldt, bijv. `YES`, `TRUNK_OPENED`, `PARKED`), naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste API-poll (datum en tijd van de laatste geslaagde poll, diagnostisch), huidig pollinginterval (minuten, normaal of laadinterval, attribuut `mode`, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
 | `binary_sensor` | Deuren, ramen, kofferbak, motorkap, verlichting, centrale vergrendeling, laden, laadkabel aangesloten, vergrendeling laadkabel, voertuig op opgeslagen laadlocatie, geparkeerd, niet beveiligd (zie [Parkeeralarm](#parkeeralarm)) |
 | `device_tracker` | Parkeerpositie (zichtbaar op de kaart; onbekend tijdens het rijden) |
-| `climate` | Airco op afstand (aan/uit, actieve ventilatie als het voertuig die ondersteunt, doeltemperatuur) |
-| `switch` | Laden starten/stoppen |
+| `climate` | Airco op afstand (aan/uit, actieve ventilatie als het voertuig die ondersteunt, doeltemperatuur), standkachel (alleen voor voertuigen die er een hebben, zie [Standkachel](#standkachel)) |
+| `switch` | Laden starten/stoppen, stekker na het laden ontgrendelen per laadprofiel (zie [Laadprofielen](#laadprofielen)) |
 | `button` | API nu opvragen (vraagt de MyŠkoda-API direct op voor het voertuig; kost één verzoek van het API-quotum en wordt geweigerd tijdens een rate limit), Voertuig wakker maken (zie hieronder) |
-| `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden), automatisch wekken van een ladend voertuig, wachttijd parkeeralarm |
-| `select` | Laadmodus (alleen als het voertuig zijn beschikbare laadmodi meldt) |
+| `number` | Laadlimiet (doel-laadniveau), pollinginterval per voertuig (normaal / tijdens laden), automatisch wekken van een ladend voertuig, wachttijd parkeeralarm, looptijd standkachel, laaddoel per laadprofiel |
+| `select` | Laadmodus (alleen als het voertuig zijn beschikbare laadmodi meldt), laadstroom per laadprofiel |
 
 Sensoren en bediening worden alleen aangemaakt voor de gegevens en acties die jouw voertuig
 meldt. In de opties kun je de **alleen-lezen-modus** inschakelen om alle bediening uit te
@@ -31,9 +31,9 @@ zetten.
 ### Wat de publieke API niet biedt
 
 Deze integratie gebruikt uitsluitend de publieke MyŠkoda-API. Vergrendelen/ontgrendelen,
-toeteren & knipperen, een echte wake-up-aanroep (de knop "Voertuig wakker maken" is slechts een omweg, zie hieronder), ruitverwarming, accuzorgmodus, gereduceerde
-laadstroom, buitentemperatuur en softwareversie zijn daarom niet mogelijk: de publieke API heeft
-daarvoor geen endpoint. De vergrendeling is een alleen-lezen `binary_sensor`.
+toeteren & knipperen, een echte wake-up-aanroep (de knop "Voertuig wakker maken" is slechts een omweg, zie hieronder), ruitverwarming, accuzorgmodus,
+buitentemperatuur en softwareversie zijn daarom niet mogelijk: de publieke API heeft
+daarvoor geen endpoint. De maximale laadstroom is alleen per laadprofiel te wijzigen (zie hieronder), niet als algemene instelling. De vergrendeling is een alleen-lezen `binary_sensor`.
 
 ## Ondersteunde talen
 
@@ -104,6 +104,29 @@ aan en voer die in.
 De integratie gebruikt uitsluitend de gedocumenteerde endpoints onder
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` en authenticeert met de
 `X-API-Key`-header.
+
+### Laadprofielen
+
+Een laadprofiel is een opgeslagen laadlocatie van de MyŠkoda-app. Voor voertuigen die de operatie
+`updateChargingProfile` vermelden en minstens één profiel melden, krijgt elk profiel drie bedieningen met
+de naam van het profiel: **laadstroom** (`MAXIMUM` of `REDUCED`), **laaddoel** (50 tot 100 %) en **stekker
+na het laden ontgrendelen**. Een voertuig neemt een profiel als geheel over, daarom haalt de integratie het
+profiel vlak voor het verzenden opnieuw op en wijzigt alleen die ene instelling; timers en voorkeurslaadtijden
+blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het verversen. Nieuwe profielen
+verschijnen pas na het herladen van de integratie. Niet getest; een voertuig zonder opgeslagen laadlocaties
+heeft geen profielen en dus geen van deze entiteiten.
+
+### Standkachel
+
+Voertuigen met een standkachel (het voertuig vermeldt `startAuxiliaryHeating` en meldt de status) krijgen een
+`climate`-entiteit **Standkachel** (uit, verwarmen, alleen ventileren) en een getal **Standkachel: looptijd**
+(10 tot 60 minuten, standaard 30). Voertuigen zonder standkachel krijgen geen van beide.
+
+De API start de verwarming alleen met de **S-PIN** van je MyŠkoda-account. Voer hem in onder **Configureren**
+(het veld verschijnt alleen als een voertuig een standkachel heeft). Hij wordt net als de API-sleutel in Home
+Assistant opgeslagen, in de diagnostiek geanonimiseerd en nooit gelogd. Zonder wordt starten geweigerd voordat
+iets wordt verzonden. Een verkeerde S-PIN kan de S-PIN blokkeren, controleer hem dus eerst in de app. De
+doeltemperatuur wordt bij elke start meegestuurd. Niet getest.
 
 ### Directe terugkoppeling na commando's
 

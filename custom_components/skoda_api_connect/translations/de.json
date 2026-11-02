@@ -48,10 +48,12 @@
           "charging_scan_interval": "Abfrageintervall beim Laden (Minuten)",
           "plugged_in_fast_polling": "Ladeintervall auch bei eingestecktem Ladekabel verwenden",
           "read_only": "Nur-Lese-Modus (alle Fernsteuerungen deaktivieren)",
-          "notify_targets": "Empfänger des Parkalarms"
+          "notify_targets": "Empfänger des Parkalarms",
+          "spin": "S-PIN (für die Standheizung)"
         },
         "data_description": {
-          "notify_targets": "Benachrichtigungsdienste, die einen kritischen Alarm erhalten, wenn ein Fahrzeug geparkt, aber nicht verriegelt und geschlossen ist, z. B. notify.mobile_app_mein_telefon. Leer lassen für keine Alarme. Die Verzögerung wird pro Fahrzeug mit dem Regler „Parkalarm-Wartezeit“ eingestellt."
+          "notify_targets": "Benachrichtigungsdienste, die einen kritischen Alarm erhalten, wenn ein Fahrzeug geparkt, aber nicht verriegelt und geschlossen ist, z. B. notify.mobile_app_mein_telefon. Leer lassen für keine Alarme. Die Verzögerung wird pro Fahrzeug mit dem Regler „Parkalarm-Wartezeit“ eingestellt.",
+          "spin": "Die Sicherheits-PIN deines MyŠkoda-Kontos. Nur nötig, um die Standheizung zu starten. Sie wird wie der API-Schlüssel in Home Assistant gespeichert. Leer lassen, wenn du sie nicht nutzt."
         }
       }
     },
@@ -192,6 +194,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Klimaanlage"
+      },
+      "auxiliary_heating": {
+        "name": "Standheizung"
       }
     },
     "switch": {
@@ -200,6 +205,9 @@
       },
       "poll_when_plugged_in": {
         "name": "Wenn eingesteckt schnell abfragen"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: Stecker nach dem Laden entriegeln"
       }
     },
     "number": {
@@ -217,11 +225,20 @@
       },
       "parking_alert_grace": {
         "name": "Parkalarm-Wartezeit"
+      },
+      "aux_duration": {
+        "name": "Standheizung: Laufzeit"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: Ladeziel"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Lademodus"
+      },
+      "profile_max_current": {
+        "name": "{profile}: Ladestrom"
       }
     }
   }

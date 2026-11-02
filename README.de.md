@@ -22,11 +22,11 @@ Options-Flow, Reauthentifizierung und Diagnose-Download.
 | `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Türen verriegelt, zuverlässiger Verriegelungsstatus und Parkstatus (wie von der API gemeldet, z. B. `YES`, `TRUNK_OPENED`, `PARKED`), Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter API-Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), API-Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose), Aktuelles Abrufintervall (Minuten, normales oder Ladeintervall, Attribut `mode`, Diagnose) |
 | `binary_sensor` | Türen, Fenster, Kofferraum, Motorhaube, Beleuchtung, Zentralverriegelung, Laden, Ladekabel angesteckt, Ladekabel-Verriegelung, Fahrzeug an gespeichertem Ladestandort, Geparkt, nicht gesichert (siehe [Parkalarm](#parkalarm)) |
 | `device_tracker` | Parkposition (erscheint auf dem Karten-Dashboard; während der Fahrt unbekannt) |
-| `climate` | Standklimatisierung (an/aus, aktive Belüftung wenn das Fahrzeug sie unterstützt, Zieltemperatur) |
-| `switch` | Laden starten/stoppen |
+| `climate` | Standklimatisierung (an/aus, aktive Belüftung wenn das Fahrzeug sie unterstützt, Zieltemperatur), Standheizung (nur bei Fahrzeugen, die sie haben, siehe [Standheizung](#standheizung)) |
+| `switch` | Laden starten/stoppen, Stecker nach dem Laden entriegeln pro Ladeprofil (siehe [Ladeprofile](#ladeprofile)) |
 | `button` | API jetzt abrufen (ruft die MyŠkoda-API für das Fahrzeug sofort ab; kostet eine Anfrage des API-Kontingents und wird bei aktivem Rate-Limit abgelehnt), Fahrzeug aufwecken (siehe unten) |
-| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs, Parkalarm-Wartezeit |
-| `select` | Lademodus (nur wenn das Fahrzeug seine verfügbaren Lademodi meldet) |
+| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs, Parkalarm-Wartezeit, Laufzeit der Standheizung, Ladeziel pro Ladeprofil |
+| `select` | Lademodus (nur wenn das Fahrzeug seine verfügbaren Lademodi meldet), Ladestrom pro Ladeprofil |
 
 Sensoren und Steuerungen werden nur für die Daten und Fernbedienungen angelegt, die dein
 Fahrzeug tatsächlich meldet. Die Entitätenliste passt sich also an dein Auto an (Elektro, Plug-in-Hybrid
@@ -39,8 +39,8 @@ Fernsteuerungen deaktiviert und alle Sensoren aktiv lässt.
 
 Die Integration nutzt ausschließlich die öffentliche MyŠkoda-API. Folgende Funktionen sind daher
 nicht möglich, weil die öffentliche API dafür keinen Endpunkt hat: Ver-/Entriegeln, Hupen &
-Blinken, ein echter Wake-up-Aufruf (der Button „Fahrzeug aufwecken" ist nur ein Umweg, siehe unten), Scheibenheizung, Batterieschonmodus, reduzierter Ladestrom,
-Außentemperatur und Softwareversion. Die Verriegelung ist ein reiner `binary_sensor`.
+Blinken, ein echter Wake-up-Aufruf (der Button „Fahrzeug aufwecken" ist nur ein Umweg, siehe unten), Scheibenheizung, Batterieschonmodus,
+Außentemperatur und Softwareversion. Der maximale Ladestrom lässt sich nur pro Ladeprofil ändern (siehe unten), nicht als allgemeine Einstellung. Die Verriegelung ist ein reiner `binary_sensor`.
 
 ## Unterstützte Sprachen
 
@@ -117,6 +117,29 @@ um die Verbindung wiederherzustellen, ohne den Verlauf der Entitäten zu verlier
 Die Integration nutzt ausschließlich die dokumentierten Endpunkte unter
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` und authentifiziert sich über den
 Header `X-API-Key`. Die Daten werden per Polling aktualisiert.
+
+### Ladeprofile
+
+Ein Ladeprofil ist ein gespeicherter Ladestandort der MyŠkoda-App. Bei Fahrzeugen, die die Operation
+`updateChargingProfile` nennen und mindestens ein Profil melden, bekommt jedes Profil drei Steuerungen mit
+dem Namen des Profils: **Ladestrom** (`MAXIMUM` oder `REDUCED`), **Ladeziel** (50 bis 100 %) und **Stecker
+nach dem Laden entriegeln**. Ein Fahrzeug übernimmt ein Profil als Ganzes, deshalb holt die Integration das
+Profil unmittelbar vor dem Senden neu und ändert nur die eine Einstellung; Timer und bevorzugte Ladezeiten
+bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus das Nachladen. Neue Profile
+erscheinen erst nach einem Neuladen der Integration. Nicht erprobt; ein Fahrzeug ohne gespeicherte
+Ladestandorte hat keine Profile und deshalb keine dieser Entitäten.
+
+### Standheizung
+
+Fahrzeuge mit Standheizung (das Fahrzeug nennt `startAuxiliaryHeating` und meldet ihren Zustand) bekommen
+eine `climate`-Entität **Standheizung** (aus, Heizen, nur Lüften für die Belüftung) und eine Zahl
+**Standheizung: Laufzeit** (10 bis 60 Minuten, Standard 30). Fahrzeuge ohne Standheizung bekommen beides nicht.
+
+Die API startet die Heizung nur mit der **S-PIN** deines MyŠkoda-Kontos. Trage sie unter **Konfigurieren**
+ein (das Feld erscheint nur, wenn ein Fahrzeug eine Standheizung hat). Sie wird wie der API-Schlüssel in
+Home Assistant gespeichert, in der Diagnose geschwärzt und nie protokolliert. Ohne sie wird das Starten
+abgelehnt, bevor etwas gesendet wird. Eine falsche S-PIN kann die S-PIN sperren, prüfe sie deshalb zuerst in
+der App. Die Zieltemperatur wird bei jedem Start mitgesendet. Nicht erprobt.
 
 ### Sofortige Rückmeldung nach Befehlen
 

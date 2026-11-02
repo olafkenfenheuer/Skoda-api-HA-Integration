@@ -48,10 +48,12 @@
           "charging_scan_interval": "Polling interval while charging (minutes)",
           "plugged_in_fast_polling": "Use the charging interval while the cable is plugged in",
           "read_only": "Read-only mode (disable all remote controls)",
-          "notify_targets": "Parking alert notification targets"
+          "notify_targets": "Parking alert notification targets",
+          "spin": "S-PIN (for the auxiliary heating)"
         },
         "data_description": {
-          "notify_targets": "Notify services that get a critical alert when a vehicle is parked but not locked and closed, e.g. notify.mobile_app_my_phone. Leave empty for no alerts. The delay is set per vehicle with the \"Parking alert grace period\" slider."
+          "notify_targets": "Notify services that get a critical alert when a vehicle is parked but not locked and closed, e.g. notify.mobile_app_my_phone. Leave empty for no alerts. The delay is set per vehicle with the \"Parking alert grace period\" slider.",
+          "spin": "The security PIN of your MyŠkoda account. Only needed to start the auxiliary heating. It is stored in Home Assistant like the API key. Leave empty if you do not use it."
         }
       }
     },
@@ -192,6 +194,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Air conditioning"
+      },
+      "auxiliary_heating": {
+        "name": "Auxiliary heating"
       }
     },
     "switch": {
@@ -200,6 +205,9 @@
       },
       "poll_when_plugged_in": {
         "name": "Fast polling while plugged in"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: unlock plug after charging"
       }
     },
     "number": {
@@ -217,11 +225,20 @@
       },
       "parking_alert_grace": {
         "name": "Parking alert grace period"
+      },
+      "aux_duration": {
+        "name": "Auxiliary heating duration"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: target charge"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Charge mode"
+      },
+      "profile_max_current": {
+        "name": "{profile}: charging current"
       }
     }
   }

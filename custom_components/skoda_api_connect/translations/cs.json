@@ -48,10 +48,12 @@
           "charging_scan_interval": "Interval dotazování při nabíjení (minuty)",
           "plugged_in_fast_polling": "Použít interval nabíjení i při zapojeném kabelu",
           "read_only": "Režim pouze pro čtení (vypne veškeré dálkové ovládání)",
-          "notify_targets": "Příjemci upozornění na parkování"
+          "notify_targets": "Příjemci upozornění na parkování",
+          "spin": "S-PIN (pro nezávislé topení)"
         },
         "data_description": {
-          "notify_targets": "Služby notify, které dostanou kritické upozornění, když vozidlo parkuje, ale není zamčené a zavřené, např. notify.mobile_app_muj_telefon. Ponechte prázdné, pokud upozornění nechcete. Prodleva se nastavuje pro každé vozidlo posuvníkem „Prodleva upozornění na parkování“."
+          "notify_targets": "Služby notify, které dostanou kritické upozornění, když vozidlo parkuje, ale není zamčené a zavřené, např. notify.mobile_app_muj_telefon. Ponechte prázdné, pokud upozornění nechcete. Prodleva se nastavuje pro každé vozidlo posuvníkem „Prodleva upozornění na parkování“.",
+          "spin": "Bezpečnostní PIN vašeho účtu MyŠkoda. Potřebný jen ke spuštění nezávislého topení. Ukládá se v Home Assistantu stejně jako klíč API. Nepoužíváte-li ho, nechte prázdné."
         }
       }
     },
@@ -192,6 +194,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Klimatizace"
+      },
+      "auxiliary_heating": {
+        "name": "Nezávislé topení"
       }
     },
     "switch": {
@@ -200,6 +205,9 @@
       },
       "poll_when_plugged_in": {
         "name": "Rychlé dotazování při zapojeném kabelu"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: odemknout zástrčku po nabití"
       }
     },
     "number": {
@@ -217,11 +225,20 @@
       },
       "parking_alert_grace": {
         "name": "Prodleva upozornění na parkování"
+      },
+      "aux_duration": {
+        "name": "Nezávislé topení: doba chodu"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: cílové nabití"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Režim nabíjení"
+      },
+      "profile_max_current": {
+        "name": "{profile}: nabíjecí proud"
       }
     }
   }

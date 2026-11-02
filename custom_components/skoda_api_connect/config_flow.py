@@ -23,6 +23,9 @@ from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
 )
 
 from .api import SkodaApi, SkodaApiError, SkodaAuthError, SkodaRateLimitError
@@ -33,6 +36,7 @@ from .const import (
     CONF_NOTIFY_TARGETS,
     CONF_PLUGGED_IN_FAST_POLLING,
     CONF_READ_ONLY,
+    CONF_SPIN,
     CONF_VINS,
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
     DEFAULT_SCAN_INTERVAL_MINUTES,
@@ -206,6 +210,13 @@ class SkodaConnectConfigFlow(ConfigFlow, domain=DOMAIN):
 class SkodaConnectOptionsFlow(OptionsFlow):
     """Handle options for an existing Škoda API Connect entry."""
 
+    def _has_auxiliary_heating(self) -> bool:
+        """Return whether a vehicle of the loaded entry has an auxiliary heating."""
+        coordinator = getattr(self.config_entry, "runtime_data", None)
+        if coordinator is None or not coordinator.data:
+            return False
+        return any(v.has_auxiliary_heating() for v in coordinator.data.vehicles.values())
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -224,6 +235,12 @@ class SkodaConnectOptionsFlow(OptionsFlow):
                         **self.config_entry.options,
                         **user_input,
                         CONF_NOTIFY_TARGETS: targets,
+                        # Always written when the field is shown, so clearing it removes the S-PIN.
+                        **(
+                            {CONF_SPIN: user_input.get(CONF_SPIN, "")}
+                            if self._has_auxiliary_heating()
+                            else {}
+                        ),
                     }
                 )
             errors[CONF_NOTIFY_TARGETS] = "unknown_notify_target"
@@ -238,6 +255,15 @@ class SkodaConnectOptionsFlow(OptionsFlow):
         )
         current_plugged = values.get(CONF_PLUGGED_IN_FAST_POLLING, False)
         current_read_only = values.get(CONF_READ_ONLY, False)
+
+        spin_field: dict[Any, Any] = {}
+        if self._has_auxiliary_heating():
+            # Only needed to start the auxiliary heating; kept as a password field.
+            spin_field[
+                vol.Optional(
+                    CONF_SPIN, description={"suggested_value": values.get(CONF_SPIN, "")}
+                )
+            ] = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
 
         schema = vol.Schema(
             {
@@ -267,6 +293,7 @@ class SkodaConnectOptionsFlow(OptionsFlow):
                 vol.Optional(
                     CONF_NOTIFY_TARGETS, description={"suggested_value": current_targets}
                 ): _notify_target_selector(self.hass, current_targets),
+                **spin_field,
             }
         )
         return self.async_show_form(

@@ -7,6 +7,13 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.0]
+
+### Added
+
+- Charging profiles: for vehicles that list `updateChargingProfile` and report profiles (the saved charging locations of the MyŠkoda app), every profile gets a select **charging current** (`MAXIMUM`/`REDUCED`), a number **target charge** and a switch **unlock plug after charging**. The profile is fetched again right before it is sent, with only the one setting changed, because the vehicle applies a profile as a whole. Untested.
+- Auxiliary heating: vehicles that list `startAuxiliaryHeating` and report the function get a `climate` entity **Auxiliary heating** (off, heat, fan only) and a number **Auxiliary heating duration**. Starting it needs the S-PIN of the MyŠkoda account, entered in the options (the field only appears if a vehicle has an auxiliary heating); it is redacted in the diagnostics. The vehicle polls faster while the heating runs, and a stop of it is used to wake vehicles without a charge mode. Untested.
+
 ## [0.4.5]
 
 ### Added

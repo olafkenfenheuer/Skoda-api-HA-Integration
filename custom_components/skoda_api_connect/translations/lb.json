@@ -48,10 +48,12 @@
           "charging_scan_interval": "Ofrointervall beim Oplueden (Minutten)",
           "plugged_in_fast_polling": "Kuerzen Opluedintervall och benotzen, wann de Ladekabel ugeschloss ass",
           "read_only": "Nëmme-Lies-Modus (all Fernsteierung deaktivéieren)",
-          "notify_targets": "Empfänger vum Parkalarm"
+          "notify_targets": "Empfänger vum Parkalarm",
+          "spin": "S-PIN (fir d'Standheizung)"
         },
         "data_description": {
-          "notify_targets": "Notify-Servicer, déi e kriteschen Alarm kréien, wann e Gefier geparkt ass, mee net gespaart an zou, z. B. notify.mobile_app_mäin_telefon. Eidel loossen fir keng Alarmer. D'Verzögerung gëtt pro Gefier mam Regler „Waardezäit vum Parkalarm“ agestallt."
+          "notify_targets": "Notify-Servicer, déi e kriteschen Alarm kréien, wann e Gefier geparkt ass, mee net gespaart an zou, z. B. notify.mobile_app_mäin_telefon. Eidel loossen fir keng Alarmer. D'Verzögerung gëtt pro Gefier mam Regler „Waardezäit vum Parkalarm“ agestallt.",
+          "spin": "D'Sécherheets-PIN vun denger MyŠkoda-Kont. Nëmmen néideg fir d'Standheizung ze starten. Si gëtt wéi den API-Schlëssel an Home Assistant gespäichert. Loss et eidel, wann s du se net notzt."
         }
       }
     },
@@ -192,6 +194,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Klimaanlag"
+      },
+      "auxiliary_heating": {
+        "name": "Standheizung"
       }
     },
     "switch": {
@@ -200,6 +205,9 @@
       },
       "poll_when_plugged_in": {
         "name": "Bei ugeschlossener Ladekabelverbindung méi dacks ofruffen"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: Stecker nom Lueden entriegelen"
       }
     },
     "number": {
@@ -217,11 +225,20 @@
       },
       "parking_alert_grace": {
         "name": "Waardezäit vum Parkalarm"
+      },
+      "aux_duration": {
+        "name": "Standheizung: Dauer"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: Luedziel"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Opluedmodus"
+      },
+      "profile_max_current": {
+        "name": "{profile}: Luedstroum"
       }
     }
   }

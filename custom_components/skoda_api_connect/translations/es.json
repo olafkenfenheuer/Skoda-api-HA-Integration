@@ -48,10 +48,12 @@
           "charging_scan_interval": "Intervalo de consulta durante la carga (minutos)",
           "plugged_in_fast_polling": "Usar también el intervalo de carga cuando el cable esté conectado",
           "read_only": "Modo de solo lectura (desactivar todos los controles remotos)",
-          "notify_targets": "Destinatarios de la alerta de aparcamiento"
+          "notify_targets": "Destinatarios de la alerta de aparcamiento",
+          "spin": "S-PIN (para la calefacción auxiliar)"
         },
         "data_description": {
-          "notify_targets": "Servicios de notificación que reciben una alerta crítica cuando un vehículo está aparcado pero no está bloqueado y cerrado, p. ej. notify.mobile_app_mi_telefono. Déjalo vacío para no recibir alertas. El retraso se ajusta por vehículo con el control deslizante «Tiempo de espera de la alerta de aparcamiento»."
+          "notify_targets": "Servicios de notificación que reciben una alerta crítica cuando un vehículo está aparcado pero no está bloqueado y cerrado, p. ej. notify.mobile_app_mi_telefono. Déjalo vacío para no recibir alertas. El retraso se ajusta por vehículo con el control deslizante «Tiempo de espera de la alerta de aparcamiento».",
+          "spin": "El PIN de seguridad de tu cuenta MyŠkoda. Solo es necesario para arrancar la calefacción auxiliar. Se guarda en Home Assistant igual que la clave de API. Déjalo vacío si no la usas."
         }
       }
     },
@@ -192,6 +194,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Aire acondicionado"
+      },
+      "auxiliary_heating": {
+        "name": "Calefacción auxiliar"
       }
     },
     "switch": {
@@ -200,6 +205,9 @@
       },
       "poll_when_plugged_in": {
         "name": "Consultar con más frecuencia cuando esté conectado"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: desbloquear el enchufe tras la carga"
       }
     },
     "number": {
@@ -217,11 +225,20 @@
       },
       "parking_alert_grace": {
         "name": "Tiempo de espera de la alerta de aparcamiento"
+      },
+      "aux_duration": {
+        "name": "Calefacción auxiliar: duración"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: carga objetivo"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Modo de carga"
+      },
+      "profile_max_current": {
+        "name": "{profile}: corriente de carga"
       }
     }
   }
