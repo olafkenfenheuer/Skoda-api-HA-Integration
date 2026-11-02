@@ -119,9 +119,31 @@ de naam van het profiel: **laadstroom** (`MAXIMUM` of `REDUCED`, de "stroombegre
 **stekker na het laden ontgrendelen**, plus de **minimale laadgrens** (eronder laadt het voertuig meteen) en, als
 het voertuig het meldt, een schakelaar om haar te activeren. Een voertuig neemt een profiel als geheel over, daarom haalt de integratie het
 profiel vlak voor het verzenden opnieuw op en wijzigt alleen die ene instelling; timers en voorkeurslaadtijden
-blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het verversen. Nieuwe profielen
-verschijnen pas na het herladen van de integratie. Niet getest; een voertuig zonder opgeslagen laadlocaties
-heeft geen profielen en dus geen van deze entiteiten.
+blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het verversen. Niet getest.
+
+**Wanneer de profielen in Home Assistant verschijnen**
+
+- Een profiel verschijnt pas als het **voertuig het aan de Škoda-servers heeft gemeld**. Na het aanmaken in de
+  app heeft het voertuig misschien even tijd of een duwtje nodig: druk op **Voertuig wakker maken**, daarna op
+  **API nu opvragen**. De sensor **Laadlocatie** (attribuut `profiles`) toont wat de API meldt; zolang de lijst
+  leeg is, valt er niets te tonen. Een voertuig zonder opgeslagen laadlocaties heeft geen profielen en dus geen
+  van deze entiteiten.
+- De entiteiten van een profiel worden **bij het instellen van de integratie** aangemaakt. Een nieuw profiel
+  krijgt ze dus pas na het **herladen** van de integratie (Instellingen > Apparaten en diensten > Škoda API
+  Connect > de drie puntjes > Opnieuw laden) of een herstart van Home Assistant. Ook de naam van een entiteit
+  wordt op dat moment overgenomen: een in de app hernoemd profiel behoudt in de entiteiten zijn oude naam tot
+  het volgende herladen (de sensor **Laadlocatie** toont de actuele naam).
+
+**Als een profiel in het voertuig of de app wordt verwijderd**
+
+- De entiteiten worden **niet beschikbaar** zodra het voertuig het profiel niet meer meldt. Voor een verdwenen
+  profiel wordt niets naar het voertuig gestuurd: de actie `update_charging_profile` weigert het ("does not report this charging profile (any more)") voordat ze iets schrijft.
+- Na het volgende herladen of de volgende herstart worden er geen entiteiten meer voor aangemaakt, maar de oude
+  blijven als niet-beschikbare entiteiten in Home Assistant staan. Ze worden niet automatisch verwijderd, omdat
+  de API ook even een lege lijst kan melden; verwijder ze onder Instellingen > Apparaten en diensten >
+  Entiteiten als het profiel echt weg is.
+- Maak je daarna een nieuw profiel aan, dan kan het het id van het verwijderde krijgen. Zijn entiteiten zijn dan
+  weer de oude (dezelfde id's), met de oude naam, tot je herlaadt.
 
 Timers en voorkeurslaadtijden zijn geen entiteiten (een profiel heeft tot 4 voorkeurslaadtijden en 3 timers). De
 sensor **Laadlocatie** toont die van het profiel waar het voertuig staat als attributen, en de actie
