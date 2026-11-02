@@ -277,11 +277,11 @@
         },
         "preferred_charging_times": {
           "name": "Heures de charge préférées",
-          "description": "Liste de modifications : id (1 à 4), enabled, start et end au format HH:MM."
+          "description": "Liste de modifications : number (1 à 4), enabled, start et end au format HH:MM. Ou indiquez à la place de number l'id que l'API signale (il compte sur tous les profils)."
         },
         "timers": {
           "name": "Minuteries",
-          "description": "Liste de modifications : id (1 à 3), enabled, time au format HH:MM, et days (MONDAY à SUNDAY) pour une minuterie récurrente ou one_off_day pour une minuterie unique."
+          "description": "Liste de modifications : number (1 à 3), enabled, time au format HH:MM, et days (MONDAY à SUNDAY) pour une minuterie récurrente ou one_off_day pour une minuterie unique. Ou indiquez à la place de number l'id que l'API signale (il compte sur tous les profils)."
         }
       }
     }

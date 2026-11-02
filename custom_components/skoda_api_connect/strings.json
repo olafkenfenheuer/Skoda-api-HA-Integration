@@ -277,11 +277,11 @@
         },
         "preferred_charging_times": {
           "name": "Preferred charging times",
-          "description": "List of changes: id (1 to 4), enabled, start and end as HH:MM."
+          "description": "List of changes: number (1 to 4), enabled, start and end as HH:MM. Or give the id the API reports (it counts across all profiles) instead of number."
         },
         "timers": {
           "name": "Timers",
-          "description": "List of changes: id (1 to 3), enabled, time as HH:MM, and days (MONDAY to SUNDAY) for a recurring timer or one_off_day for a one-off timer."
+          "description": "List of changes: number (1 to 3), enabled, time as HH:MM, and days (MONDAY to SUNDAY) for a recurring timer or one_off_day for a one-off timer. Or give the id the API reports (it counts across all profiles) instead of number."
         }
       }
     }

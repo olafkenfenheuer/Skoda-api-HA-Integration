@@ -277,11 +277,11 @@
         },
         "preferred_charging_times": {
           "name": "Bevorzugte Ladezeiten",
-          "description": "Liste von Änderungen: id (1 bis 4), enabled, start und end als HH:MM."
+          "description": "Liste von Änderungen: number (1 bis 4), enabled, start und end als HH:MM. Oder statt number die ID, die die API meldet (sie zählt über alle Profile hinweg)."
         },
         "timers": {
-          "name": "Timer",
-          "description": "Liste von Änderungen: id (1 bis 3), enabled, time als HH:MM sowie days (MONDAY bis SUNDAY) für einen wiederkehrenden oder one_off_day für einen einmaligen Timer."
+          "name": "Timer (Abfahrtszeiten)",
+          "description": "Liste von Änderungen: number (1 bis 3), enabled, time als HH:MM sowie days (MONDAY bis SUNDAY) für einen wiederkehrenden oder one_off_day für einen einmaligen Timer. Oder statt number die ID, die die API meldet (sie zählt über alle Profile hinweg)."
         }
       }
     }

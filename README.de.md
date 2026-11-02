@@ -167,8 +167,10 @@ bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus d
 Timer und bevorzugte Ladezeiten sind keine Entitäten (ein Profil hat bis zu 4 bevorzugte Ladezeiten und 3
 Timer). Der Sensor **Ladestandort** zeigt die des Profils, in dem das Fahrzeug steht, als Attribute, und die
 Aktion `skoda_api_connect.update_charging_profile` ändert beliebige Einstellungen, bevorzugte Ladezeiten und
-Timer eines Profils: Als Ziel eine Entität des Profils wählen und nur angeben, was sich ändern soll (siehe das
-Beispiel in der englischen README).
+Timer eines Profils: Als Ziel eine Entität des Profils wählen und nur angeben, was sich ändern soll. Ein Timer (die App
+nennt sie „Abfahrtszeiten“) oder eine bevorzugte Ladezeit wird über ihre `number` im Profil benannt (die erste ist 1)
+oder über die `id`, die die API meldet; diese IDs zählen über alle Profile hinweg, das zweite Profil eines
+Fahrzeugs kann also bei 5 beginnen (siehe das Beispiel in der englischen README).
 
 ### Standheizung
 

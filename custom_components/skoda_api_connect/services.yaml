@@ -30,10 +30,10 @@ update_charging_profile:
       selector:
         boolean:
     preferred_charging_times:
-      example: '[{"id": 1, "enabled": true, "start": "22:00", "end": "06:00"}]'
+      example: '[{"number": 1, "enabled": true, "start": "22:00", "end": "06:00"}]'
       selector:
         object:
     timers:
-      example: '[{"id": 1, "enabled": true, "time": "07:00", "days": ["MONDAY", "TUESDAY"]}]'
+      example: '[{"number": 1, "enabled": true, "time": "07:00", "days": ["MONDAY", "TUESDAY"]}]'
       selector:
         object:

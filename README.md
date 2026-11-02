@@ -163,7 +163,10 @@ times stay as they are. A change costs two requests of the quota plus the follow
 Timers and preferred charging times are not entities (a profile has up to 4 preferred charging times and 3
 timers). The sensor **Charging location** shows those of the profile the vehicle is at as attributes, and the
 action `skoda_api_connect.update_charging_profile` changes any of the settings, preferred charging times and
-timers of a profile: pick an entity of the profile as the target and name only what should change, for example
+timers of a profile: pick an entity of the profile as the target and name only what should change. A timer
+(the app calls them "departure times") or preferred charging time is named by its `number` in the profile (the
+first is 1), or by the `id` the API reports; those ids count across all profiles, so the second profile of a
+vehicle may start at 5. For example
 
 ```yaml
 action: skoda_api_connect.update_charging_profile
@@ -172,12 +175,12 @@ target:
 data:
   max_charging_current: REDUCED
   timers:
-    - id: 1
+    - number: 1
       enabled: true
       time: "07:30"
       days: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
   preferred_charging_times:
-    - id: 1
+    - number: 1
       enabled: true
       start: "22:00"
       end: "06:00"

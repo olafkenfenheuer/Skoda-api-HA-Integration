@@ -279,3 +279,65 @@ async def test_action_refuses_what_it_cannot_apply(
             )
     put.assert_not_awaited()
     await c.async_shutdown()
+
+
+async def test_action_counts_slots_by_position_or_by_the_id_of_the_api(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    # A second profile of a vehicle starts at 5: the ids count across all profiles.
+    profile = _profile()
+    profile["preferredChargingTimes"] = [
+        {"id": 5, "enabled": False, "startTime": "22:00", "endTime": "06:00"},
+        {"id": 6, "enabled": False, "startTime": "22:00", "endTime": "06:00"},
+    ]
+    profile["timers"] = [{"id": 4, "enabled": False, "time": "07:00", "type": "RECURRING"}]
+    c, _ = await _setup(hass, mock_entry, _vehicle(profile))
+    select = _entity(hass, "select", "max_current")
+    with patch(PUT, new=AsyncMock()) as put:
+        await hass.services.async_call(
+            "skoda_api_connect",
+            "update_charging_profile",
+            {
+                "entity_id": [select],
+                "preferred_charging_times": [
+                    {"number": 2, "enabled": True},  # the second one of the profile: id 6
+                    {"id": 5, "end": "05:00"},  # the id the API reports
+                ],
+                "timers": [{"number": 1, "time": "08:00"}],  # id 4
+            },
+            blocking=True,
+        )
+    body = put.await_args.args[2]
+    assert body["preferredChargingTimes"] == [
+        {"id": 5, "enabled": False, "startTime": "22:00", "endTime": "05:00"},
+        {"id": 6, "enabled": True, "startTime": "22:00", "endTime": "06:00"},
+    ]
+    assert body["timers"][0]["time"] == "08:00"
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_action_refuses_a_slot_without_number_or_id_and_one_that_is_not_there(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    import voluptuous as vol
+
+    c, _ = await _setup(hass, mock_entry, _vehicle(_profile()))
+    select = _entity(hass, "select", "max_current")
+    with patch(PUT, new=AsyncMock()) as put:
+        with pytest.raises(vol.Invalid):  # neither number nor id
+            await hass.services.async_call(
+                "skoda_api_connect",
+                "update_charging_profile",
+                {"entity_id": [select], "timers": [{"enabled": True}]},
+                blocking=True,
+            )
+        with pytest.raises(HomeAssistantError):  # the profile has no fifth timer
+            await hass.services.async_call(
+                "skoda_api_connect",
+                "update_charging_profile",
+                {"entity_id": [select], "timers": [{"number": 5, "enabled": True}]},
+                blocking=True,
+            )
+    put.assert_not_awaited()
+    await c.async_shutdown()

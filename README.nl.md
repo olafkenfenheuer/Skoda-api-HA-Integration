@@ -154,8 +154,10 @@ blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het
 Timers en voorkeurslaadtijden zijn geen entiteiten (een profiel heeft tot 4 voorkeurslaadtijden en 3 timers). De
 sensor **Laadlocatie** toont die van het profiel waar het voertuig staat als attributen, en de actie
 `skoda_api_connect.update_charging_profile` wijzigt elke instelling, voorkeurslaadtijd en timer van een profiel:
-kies een entiteit van het profiel als doel en geef alleen op wat moet veranderen (zie het voorbeeld in de
-Engelse README).
+kies een entiteit van het profiel als doel en geef alleen op wat moet veranderen. Een timer (de app noemt ze
+"vertrektijden") of voorkeurslaadtijd wordt aangeduid met zijn `number` in het profiel (de eerste is 1) of met
+het `id` dat de API meldt; die id's tellen over alle profielen heen, het tweede profiel van een voertuig kan dus
+bij 5 beginnen (zie het voorbeeld in de Engelse README).
 
 ### Standkachel
 

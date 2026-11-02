@@ -277,11 +277,11 @@
         },
         "preferred_charging_times": {
           "name": "Voorkeurslaadtijden",
-          "description": "Lijst van wijzigingen: id (1 tot 4), enabled, start en end als HH:MM."
+          "description": "Lijst van wijzigingen: number (1 tot 4), enabled, start en end als HH:MM. Of geef in plaats van number het id dat de API meldt (het telt over alle profielen heen)."
         },
         "timers": {
           "name": "Timers",
-          "description": "Lijst van wijzigingen: id (1 tot 3), enabled, time als HH:MM, en days (MONDAY tot SUNDAY) voor een terugkerende of one_off_day voor een eenmalige timer."
+          "description": "Lijst van wijzigingen: number (1 tot 3), enabled, time als HH:MM, en days (MONDAY tot SUNDAY) voor een terugkerende of one_off_day voor een eenmalige timer. Of geef in plaats van number het id dat de API meldt (het telt over alle profielen heen)."
         }
       }
     }

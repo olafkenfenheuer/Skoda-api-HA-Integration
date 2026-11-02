@@ -277,11 +277,11 @@
         },
         "preferred_charging_times": {
           "name": "Horarios de carga preferidos",
-          "description": "Lista de cambios: id (1 a 4), enabled, start y end como HH:MM."
+          "description": "Lista de cambios: number (1 a 4), enabled, start y end como HH:MM. O indica en lugar de number el id que informa la API (cuenta en todos los perfiles)."
         },
         "timers": {
           "name": "Temporizadores",
-          "description": "Lista de cambios: id (1 a 3), enabled, time como HH:MM, y days (MONDAY a SUNDAY) para uno recurrente o one_off_day para uno único."
+          "description": "Lista de cambios: number (1 a 3), enabled, time como HH:MM, y days (MONDAY a SUNDAY) para uno recurrente o one_off_day para uno único. O indica en lugar de number el id que informa la API (cuenta en todos los perfiles)."
         }
       }
     }

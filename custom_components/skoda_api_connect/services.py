@@ -21,7 +21,26 @@ SERVICE_UPDATE_CHARGING_PROFILE = "update_charging_profile"
 _PROFILE_UNIQUE_ID = re.compile(r"^(?P<vin>.+)_profile_(?P<id>\d+)_[a-z_]+$")
 _TIME = vol.All(cv.string, vol.Match(r"^([01]\d|2[0-3]):[0-5]\d$"))
 _DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
-_SLOT_ID = vol.All(vol.Coerce(int), vol.Range(min=1))
+_SLOT_NUMBER = vol.All(vol.Coerce(int), vol.Range(min=1))
+
+
+def _slot(fields: dict[Any, Any]) -> vol.All:
+    """Schema of a preferred charging time or a timer.
+
+    ``number`` is its position in the profile (1 is the first); ``id`` is the id the API
+    reports, which counts across all profiles (the second profile may start at 5).
+    """
+    return vol.All(
+        vol.Schema(
+            {
+                vol.Exclusive("id", "slot"): _SLOT_NUMBER,
+                vol.Exclusive("number", "slot"): _SLOT_NUMBER,
+                **fields,
+            }
+        ),
+        cv.has_at_least_one_key("id", "number"),
+    )
+
 
 UPDATE_CHARGING_PROFILE_SCHEMA = vol.Schema(
     {
@@ -32,9 +51,8 @@ UPDATE_CHARGING_PROFILE_SCHEMA = vol.Schema(
         vol.Optional("min_charge"): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
         vol.Optional("min_charge_enabled"): cv.boolean,
         vol.Optional("preferred_charging_times"): [
-            vol.Schema(
+            _slot(
                 {
-                    vol.Required("id"): _SLOT_ID,
                     vol.Optional("enabled"): cv.boolean,
                     vol.Optional("start"): _TIME,
                     vol.Optional("end"): _TIME,
@@ -42,9 +60,8 @@ UPDATE_CHARGING_PROFILE_SCHEMA = vol.Schema(
             )
         ],
         vol.Optional("timers"): [
-            vol.Schema(
+            _slot(
                 {
-                    vol.Required("id"): _SLOT_ID,
                     vol.Optional("enabled"): cv.boolean,
                     vol.Optional("time"): _TIME,
                     vol.Optional("days"): vol.All(cv.ensure_list, [vol.In(_DAYS)]),
@@ -64,11 +81,17 @@ _SETTINGS = (
 )
 
 
-def _find(items: list[dict[str, Any]], item_id: int, what: str) -> dict[str, Any]:
-    for item in items:
-        if item.get("id") == item_id:
-            return item
-    raise HomeAssistantError(f"The charging profile has no {what} with the id {item_id}")
+def _find(items: list[dict[str, Any]], change: dict[str, Any], what: str) -> dict[str, Any]:
+    """Return the preferred charging time or timer a change is about."""
+    if "id" in change:
+        for item in items:
+            if item.get("id") == change["id"]:
+                return item
+        raise HomeAssistantError(f"The charging profile has no {what} with the id {change['id']}")
+    number = change["number"]
+    if number > len(items):
+        raise HomeAssistantError(f"The charging profile has no {what} number {number}")
+    return items[number - 1]
 
 
 def apply_changes(body: dict[str, Any], data: dict[str, Any]) -> None:
@@ -85,12 +108,12 @@ def apply_changes(body: dict[str, Any], data: dict[str, Any]) -> None:
             node = node.setdefault(name, {})
         node[path[-1]] = value
     for change in data.get("preferred_charging_times", []):
-        slot = _find(body.get("preferredChargingTimes", []), change["id"], "preferred charging time")
+        slot = _find(body.get("preferredChargingTimes", []), change, "preferred charging time")
         for field, key in (("enabled", "enabled"), ("start", "startTime"), ("end", "endTime")):
             if field in change:
                 slot[key] = change[field]
     for change in data.get("timers", []):
-        timer = _find(body.get("timers", []), change["id"], "timer")
+        timer = _find(body.get("timers", []), change, "timer")
         if "enabled" in change:
             timer["enabled"] = change["enabled"]
         if "time" in change:

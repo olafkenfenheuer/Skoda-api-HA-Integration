@@ -277,11 +277,11 @@
         },
         "preferred_charging_times": {
           "name": "Preferované časy nabíjení",
-          "description": "Seznam změn: id (1 až 4), enabled, start a end jako HH:MM."
+          "description": "Seznam změn: number (1 až 4), enabled, start a end jako HH:MM. Nebo místo number uveďte id, které hlásí API (počítá se napříč všemi profily)."
         },
         "timers": {
           "name": "Časovače",
-          "description": "Seznam změn: id (1 až 3), enabled, time jako HH:MM a days (MONDAY až SUNDAY) pro opakovaný nebo one_off_day pro jednorázový časovač."
+          "description": "Seznam změn: number (1 až 3), enabled, time jako HH:MM a days (MONDAY až SUNDAY) pro opakovaný nebo one_off_day pro jednorázový časovač. Nebo místo number uveďte id, které hlásí API (počítá se napříč všemi profily)."
         }
       }
     }

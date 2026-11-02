@@ -277,11 +277,11 @@
         },
         "preferred_charging_times": {
           "name": "Bevorzugt Luedzäiten",
-          "description": "Lëscht vun Ännerungen: id (1 bis 4), enabled, start an end als HH:MM."
+          "description": "Lëscht vun Ännerungen: number (1 bis 4), enabled, start an end als HH:MM. Oder amplaz number d'ID, déi d'API mellt (se zielt iwwer all Profiler)."
         },
         "timers": {
           "name": "Timer",
-          "description": "Lëscht vun Ännerungen: id (1 bis 3), enabled, time als HH:MM, an days (MONDAY bis SUNDAY) fir e widderhuelenden oder one_off_day fir een eemolegen Timer."
+          "description": "Lëscht vun Ännerungen: number (1 bis 3), enabled, time als HH:MM, an days (MONDAY bis SUNDAY) fir e widderhuelenden oder one_off_day fir een eemolegen Timer. Oder amplaz number d'ID, déi d'API mellt (se zielt iwwer all Profiler)."
         }
       }
     }
