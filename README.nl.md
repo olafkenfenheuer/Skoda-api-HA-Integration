@@ -177,6 +177,23 @@ Assistant opgeslagen, in de diagnostiek geanonimiseerd en nooit gelogd. Zonder w
 iets wordt verzonden. Een verkeerde S-PIN kan de S-PIN blokkeren, controleer hem dus eerst in de app. De
 doeltemperatuur wordt bij elke start meegestuurd. Niet getest.
 
+### Blueprint: een laadprofiel met beveiligingen wijzigen
+
+[![Blueprint importeren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Folafkenfenheuer%2FSkoda-api-HA-Integration%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fskoda_api_connect%2Fupdate_charging_profile.yaml)
+
+De blueprint **Škoda charging profile - change settings with safeguards** roept de bovenstaande actie aan als je
+trigger afgaat en je voorwaarden gelden, voor trage, zeldzame wijzigingen: een tijdstip, een seizoen, de
+huisbelasting. Je kiest het profiel, de te wijzigen velden (velden op "niet wijzigen" blijven zoals ze zijn), de
+sensor **Resterende API-verzoeken** en een pauze. Er wordt alleen verzonden als de API nog genoeg verzoeken heeft
+(een wijziging kost drie van 20 per uur), een eerdere wijziging niet nog bij het voertuig wacht, het profiel
+beschikbaar is en, als je de API-statussensor kiest, de API werkt. Na een wijziging wacht hij de pauze af;
+triggers in die tijd worden genegeerd.
+
+Hij is niet bedoeld om elke minuut een overschot te volgen: het voertuig heeft 20 seconden tot enkele minuten nodig
+om een wijziging over te nemen, en het quotum is klein. Gebruik daarvoor de wallbox. Wijzig hetzelfde profiel niet
+tegelijk in de MyŠkoda-app. De blueprint staat in `blueprints/automation/skoda_api_connect/` van deze repository
+(de import werkt pas als hij op de standaardbranch staat).
+
 ### Directe terugkoppeling na commando's
 
 Een commando wordt door de API alleen *geaccepteerd* (HTTP 202); het voertuig voert het misschien veel

@@ -204,6 +204,22 @@ like the API key, redacted in the diagnostics and never logged. Without it, star
 anything is sent. A wrong S-PIN can lock the S-PIN, so check it in the app first. The target temperature is
 sent with each start. Untested.
 
+### Blueprint: change a charging profile with safeguards
+
+[![Import the blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Folafkenfenheuer%2FSkoda-api-HA-Integration%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fskoda_api_connect%2Fupdate_charging_profile.yaml)
+
+The blueprint **Škoda charging profile - change settings with safeguards** calls the action above when your
+trigger fires and your conditions hold, for slow, rare changes: a time of day, a season, the house load. Pick
+the profile, the fields to change (every field left at "do not change" stays as it is), the sensor **API requests
+remaining** and a pause. It only sends if the API still has enough requests left (a change costs three of 20 per
+hour), a previous change is not still waiting for the vehicle, the profile is available and, if you pick the API
+status sensor, the API works. After a change it waits for the pause; triggers in the meantime are ignored.
+
+It is not made for following a surplus every minute: the vehicle needs 20 seconds to a few minutes to apply a
+change, and the quota is small. For that use the wallbox. Do not change the same profile in the MyŠkoda app at the
+same time. The blueprint is in `blueprints/automation/skoda_api_connect/` of this repository (the import only
+works once it is on the default branch).
+
 ### Immediate feedback after commands
 
 A command is only *accepted* by the API (HTTP 202); the vehicle may execute it much later, or never if

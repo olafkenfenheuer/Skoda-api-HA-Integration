@@ -190,6 +190,23 @@ Home Assistant gespeichert, in der Diagnose geschwärzt und nie protokolliert. O
 abgelehnt, bevor etwas gesendet wird. Eine falsche S-PIN kann die S-PIN sperren, prüfe sie deshalb zuerst in
 der App. Die Zieltemperatur wird bei jedem Start mitgesendet. Nicht erprobt.
 
+### Blueprint: ein Ladeprofil mit Schutzregeln ändern
+
+[![Blueprint importieren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Folafkenfenheuer%2FSkoda-api-HA-Integration%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fskoda_api_connect%2Fupdate_charging_profile.yaml)
+
+Der Blueprint **Škoda charging profile - change settings with safeguards** ruft die obige Aktion auf, wenn dein
+Auslöser feuert und deine Bedingungen gelten, für langsame, seltene Änderungen: eine Tageszeit, eine Jahreszeit,
+die Hauslast. Du wählst das Profil, die zu ändernden Felder (Felder auf „nicht ändern“ bleiben, wie sie sind), den
+Sensor **Verbleibende API-Anfragen** und eine Pause. Gesendet wird nur, wenn die API noch genug Anfragen hat (eine
+Änderung kostet drei von 20 pro Stunde), keine frühere Änderung noch beim Fahrzeug aussteht, das Profil verfügbar
+ist und, wenn du den API-Status-Sensor wählst, die API funktioniert. Nach einer Änderung wartet er die Pause ab;
+Auslöser in dieser Zeit werden ignoriert.
+
+Er ist nicht dafür gemacht, jede Minute einem Überschuss zu folgen: Das Fahrzeug braucht 20 Sekunden bis einige
+Minuten, um eine Änderung zu übernehmen, und das Kontingent ist klein. Dafür nimm die Wallbox. Ändere dasselbe
+Profil nicht gleichzeitig in der MyŠkoda-App. Der Blueprint liegt unter `blueprints/automation/skoda_api_connect/`
+in diesem Repository (der Import funktioniert erst, wenn er auf dem Standard-Branch liegt).
+
 ### Sofortige Rückmeldung nach Befehlen
 
 Ein Befehl wird von der API nur *angenommen* (HTTP 202); das Fahrzeug führt ihn eventuell viel später
