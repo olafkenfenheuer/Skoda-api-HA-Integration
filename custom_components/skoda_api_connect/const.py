@@ -7,6 +7,7 @@ from typing import Final
 DOMAIN: Final = "skoda_api_connect"
 
 API_BASE_URL: Final = "https://public.api.connect.skoda-auto.cz"
+API_KEYS_URL: Final = "https://go.skoda.eu/api-keys"
 
 CONF_API_KEY: Final = "api_key"
 CONF_VINS: Final = "vins"

@@ -11,6 +11,10 @@ externe client-bibliotheek.
 > **Niet-officieel project.** Deze integratie is niet verbonden met, onderschreven door, of
 > geassocieerd met Škoda Auto. Gebruik op eigen risico.
 
+> **Met AI-ondersteuning ontwikkeld.** De programmering van deze integratie is gedaan met ondersteuning van
+> [Claude](https://claude.com), een AI-assistent van Anthropic. Functies zijn getest op het eigen voertuig van de
+> beheerder (een Enyaq), voor zover deze README dat zegt; al het andere is niet getest.
+
 ## Functies
 
 | Platform | Entiteiten |
@@ -85,7 +89,8 @@ vernieuwd, of je wilt een pre-release uitproberen), voeg ze dan als aangepaste r
 
 1. Maak in de MyŠkoda-app een API-sleutel aan: open **Profiel → Smart home → Keys → Create key** (de namen in
    de taal van je app kunnen afwijken) en kies de voertuig(en) waarvoor hij geldt. Sleutels worden alleen in de app
-   aangemaakt. Ze zijn aan die voertuigen gebonden en verlopen (de app toont de datum naast elke sleutel), en je kunt er
+   aangemaakt. Op een telefoon met de app opent <https://go.skoda.eu/api-keys> dit scherm direct (op een computer
+   werkt de link niet). Ze zijn aan die voertuigen gebonden en verlopen (de app toont de datum naast elke sleutel), en je kunt er
    maximaal 5 hebben. Hetzelfde scherm toont het **VIN** van het voertuig met een kopieerknop, dat je in stap 3
    nodig hebt.
 
@@ -316,8 +321,8 @@ De API staat momenteel **20 verzoeken per uur per VIN** toe (niet definitief). E
 
 ## Problemen oplossen
 
-- **Je vindt het scherm voor de API-sleutels niet.** Open **Profiel → Smart home** in de app (zie de
-  schermafbeeldingen hierboven). Škoda documenteert niet in welke appversies of markten dit scherm bestaat; heb je
+- **De link of het menu leidt niet naar de API-sleutels.** Op sommige telefoons opent de link alleen het
+  startscherm van de app. Open **Profiel → Smart home** in de app handmatig (zie de schermafbeeldingen hierboven). Škoda documenteert niet in welke appversies of markten dit scherm bestaat; heb je
   geen item "Smart home", werk dan de app bij en vraag de Škoda-support.
 - **API-status "partial" of entiteiten tonen oude waarden.** De API laat een deel van de gegevens weg als ze dat nu
   niet kan ophalen (`…_UNAVAILABLE`, vermeld in de attributen van de API-statussensor). De integratie bewaart dan
@@ -349,4 +354,5 @@ Zie [CHANGELOG.nl.md](CHANGELOG.nl.md) voor de release notes.
 
 Aangeboden zoals het is, zonder garantie. Škoda Auto kan zijn API op elk moment wijzigen,
 waardoor deze integratie kan stoppen met werken. Gebruik van de publieke MyŠkoda API valt
-onder de eigen gebruiksvoorwaarden van Škoda.
+onder de eigen gebruiksvoorwaarden van Škoda. De code is geschreven met ondersteuning van Claude, een
+AI-assistent van Anthropic, en getest zoals hierboven beschreven, maar kan fouten bevatten.

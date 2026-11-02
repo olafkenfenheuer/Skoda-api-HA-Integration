@@ -11,6 +11,10 @@ Client-Bibliothek.
 > **Inoffizielles Projekt.** Diese Integration steht in keiner Verbindung zu Škoda Auto und wird
 > weder von Škoda Auto unterstützt noch empfohlen. Nutzung auf eigene Gefahr.
 
+> **Mit KI-Unterstützung entwickelt.** Die Programmierung dieser Integration erfolgte mit Unterstützung von
+> [Claude](https://claude.com), einem KI-Assistenten von Anthropic. Funktionen sind am eigenen Fahrzeug des
+> Betreibers (einem Enyaq) erprobt, soweit diese README es sagt; alles andere ist nicht erprobt.
+
 ## Funktionen
 
 Entwickelt nach den aktuellen Best Practices für Home-Assistant-Integrationen: reiner UI-Config-Flow,
@@ -93,7 +97,9 @@ oder du eine Vorabversion testen möchtest), füge sie stattdessen als benutzerd
 
 1. Erstelle in der MyŠkoda-App einen API-Schlüssel: Öffne **Profil → Smart home → Keys → Create key** (die
    Bezeichnungen in deiner App-Sprache können abweichen) und wähle die Fahrzeuge aus, für die er gelten soll. 
-   Schlüssel werden nur in der App erstellt. Sie sind an diese Fahrzeuge gebunden und laufen ab (die App zeigt
+   Schlüssel werden nur in der App erstellt. Auf einem
+   Handy mit der App öffnet <https://go.skoda.eu/api-keys> diesen Bildschirm direkt (am Rechner funktioniert der
+   Link nicht). Schlüssel sind an diese Fahrzeuge gebunden und laufen ab (die App zeigt
    das Datum neben jedem Schlüssel), und du kannst bis zu 5 haben. Derselbe Bildschirm zeigt die **VIN** des
    Fahrzeugs mit einem Kopierknopf, die du in Schritt 3 brauchst.
 
@@ -343,8 +349,8 @@ was ein Neuladen der Integration erfordern kann.
 
 ## Fehlerbehebung
 
-- **Du findest den Bildschirm für die API-Schlüssel nicht.** Öffne **Profil → Smart home** in der App (siehe die
-  Screenshots oben). Škoda dokumentiert nicht, in welchen App-Versionen oder Märkten dieser Bildschirm existiert;
+- **Der Link oder das Menü führt nicht zu den API-Schlüsseln.** Auf manchen Handys öffnet der Link nur die
+  Startseite der App. Öffne **Profil → Smart home** in der App von Hand (siehe die Screenshots oben). Škoda dokumentiert nicht, in welchen App-Versionen oder Märkten dieser Bildschirm existiert;
   hast du keinen Eintrag „Smart home“, aktualisiere die App und frage den Škoda-Support.
 - **API-Status „partial“ oder Entitäten zeigen alte Werte.** Die API lässt einen Teil der Daten weg, wenn sie ihn
   gerade nicht abrufen kann (`…_UNAVAILABLE`, aufgeführt in den Attributen des API-Status-Sensors). Die
@@ -377,4 +383,5 @@ Die Versionshinweise findest du in [CHANGELOG.md](CHANGELOG.md) (Englisch).
 
 Bereitgestellt wie besehen, ohne Gewährleistung. Škoda Auto kann seine API jederzeit ändern, wodurch
 diese Integration nicht mehr funktionieren kann. Die Nutzung der MyŠkoda Public API unterliegt den
-eigenen Nutzungsbedingungen von Škoda.
+eigenen Nutzungsbedingungen von Škoda. Der Code wurde mit Unterstützung von Claude, einem KI-Assistenten von
+Anthropic, geschrieben und wie oben beschrieben getestet, kann aber Fehler enthalten.
