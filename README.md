@@ -152,7 +152,9 @@ times stay as they are. A change costs two requests of the quota plus the follow
   to the vehicle for a profile that is gone: the action `update_charging_profile` refuses it ("The vehicle does
   not report this charging profile (any more)") before it writes anything.
 - A deletion has to show in **three polls in a row**. Then the integration removes the entities of the
-  deleted profile from Home Assistant and reloads itself. This only happens while the vehicle still lists
+  deleted profile from Home Assistant and reloads itself. The removal is an option (**Configure** > **Remove the
+  entities of deleted charging profiles**, on by default, only shown for vehicles with charging profiles); with it
+  off the entities stay as unavailable entities, which you delete by hand, and the reload happens after two polls. This only happens while the vehicle still lists
   `updateChargingProfile`, so a vehicle whose operations are missing for a moment does not lose its entities. If
   you changed the name or the area of such an entity, that is gone with it.
 - If you create a new profile afterwards it may get the id of the deleted one; it then gets fresh entities

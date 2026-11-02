@@ -49,11 +49,13 @@
           "plugged_in_fast_polling": "Ladeintervall auch bei eingestecktem Ladekabel verwenden",
           "read_only": "Nur-Lese-Modus (alle Fernsteuerungen deaktivieren)",
           "notify_targets": "Empfänger des Parkalarms",
-          "spin": "S-PIN (für die Standheizung)"
+          "spin": "S-PIN (für die Standheizung)",
+          "remove_deleted_profiles": "Entitäten gelöschter Ladeprofile entfernen"
         },
         "data_description": {
           "notify_targets": "Benachrichtigungsdienste, die einen kritischen Alarm erhalten, wenn ein Fahrzeug geparkt, aber nicht verriegelt und geschlossen ist, z. B. notify.mobile_app_mein_telefon. Leer lassen für keine Alarme. Die Verzögerung wird pro Fahrzeug mit dem Regler „Parkalarm-Wartezeit“ eingestellt.",
-          "spin": "Die Sicherheits-PIN deines MyŠkoda-Kontos. Nur nötig, um die Standheizung zu starten. Sie wird wie der API-Schlüssel in Home Assistant gespeichert. Leer lassen, wenn du sie nicht nutzt."
+          "spin": "Die Sicherheits-PIN deines MyŠkoda-Kontos. Nur nötig, um die Standheizung zu starten. Sie wird wie der API-Schlüssel in Home Assistant gespeichert. Leer lassen, wenn du sie nicht nutzt.",
+          "remove_deleted_profiles": "Wurde ein Ladeprofil im Fahrzeug gelöscht (in drei Abrufen hintereinander gesehen), werden seine Entitäten aus Home Assistant entfernt, samt eigenen Namen und Bereichen. Ohne diese Option bleiben sie als nicht verfügbare Entitäten, die du von Hand löschst."
         }
       }
     },

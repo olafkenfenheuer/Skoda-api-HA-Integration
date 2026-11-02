@@ -36,6 +36,7 @@ from .const import (
     CONF_NOTIFY_TARGETS,
     CONF_PLUGGED_IN_FAST_POLLING,
     CONF_READ_ONLY,
+    CONF_REMOVE_DELETED_PROFILES,
     CONF_SPIN,
     CONF_VINS,
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
@@ -210,6 +211,13 @@ class SkodaConnectConfigFlow(ConfigFlow, domain=DOMAIN):
 class SkodaConnectOptionsFlow(OptionsFlow):
     """Handle options for an existing Škoda API Connect entry."""
 
+    def _has_charging_profiles(self) -> bool:
+        """Return whether a vehicle of the loaded entry can have charging profile entities."""
+        coordinator = getattr(self.config_entry, "runtime_data", None)
+        if coordinator is None or not coordinator.data:
+            return False
+        return any(v.lists("updateChargingProfile") for v in coordinator.data.vehicles.values())
+
     def _has_auxiliary_heating(self) -> bool:
         """Return whether a vehicle of the loaded entry has an auxiliary heating."""
         coordinator = getattr(self.config_entry, "runtime_data", None)
@@ -264,6 +272,14 @@ class SkodaConnectOptionsFlow(OptionsFlow):
                     CONF_SPIN, description={"suggested_value": values.get(CONF_SPIN, "")}
                 )
             ] = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
+
+        if self._has_charging_profiles():
+            spin_field[
+                vol.Required(
+                    CONF_REMOVE_DELETED_PROFILES,
+                    default=values.get(CONF_REMOVE_DELETED_PROFILES, True),
+                )
+            ] = bool
 
         schema = vol.Schema(
             {

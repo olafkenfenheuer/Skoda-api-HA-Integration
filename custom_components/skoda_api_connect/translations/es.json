@@ -49,11 +49,13 @@
           "plugged_in_fast_polling": "Usar también el intervalo de carga cuando el cable esté conectado",
           "read_only": "Modo de solo lectura (desactivar todos los controles remotos)",
           "notify_targets": "Destinatarios de la alerta de aparcamiento",
-          "spin": "S-PIN (para la calefacción auxiliar)"
+          "spin": "S-PIN (para la calefacción auxiliar)",
+          "remove_deleted_profiles": "Eliminar las entidades de los perfiles de carga borrados"
         },
         "data_description": {
           "notify_targets": "Servicios de notificación que reciben una alerta crítica cuando un vehículo está aparcado pero no está bloqueado y cerrado, p. ej. notify.mobile_app_mi_telefono. Déjalo vacío para no recibir alertas. El retraso se ajusta por vehículo con el control deslizante «Tiempo de espera de la alerta de aparcamiento».",
-          "spin": "El PIN de seguridad de tu cuenta MyŠkoda. Solo es necesario para arrancar la calefacción auxiliar. Se guarda en Home Assistant igual que la clave de API. Déjalo vacío si no la usas."
+          "spin": "El PIN de seguridad de tu cuenta MyŠkoda. Solo es necesario para arrancar la calefacción auxiliar. Se guarda en Home Assistant igual que la clave de API. Déjalo vacío si no la usas.",
+          "remove_deleted_profiles": "Cuando se borra un perfil de carga en el vehículo (visto en tres consultas seguidas), sus entidades se eliminan de Home Assistant, con sus nombres y áreas propios. Sin esta opción quedan como entidades no disponibles que borras a mano."
         }
       }
     },

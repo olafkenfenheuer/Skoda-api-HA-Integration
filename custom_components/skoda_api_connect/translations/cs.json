@@ -49,11 +49,13 @@
           "plugged_in_fast_polling": "Použít interval nabíjení i při zapojeném kabelu",
           "read_only": "Režim pouze pro čtení (vypne veškeré dálkové ovládání)",
           "notify_targets": "Příjemci upozornění na parkování",
-          "spin": "S-PIN (pro nezávislé topení)"
+          "spin": "S-PIN (pro nezávislé topení)",
+          "remove_deleted_profiles": "Odebrat entity smazaných nabíjecích profilů"
         },
         "data_description": {
           "notify_targets": "Služby notify, které dostanou kritické upozornění, když vozidlo parkuje, ale není zamčené a zavřené, např. notify.mobile_app_muj_telefon. Ponechte prázdné, pokud upozornění nechcete. Prodleva se nastavuje pro každé vozidlo posuvníkem „Prodleva upozornění na parkování“.",
-          "spin": "Bezpečnostní PIN vašeho účtu MyŠkoda. Potřebný jen ke spuštění nezávislého topení. Ukládá se v Home Assistantu stejně jako klíč API. Nepoužíváte-li ho, nechte prázdné."
+          "spin": "Bezpečnostní PIN vašeho účtu MyŠkoda. Potřebný jen ke spuštění nezávislého topení. Ukládá se v Home Assistantu stejně jako klíč API. Nepoužíváte-li ho, nechte prázdné.",
+          "remove_deleted_profiles": "Když je nabíjecí profil ve vozidle smazán (zjištěno ve třech dotazech po sobě), jeho entity se odeberou z Home Assistantu, včetně vlastních názvů a oblastí. Bez této volby zůstanou jako nedostupné entity, které smažete ručně."
         }
       }
     },

@@ -49,11 +49,13 @@
           "plugged_in_fast_polling": "Use the charging interval while the cable is plugged in",
           "read_only": "Read-only mode (disable all remote controls)",
           "notify_targets": "Parking alert notification targets",
-          "spin": "S-PIN (for the auxiliary heating)"
+          "spin": "S-PIN (for the auxiliary heating)",
+          "remove_deleted_profiles": "Remove the entities of deleted charging profiles"
         },
         "data_description": {
           "notify_targets": "Notify services that get a critical alert when a vehicle is parked but not locked and closed, e.g. notify.mobile_app_my_phone. Leave empty for no alerts. The delay is set per vehicle with the \"Parking alert grace period\" slider.",
-          "spin": "The security PIN of your MyŠkoda account. Only needed to start the auxiliary heating. It is stored in Home Assistant like the API key. Leave empty if you do not use it."
+          "spin": "The security PIN of your MyŠkoda account. Only needed to start the auxiliary heating. It is stored in Home Assistant like the API key. Leave empty if you do not use it.",
+          "remove_deleted_profiles": "When a charging profile was deleted in the vehicle (seen in three polls in a row), its entities are removed from Home Assistant, including their own names and areas. Without it they stay as unavailable entities that you delete by hand."
         }
       }
     },

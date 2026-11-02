@@ -12,7 +12,13 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SkodaApi
-from .const import CONF_API_KEY, CONF_READ_ONLY, CONF_VINS, DOMAIN
+from .const import (
+    CONF_API_KEY,
+    CONF_READ_ONLY,
+    CONF_REMOVE_DELETED_PROFILES,
+    CONF_VINS,
+    DOMAIN,
+)
 from .coordinator import SkodaConfigEntry, SkodaDataUpdateCoordinator
 from .parking_alert import SkodaParkingAlert
 from .services import async_setup_services
@@ -85,9 +91,9 @@ def _async_reload_on_profile_change(
 
     Profiles get their entities (and their names) when the entry is set up. A change has to
     show in several polls in a row; the count restarts when it is gone again. The entities of
-    a deleted profile are removed as well, one poll later than a reload alone would happen, and
-    only while the vehicle still lists the operation, so a vehicle whose operations are missing
-    for a moment does not lose its entities.
+    a deleted profile are removed as well (an option, on by default), one poll later than a
+    reload alone would happen, and only while the vehicle still lists the operation, so a vehicle
+    whose operations are missing for a moment does not lose its entities.
     """
     known = _profiles(coordinator)
     last_data = coordinator.data
@@ -113,11 +119,14 @@ def _async_reload_on_profile_change(
             for profile_id, _name in profiles
             if profile_id not in {i for i, _ in current[vin]}
         }
-        needed = PROFILE_REMOVAL_CONFIRMATIONS if removed else PROFILE_CHANGE_CONFIRMATIONS
+        # The option may be changed at any time, so it is read when a change is confirmed.
+        remove = entry.options.get(CONF_REMOVE_DELETED_PROFILES, True) and bool(removed)
+        needed = PROFILE_REMOVAL_CONFIRMATIONS if remove else PROFILE_CHANGE_CONFIRMATIONS
         if confirmations < needed:
             return
         scheduled = True
-        _async_remove_profile_entities(hass, entry, removed)
+        if remove:
+            _async_remove_profile_entities(hass, entry, removed)
         _LOGGER.info("The charging profiles of a vehicle changed; reloading the integration")
         hass.config_entries.async_schedule_reload(entry.entry_id)
 

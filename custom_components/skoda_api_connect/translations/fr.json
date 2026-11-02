@@ -49,11 +49,13 @@
           "plugged_in_fast_polling": "Utiliser l'intervalle de charge dès que le câble est branché",
           "read_only": "Mode lecture seule (désactive toutes les commandes à distance)",
           "notify_targets": "Destinataires de l'alerte de stationnement",
-          "spin": "S-PIN (pour le chauffage auxiliaire)"
+          "spin": "S-PIN (pour le chauffage auxiliaire)",
+          "remove_deleted_profiles": "Supprimer les entités des profils de charge supprimés"
         },
         "data_description": {
           "notify_targets": "Services de notification qui reçoivent une alerte critique lorsqu'un véhicule est garé mais n'est pas verrouillé et fermé, p. ex. notify.mobile_app_mon_telephone. Laisser vide pour ne recevoir aucune alerte. Le délai se règle par véhicule avec le curseur « Délai de l'alerte de stationnement ».",
-          "spin": "Le code PIN de sécurité de votre compte MyŠkoda. Nécessaire uniquement pour démarrer le chauffage auxiliaire. Il est stocké dans Home Assistant comme la clé d'API. Laissez vide si vous ne l'utilisez pas."
+          "spin": "Le code PIN de sécurité de votre compte MyŠkoda. Nécessaire uniquement pour démarrer le chauffage auxiliaire. Il est stocké dans Home Assistant comme la clé d'API. Laissez vide si vous ne l'utilisez pas.",
+          "remove_deleted_profiles": "Quand un profil de charge a été supprimé dans le véhicule (constaté lors de trois interrogations de suite), ses entités sont supprimées de Home Assistant, avec leurs noms et zones personnalisés. Sans cette option, elles restent comme entités indisponibles que vous supprimez à la main."
         }
       }
     },

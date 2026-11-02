@@ -49,11 +49,13 @@
           "plugged_in_fast_polling": "Laadinterval ook gebruiken zolang de laadkabel is aangesloten",
           "read_only": "Alleen-lezen modus (alle bedieningsfuncties uitschakelen)",
           "notify_targets": "Ontvangers van het parkeeralarm",
-          "spin": "S-PIN (voor de standkachel)"
+          "spin": "S-PIN (voor de standkachel)",
+          "remove_deleted_profiles": "Entiteiten van verwijderde laadprofielen verwijderen"
         },
         "data_description": {
           "notify_targets": "Notify-services die een kritieke melding krijgen als een voertuig geparkeerd staat maar niet vergrendeld en gesloten is, bijv. notify.mobile_app_mijn_telefoon. Leeg laten voor geen meldingen. De vertraging stel je per voertuig in met de schuifregelaar \"Wachttijd parkeeralarm\".",
-          "spin": "De beveiligingspincode van je MyŠkoda-account. Alleen nodig om de standkachel te starten. Hij wordt net als de API-sleutel in Home Assistant opgeslagen. Laat leeg als je hem niet gebruikt."
+          "spin": "De beveiligingspincode van je MyŠkoda-account. Alleen nodig om de standkachel te starten. Hij wordt net als de API-sleutel in Home Assistant opgeslagen. Laat leeg als je hem niet gebruikt.",
+          "remove_deleted_profiles": "Als een laadprofiel in het voertuig is verwijderd (in drie polls achter elkaar gezien), worden de entiteiten ervan uit Home Assistant verwijderd, inclusief eigen namen en gebieden. Zonder deze optie blijven ze staan als niet-beschikbare entiteiten die je handmatig verwijdert."
         }
       }
     },

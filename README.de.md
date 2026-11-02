@@ -155,7 +155,10 @@ bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus d
   gelöschtes Profil wird nichts gesendet: Die Aktion `update_charging_profile` lehnt es ab („The vehicle does
   not report this charging profile (any more)“), bevor sie etwas schreibt.
 - Ein Löschen muss in **drei Abrufen hintereinander** auftauchen. Dann entfernt die Integration die Entitäten des
-  gelöschten Profils aus Home Assistant und lädt sich selbst neu. Das geschieht nur, solange das Fahrzeug
+  gelöschten Profils aus Home Assistant und lädt sich selbst neu. Das Entfernen ist eine Option (**Konfigurieren** >
+  **Entitäten gelöschter Ladeprofile entfernen**, standardmäßig an, nur bei Fahrzeugen mit Ladeprofilen sichtbar); ist
+  sie aus, bleiben die Entitäten als nicht verfügbare Entitäten stehen, die du von Hand löschst, und das Neuladen
+  geschieht nach zwei Abrufen. Das geschieht nur, solange das Fahrzeug
   `updateChargingProfile` noch nennt, damit ein Fahrzeug, dessen Operationen kurz fehlen, seine Entitäten nicht
   verliert. Hast du Name oder Bereich einer solchen Entität geändert, ist das damit weg.
 - Legst du danach ein neues Profil an, kann es die ID des gelöschten bekommen; es bekommt dann frische

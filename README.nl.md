@@ -142,7 +142,10 @@ blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het
   profiel wordt niets naar het voertuig gestuurd: de actie `update_charging_profile` weigert het ("The vehicle
   does not report this charging profile (any more)") voordat ze iets schrijft.
 - Een verwijdering moet in **drie polls achter elkaar** voorkomen. Dan verwijdert de integratie de entiteiten
-  van het verwijderde profiel uit Home Assistant en herlaadt ze zichzelf. Dat gebeurt alleen zolang het voertuig
+  van het verwijderde profiel uit Home Assistant en herlaadt ze zichzelf. Het verwijderen is een optie
+  (**Configureren** > **Entiteiten van verwijderde laadprofielen verwijderen**, standaard aan, alleen zichtbaar
+  voor voertuigen met laadprofielen); staat ze uit, dan blijven de entiteiten als niet-beschikbare entiteiten
+  staan die je handmatig verwijdert, en het herladen gebeurt na twee polls. Dat gebeurt alleen zolang het voertuig
   `updateChargingProfile` nog vermeldt, zodat een voertuig waarvan de operaties even ontbreken zijn entiteiten niet
   kwijtraakt. Heb je de naam of het gebied van zo'n entiteit aangepast, dan is dat daarmee weg.
 - Maak je daarna een nieuw profiel aan, dan kan het het id van het verwijderde krijgen; het krijgt dan verse
