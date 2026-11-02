@@ -109,7 +109,12 @@ want to try a pre-release), add it as a custom repository instead:
    - the shorter polling interval used **while charging** (default 5),
    - whether that charging interval is **also used while the cable is plugged in** (default off),
    - read-only mode,
-   - the notify services that get the [parking alert](#parking-alert).
+   - the notify services that get the [parking alert](#parking-alert),
+   - whether the entities of a deleted [charging profile](#charging-profiles) are removed (only shown for vehicles
+     with charging profiles, default on),
+   - the **S-PIN** for the [auxiliary heating](#auxiliary-heating) (only shown if a vehicle has one).
+
+   While the climate or the auxiliary heating runs, the vehicle is also polled at the charging interval.
 
 You can replace the API key (or change the VINs) at any time - before it expires, or after creating a
 new one - via **Settings → Devices & Services → Škoda API Connect → ⋮ → Reconfigure**. The entry is reloaded

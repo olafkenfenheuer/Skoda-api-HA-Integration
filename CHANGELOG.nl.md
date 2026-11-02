@@ -20,6 +20,7 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ### Gewijzigd
 
+- README: waar je de API-sleutel in de MyŠkoda-app aanmaakt (Profiel > Smart home > Keys > Create key, met schermafbeeldingen) en een sectie voor het oplossen van problemen.
 - De diagnostiek anonimiseert de namen van laadprofielen, die meestal adressen zijn.
 
 ### Opgelost

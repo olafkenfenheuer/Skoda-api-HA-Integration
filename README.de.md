@@ -112,7 +112,12 @@ oder du eine Vorabversion testen möchtest), füge sie stattdessen als benutzerd
    - das kürzere Intervall **während des Ladens** (Standard 5),
    - ob dieses Ladeintervall **auch bei eingestecktem Ladekabel** gilt (Standard aus),
    - den Nur-Lese-Modus,
-   - die Benachrichtigungsdienste, die den [Parkalarm](#parkalarm) erhalten.
+   - die Benachrichtigungsdienste, die den [Parkalarm](#parkalarm) erhalten,
+   - ob die Entitäten eines gelöschten [Ladeprofils](#ladeprofile) entfernt werden (nur bei Fahrzeugen mit
+     Ladeprofilen sichtbar, Standard an),
+   - die **S-PIN** für die [Standheizung](#standheizung) (nur sichtbar, wenn ein Fahrzeug eine hat).
+
+   Läuft die Klimaanlage oder die Standheizung, wird das Fahrzeug ebenfalls mit dem Ladeintervall abgefragt.
 
 Den API-Schlüssel (oder die VINs) kannst du jederzeit ersetzen – vor dem Ablauf oder nachdem du einen
 neuen erstellt hast – unter **Einstellungen → Geräte & Dienste → Škoda API Connect → ⋮ → Neu konfigurieren**.

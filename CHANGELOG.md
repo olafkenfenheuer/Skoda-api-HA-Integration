@@ -20,6 +20,7 @@ All notable changes to this integration are documented here. The format follows
 
 ### Changed
 
+- README: where to create the API key in the MyŠkoda app (Profile > Smart home > Keys > Create key, with screenshots) and a troubleshooting section.
 - The diagnostics redact the names of charging profiles, which are usually addresses.
 
 ### Fixed

@@ -100,7 +100,10 @@ vernieuwd, of je wilt een pre-release uitproberen), voeg ze dan als aangepaste r
    De API heeft geen voertuiglijst, dus de VIN's moeten handmatig worden ingevoerd.
 4. Via **Configureren** wijzig je het pollinginterval (3-1440 minuten, standaard 10) of zet je
    de alleen-lezen-modus aan. Optioneel gebruik je het laadinterval ook zolang de laadkabel is aangesloten.
-   Daar kies je ook de notify-services die het [parkeeralarm](#parkeeralarm) krijgen.
+   Daar kies je ook de notify-services die het [parkeeralarm](#parkeeralarm) krijgen, of de entiteiten van een
+   verwijderd [laadprofiel](#laadprofielen) worden verwijderd (alleen zichtbaar voor voertuigen met laadprofielen,
+   standaard aan) en de **S-PIN** voor de [standkachel](#standkachel) (alleen zichtbaar als een voertuig er een
+   heeft). Draait de airco of de standkachel, dan wordt het voertuig ook met het laadinterval gepolld.
 
 Je kunt de API-sleutel (of de VIN's) op elk moment vervangen - vóór het verlopen of nadat je een nieuwe
 hebt aangemaakt - via **Instellingen → Apparaten & services → Škoda API Connect → ⋮ → Opnieuw configureren**.

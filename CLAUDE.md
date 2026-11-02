@@ -28,6 +28,7 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
     `climate`, `switch`, `number`, `select`; `diagnostics.py`
   - `strings.json` is a copy of `translations/en.json`; translations exist for en/de/nl/fr/cs/sk/es/lb
   - `brand/icon.png` - icon shown by Home Assistant 2026.3+
+- `blueprints/automation/skoda_api_connect/` - the blueprint to change a charging profile with safeguards (imported by URL, not installed by HACS); `docs/images/` - screenshots for the README (blank out names, VINs and addresses)
 - `tests/` - pytest suite using `pytest-homeassistant-custom-component` (see `pytest.ini`)
 - `README.md` / `README.de.md` / `README.nl.md`, `CHANGELOG.md` / `CHANGELOG.nl.md`
 
