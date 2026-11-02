@@ -1,0 +1,231 @@
+blueprint:
+  name: Škoda charging profile - change settings with safeguards
+  description: >-
+    Changes settings, preferred charging times and timers of a charging profile
+    (a saved charging location of the MyŠkoda app) when your trigger fires and
+    your conditions hold. It calls the action
+    skoda_api_connect.update_charging_profile only if the Škoda API still has
+    enough requests left, a previous change is not still waiting for the
+    vehicle, and the last change was long enough ago. Fields you leave at "do not
+    change" stay as they are.
+
+
+    Deutsch: Ändert Einstellungen, bevorzugte Ladezeiten und Abfahrtszeiten
+    (Timer) eines Ladeprofils, wenn dein Auslöser feuert und deine Bedingungen
+    gelten. Gesendet wird nur, wenn das API-Kontingent reicht, keine frühere
+    Änderung noch beim Fahrzeug aussteht und die letzte Änderung lange genug
+    her ist. Felder auf "nicht ändern" bleiben unverändert.
+
+
+    Every change costs three of the 20 requests per hour of the API. This is
+    meant for slow, rare changes (time of day, season, house load), not for
+    following a surplus every minute. Do not change the same profile in the
+    MyŠkoda app at the same time: the vehicle applies a profile as a whole, so
+    whoever saves last wins.
+  domain: automation
+  source_url: https://github.com/olafkenfenheuer/Skoda-api-HA-Integration/blob/main/blueprints/automation/skoda_api_connect/update_charging_profile.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    trigger_section:
+      name: When
+      icon: mdi:play-circle-outline
+      collapsed: false
+      input:
+        triggers:
+          name: Trigger / Auslöser
+          description: >-
+            When the change should happen, for example a time of day, a weekday
+            or a state.
+          selector:
+            trigger: {}
+          default: []
+        conditions:
+          name: Conditions / Bedingungen (optional)
+          description: Only change the profile if all of these hold.
+          selector:
+            condition: {}
+          default: []
+    profile_section:
+      name: Charging profile / Ladeprofil
+      icon: mdi:map-marker-radius
+      collapsed: false
+      input:
+        profile:
+          name: Charging profile / Ladeprofil
+          description: >-
+            Any "charging current" select of the profile (its other entities
+            belong to the same profile).
+          selector:
+            entity:
+              integration: skoda_api_connect
+              domain: select
+    changes_section:
+      name: What to change / Was ändern
+      icon: mdi:ev-station
+      collapsed: false
+      input:
+        max_charging_current:
+          name: Charging current / Ladestrom
+          description: MAXIMUM, or REDUCED (the "current limit" of the app).
+          default: unchanged
+          selector:
+            select:
+              options:
+                - label: Do not change / nicht ändern
+                  value: unchanged
+                - label: MAXIMUM
+                  value: MAXIMUM
+                - label: REDUCED
+                  value: REDUCED
+        target_charge:
+          name: Target charge in % / Ladeziel in %
+          description: 0 = do not change.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 10
+              unit_of_measurement: "%"
+        min_charge:
+          name: Minimum charge in % / Minimale Ladegrenze in %
+          description: -1 = do not change.
+          default: -1
+          selector:
+            number:
+              min: -1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+        auto_unlock_plug:
+          name: Unlock plug after charging / Stecker entriegeln
+          default: unchanged
+          selector:
+            select:
+              options:
+                - label: Do not change / nicht ändern
+                  value: unchanged
+                - label: "On / An"
+                  value: "on"
+                - label: "Off / Aus"
+                  value: "off"
+        preferred_charging_times:
+          name: Preferred charging times / Bevorzugte Ladezeiten
+          description: >-
+            A list, empty = do not change. Example:
+            [{"number": 1, "enabled": true, "start": "22:00", "end": "06:00"}]
+          default: []
+          selector:
+            object: {}
+        timers:
+          name: Timers (departure times) / Abfahrtszeiten
+          description: >-
+            A list, empty = do not change. Example:
+            [{"number": 1, "enabled": true, "time": "07:00", "days": ["MONDAY", "FRIDAY"]}]
+          default: []
+          selector:
+            object: {}
+    safeguards_section:
+      name: Safeguards / Schutzregeln
+      icon: mdi:shield-check-outline
+      collapsed: false
+      input:
+        requests_sensor:
+          name: API requests remaining / Verbleibende API-Anfragen
+          description: >-
+            The sensor "API requests remaining" of the vehicle. Nothing is sent
+            when it is below the minimum.
+          selector:
+            entity:
+              integration: skoda_api_connect
+              domain: sensor
+        min_requests:
+          name: Minimum requests left / Mindestens verbleibende Anfragen
+          description: A change needs 3. Keep some for polling.
+          default: 8
+          selector:
+            number:
+              min: 3
+              max: 20
+              step: 1
+        api_status_sensor:
+          name: API status sensor / API-Status (optional)
+          description: >-
+            If you pick it, nothing is sent while it is not "ok" or "partial"
+            (for example during a rate limit).
+          default: ""
+          selector:
+            entity:
+              integration: skoda_api_connect
+              domain: sensor
+        cooldown_minutes:
+          name: Pause between changes in minutes / Pause zwischen Änderungen
+          description: >-
+            After a change this automation waits this long. Triggers in the
+            meantime are ignored. (A restart of Home Assistant ends the wait.)
+          default: 30
+          selector:
+            number:
+              min: 1
+              max: 1440
+              step: 1
+              unit_of_measurement: min
+
+mode: single
+max_exceeded: silent
+
+variables:
+  profile: !input profile
+  max_charging_current: !input max_charging_current
+  target_charge: !input target_charge
+  min_charge: !input min_charge
+  auto_unlock_plug: !input auto_unlock_plug
+  preferred_charging_times: !input preferred_charging_times
+  timers: !input timers
+  requests_sensor: !input requests_sensor
+  min_requests: !input min_requests
+  api_status_sensor: !input api_status_sensor
+  cooldown_minutes: !input cooldown_minutes
+  changes: >-
+    {% set ns = namespace(d={}) %}
+    {% if max_charging_current in ['MAXIMUM', 'REDUCED'] %}{% set ns.d = dict(ns.d, max_charging_current=max_charging_current) %}{% endif %}
+    {% if target_charge | int(0) > 0 %}{% set ns.d = dict(ns.d, target_charge=target_charge | int) %}{% endif %}
+    {% if min_charge | int(-1) >= 0 %}{% set ns.d = dict(ns.d, min_charge=min_charge | int) %}{% endif %}
+    {% if auto_unlock_plug in ['on', 'off'] %}{% set ns.d = dict(ns.d, auto_unlock_plug=(auto_unlock_plug == 'on')) %}{% endif %}
+    {% if preferred_charging_times %}{% set ns.d = dict(ns.d, preferred_charging_times=preferred_charging_times) %}{% endif %}
+    {% if timers %}{% set ns.d = dict(ns.d, timers=timers) %}{% endif %}
+    {{ ns.d }}
+
+triggers: !input triggers
+
+conditions:
+  - alias: Something to change
+    condition: template
+    value_template: "{{ changes | length > 0 }}"
+  - alias: The profile is there
+    condition: template
+    value_template: "{{ states(profile) not in ['unavailable', 'unknown'] }}"
+  - alias: No change is still waiting for the vehicle
+    condition: template
+    value_template: "{{ not state_attr(profile, 'pending') }}"
+  - alias: Enough API requests left
+    condition: template
+    value_template: >-
+      {{ states(requests_sensor) | int(-1) >= min_requests | int(8) }}
+  - alias: The API works
+    condition: template
+    value_template: >-
+      {{ api_status_sensor in ['', none] or states(api_status_sensor) in ['ok', 'partial'] }}
+  - condition: and
+    conditions: !input conditions
+
+actions:
+  - alias: Change the charging profile
+    action: skoda_api_connect.update_charging_profile
+    target:
+      entity_id: "{{ profile }}"
+    data: "{{ changes }}"
+  - alias: Pause, so that no new change follows too soon
+    delay:
+      minutes: "{{ cooldown_minutes | int(30) }}"

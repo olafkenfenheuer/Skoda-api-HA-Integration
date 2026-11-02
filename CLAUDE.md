@@ -28,6 +28,7 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
     `climate`, `switch`, `number`, `select`; `diagnostics.py`
   - `strings.json` is a copy of `translations/en.json`; translations exist for en/de/nl/fr/cs/sk/es/lb
   - `brand/icon.png` - icon shown by Home Assistant 2026.3+
+- `blueprints/automation/skoda_api_connect/` - the blueprint to change a charging profile with safeguards (imported by URL, not installed by HACS); `docs/images/` - screenshots for the README (blank out names, VINs and addresses)
 - `tests/` - pytest suite using `pytest-homeassistant-custom-component` (see `pytest.ini`)
 - `README.md` / `README.de.md` / `README.nl.md`, `CHANGELOG.md` / `CHANGELOG.nl.md`
 
@@ -51,7 +52,7 @@ python -m compileall -q custom_components           # quick syntax check
 - Enum values may gain new members - never assume an exhaustive list; treat `UNKNOWN`/`UNSUPPORTED` as
   unknown.
 - There is **no vehicle list**, so VINs are entered by the user. There is **no lock/unlock, honk/flash,
-  wakeup (the button "Wake vehicle" is only a workaround: it re-sends the current charge mode, or stops an idle function if there is no charge mode, see `coordinator._wake_command`), window heating, battery care, reduced current**; do not re-add entities for them.
+  wakeup (the button "Wake vehicle" is only a workaround: it re-sends the current charge mode, or stops an idle function if there is no charge mode, see `coordinator._wake_command`), window heating, battery care**; do not re-add entities for them. The maximum charging current is only writable inside a charging profile (`updateChargingProfile`, see `SkodaProfileEntity`; `services.py` has the action `update_charging_profile`, registered in `async_setup`, and `services.yaml` plus the `services` strings must stay in sync).
 - Errors are RFC 9457 `application/problem+json`; the type suffix (e.g. `api-key-expired`) is kept in
   `SkodaApiError.problem`. 401 -> reauth, 429 -> backoff via `Retry-After`.
 

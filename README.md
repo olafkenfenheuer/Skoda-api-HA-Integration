@@ -18,14 +18,14 @@ an options flow, reauthentication support, and a diagnostics download.
 
 | Platform | Entities |
 |---|---|
-| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, doors locked, reliable lock status and parking state (as reported by the API, e.g. `YES`, `TRUNK_OPENED`, `PARKED`), name of the charging location profile currently active, API status (result of the last poll, diagnostic), last API poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), API rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic), current polling interval (minutes, normal or charging interval, attribute `mode`, diagnostic) |
+| `sensor` | Battery level, charging power, charge limit (read-only), charging rate, remaining charging time, battery/total range, fuel level, AdBlue range, mileage, target temperature, address of the parking position, doors locked, reliable lock status and parking state (as reported by the API, e.g. `YES`, `TRUNK_OPENED`, `PARKED`), name of the charging location profile currently active (with its id, target charge, next charging time and the list of all profiles as attributes), API status (result of the last poll, diagnostic), last API poll (date and time of the last successful poll, diagnostic), last vehicle data (when the vehicle itself last reported data to the Škoda servers, diagnostic), API rate limit until (when the request quota is available again after a rate limit, diagnostic), API requests remaining (left of the hourly quota according to the last response, with the attributes `limit` and `reset_at`, diagnostic), current polling interval (minutes, normal or charging interval, attribute `mode`, diagnostic) |
 | `binary_sensor` | Doors, windows, trunk, bonnet, lights, central locking, charging, charging cable plugged in, charging cable lock, vehicle at saved charging location, parked unsecured (see [Parking alert](#parking-alert)) |
 | `device_tracker` | Parking position (shows on the Map dashboard; unknown while driving) |
-| `climate` | Remote air conditioning (on/off, active ventilation if the vehicle supports it, target temperature) |
-| `switch` | Start/stop charging |
+| `climate` | Remote air conditioning (on/off, active ventilation if the vehicle supports it, target temperature), auxiliary heating (only for vehicles that have it, see [Auxiliary heating](#auxiliary-heating)) |
+| `switch` | Start/stop charging, unlock the plug after charging per charging profile (see [Charging profiles](#charging-profiles)) |
 | `button` | Poll API now (queries the MyŠkoda API for the vehicle immediately; costs one request of the API quota and is refused while the API is rate limited), Wake vehicle (see below) |
-| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle, parking alert grace period |
-| `select` | Charge mode (only if the vehicle reports its available charge modes) |
+| `number` | Charge limit (target state of charge), per-vehicle polling intervals (normal / while charging), automatic wake-up of a charging vehicle, parking alert grace period, auxiliary heating duration, target charge per charging profile |
+| `select` | Charge mode (only if the vehicle reports its available charge modes), charging current per charging profile |
 
 Sensors and controls are only created for the data and remote operations your specific vehicle
 reports, so the entity list adapts to your car (EV, PHEV, or combustion).
@@ -37,8 +37,8 @@ while keeping all sensors active.
 
 This integration uses only the public MyŠkoda API. The following are therefore not possible,
 because the public API has no endpoint for them: locking/unlocking, honk & flash, a real wake-up
-call (the button "Wake vehicle" is only a workaround, see below), window heating, battery care mode, reduced charging current, outside temperature and
-software version. The lock is a read-only `binary_sensor`.
+call (the button "Wake vehicle" is only a workaround, see below), window heating, battery care mode, outside temperature and software version. The maximum
+charging current can only be changed per charging profile (see below), not as a general setting. The lock is a read-only `binary_sensor`.
 
 ## Supported languages
 
@@ -88,8 +88,17 @@ want to try a pre-release), add it as a custom repository instead:
 
 ## Configuration
 
-1. In the MyŠkoda app, create an API key at <https://go.skoda.eu/api-keys> and select the
-   vehicle(s) it should be valid for. Keys are bound to those vehicles and expire.
+1. In the MyŠkoda app, create an API key: open **Profile → Smart home → Keys → Create key** and select the
+   vehicle(s) it should be valid for. On a phone with the app, <https://go.skoda.eu/api-keys> should open
+   this screen directly (on a computer, scan the QR code on the Škoda page). Keys are bound to those vehicles and
+   expire (the app shows the date next to each key), and you can have up to 5 of them. The same screen shows the
+   **VIN** of the vehicle with a copy button, which you need in step 3.
+
+   <p>
+     <img src="docs/images/myskoda-profile.png" alt="MyŠkoda app: Profile" width="240">
+     <img src="docs/images/myskoda-smart-home-keys.png" alt="MyŠkoda app: Smart home, Keys, Create key" width="240">
+   </p>
+   (Screenshots of app version 8.18, English; names and VIN are blacked out.)
 2. Go to **Settings → Devices & Services → Add Integration** and search for "Škoda API Connect".
 3. Enter the API key and the VIN of each vehicle (several VINs separated by commas). The API
    has no vehicle list endpoint, so the VINs have to be entered manually.
@@ -100,7 +109,12 @@ want to try a pre-release), add it as a custom repository instead:
    - the shorter polling interval used **while charging** (default 5),
    - whether that charging interval is **also used while the cable is plugged in** (default off),
    - read-only mode,
-   - the notify services that get the [parking alert](#parking-alert).
+   - the notify services that get the [parking alert](#parking-alert),
+   - whether the entities of a deleted [charging profile](#charging-profiles) are removed (only shown for vehicles
+     with charging profiles, default on),
+   - the **S-PIN** for the [auxiliary heating](#auxiliary-heating) (only shown if a vehicle has one).
+
+   While the climate or the auxiliary heating runs, the vehicle is also polled at the charging interval.
 
 You can replace the API key (or change the VINs) at any time - before it expires, or after creating a
 new one - via **Settings → Devices & Services → Škoda API Connect → ⋮ → Reconfigure**. The entry is reloaded
@@ -115,6 +129,110 @@ without losing entity history.
 The integration only uses the documented endpoints under
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` and authenticates with the
 `X-API-Key` header. Data is refreshed by polling.
+
+The API leaves out a part of the data when it cannot retrieve it right now (reported as
+`<PART>_UNAVAILABLE`, shown in the attributes of the API status sensor). For such a part the integration
+keeps the last known data, with its old timestamp, instead of dropping it: otherwise the entities of that part
+would be missing after a Home Assistant restart that happens at the wrong moment. Unsupported or disabled
+parts are not filled in.
+
+### Charging profiles
+
+A charging profile is a saved charging location of the MyŠkoda app. For vehicles that list the operation
+`updateChargingProfile` and report at least one profile, every profile gets three controls, named after
+the profile: **charging current** (`MAXIMUM` or `REDUCED`, the "current limit" of the app), **target charge**
+(50 to 100 %) and **unlock plug after charging**, plus the **minimum charge** (below it the vehicle charges at once) and,
+if the vehicle reports it, a switch to activate it. A vehicle applies a profile as a whole, so the integration fetches the
+profile again right before it sends it, with only the one setting changed; timers and preferred charging
+times stay as they are. A change costs two requests of the quota plus the follow-up refresh.
+
+Tested on an Enyaq (2026): the charging current, target charge, minimum charge, "unlock plug", preferred charging
+times and the timers (the app calls them "departure times") of a profile, switched on and off and with other
+times and days, all in one command; adding and deleting a profile. Not tested: one-off timers (`one_off_day`) and
+the switch for the minimum charge (the Enyaq does not report it). The preferred charging times apply to all
+departure times of the profile, as the app says.
+
+**When the profiles show up in Home Assistant**
+
+- A profile only appears once the **vehicle has reported it** to the Škoda servers. After you create one in
+  the app, the vehicle may need a moment, or a nudge: press **Wake vehicle**, then **Poll API now**. The
+  sensor **Charging location** (attribute `profiles`) lists what the API reports; as long as the list is
+  empty there is nothing to show. A vehicle without saved charging locations has no profiles and therefore none
+  of these entities.
+- The entities of a profile are created when the integration is set up, so the integration **reloads itself**
+  when the profiles of a vehicle change: a profile that was added, deleted or renamed (the names of the
+  entities are taken at setup). A change has to show in **two polls in a row** (a deletion in three), so an answer that is wrong
+  for a moment does not cause a reload; with the normal polling interval that takes 10 to 30 minutes. Only
+  vehicles that list `updateChargingProfile` are watched. You can also reload by hand (Settings > Devices &
+  services > Škoda API Connect > the three dots > Reload).
+
+**When a profile is deleted in the vehicle or the app**
+
+- Its entities become **unavailable** as soon as the vehicle no longer reports the profile. Nothing is sent
+  to the vehicle for a profile that is gone: the action `update_charging_profile` refuses it ("The vehicle does
+  not report this charging profile (any more)") before it writes anything.
+- A deletion has to show in **three polls in a row**. Then the integration removes the entities of the
+  deleted profile from Home Assistant and reloads itself. The removal is an option (**Configure** > **Remove the
+  entities of deleted charging profiles**, on by default, only shown for vehicles with charging profiles); with it
+  off the entities stay as unavailable entities, which you delete by hand, and the reload happens after two polls. This only happens while the vehicle still lists
+  `updateChargingProfile`, so a vehicle whose operations are missing for a moment does not lose its entities. If
+  you changed the name or the area of such an entity, that is gone with it.
+- If you create a new profile afterwards it may get the id of the deleted one; it then gets fresh entities
+  with the same ids.
+
+Timers and preferred charging times are not entities (a profile has up to 4 preferred charging times and 3
+timers). The sensor **Charging location** shows those of the profile the vehicle is at as attributes, and the
+action `skoda_api_connect.update_charging_profile` changes any of the settings, preferred charging times and
+timers of a profile: pick an entity of the profile as the target and name only what should change. A timer
+(the app calls them "departure times") or preferred charging time is named by its `number` in the profile (the
+first is 1), or by the `id` the API reports; those ids count across all profiles, so the second profile of a
+vehicle may start at 5. For example
+
+```yaml
+action: skoda_api_connect.update_charging_profile
+target:
+  entity_id: select.my_car_home_charging_current
+data:
+  max_charging_current: REDUCED
+  timers:
+    - number: 1
+      enabled: true
+      time: "07:30"
+      days: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+  preferred_charging_times:
+    - number: 1
+      enabled: true
+      start: "22:00"
+      end: "06:00"
+```
+
+### Auxiliary heating
+
+Vehicles with an auxiliary heating (the vehicle lists `startAuxiliaryHeating` and reports its state) get a
+`climate` entity **Auxiliary heating** (off, heat, fan only for ventilation), and a number **Auxiliary
+heating duration** (10 to 60 minutes, default 30). Vehicles without one get neither.
+
+The API only starts the heating with the **S-PIN** of your MyŠkoda account. Enter it under
+**Configure** (the field only appears if a vehicle has an auxiliary heating). It is stored in Home Assistant
+like the API key, redacted in the diagnostics and never logged. Without it, starting is refused before
+anything is sent. A wrong S-PIN can lock the S-PIN, so check it in the app first. The target temperature is
+sent with each start. Untested.
+
+### Blueprint: change a charging profile with safeguards
+
+[![Import the blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Folafkenfenheuer%2FSkoda-api-HA-Integration%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fskoda_api_connect%2Fupdate_charging_profile.yaml)
+
+The blueprint **Škoda charging profile - change settings with safeguards** calls the action above when your
+trigger fires and your conditions hold, for slow, rare changes: a time of day, a season, the house load. Pick
+the profile, the fields to change (every field left at "do not change" stays as it is), the sensor **API requests
+remaining** and a pause. It only sends if the API still has enough requests left (a change costs three of 20 per
+hour), a previous change is not still waiting for the vehicle, the profile is available and, if you pick the API
+status sensor, the API works. After a change it waits for the pause; triggers in the meantime are ignored.
+
+It is not made for following a surplus every minute: the vehicle needs 20 seconds to a few minutes to apply a
+change, and the quota is small. For that use the wallbox. Do not change the same profile in the MyŠkoda app at the
+same time. The blueprint is in `blueprints/automation/skoda_api_connect/` of this repository (the import only
+works once it is on the default branch).
 
 ### Immediate feedback after commands
 
@@ -231,6 +349,24 @@ integration:
 Parts of the vehicle the API cannot report (for example because the vehicle is asleep) are
 simply omitted from its response; the corresponding entities are created once the data is
 available, which can require reloading the integration.
+
+## Troubleshooting
+
+- **The link opens only the app's home screen.** Open **Profile → Smart home** in the app by hand (see the
+  screenshots above). Škoda does not document in which app versions or markets this screen exists; if you
+  have no "Smart home" entry, update the app and ask Škoda support.
+- **API status "partial" or entities show old values.** The API leaves out a part of the data when it cannot
+  retrieve it right now (`…_UNAVAILABLE`, listed in the attributes of the API status sensor). The integration then
+  keeps the last known data of that part with its old timestamp; the sensor **Last vehicle data** shows how old it
+  is. It usually passes by itself.
+- **The API quota is used up (20 requests per hour and vehicle).** The integration pauses polling until it is back
+  (API status "rate limited"). Everything that uses the same key counts, such as the Swagger page of Škoda or other
+  tools. Commands cost requests too; a change to a charging profile costs three.
+- **A change in the app and one from Home Assistant overwrite each other.** The vehicle takes a charging profile as
+  a whole, and the app saves without a button. Close the app while you change a profile from Home Assistant, and
+  check in the data that it arrived.
+- **A vehicle that reports rarely.** A parked or charging vehicle can stay silent for an hour. Use the button
+  **Wake vehicle** or the option to wake a charging vehicle automatically.
 
 ## Development
 

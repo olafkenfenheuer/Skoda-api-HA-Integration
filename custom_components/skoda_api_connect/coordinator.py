@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import logging
 import time
 from collections.abc import Awaitable, Callable
@@ -32,13 +33,16 @@ from .const import (
     AUTO_WAKE_MIN_REQUESTS_REMAINING,
     CONF_CHARGING_SCAN_INTERVAL,
     CONF_PLUGGED_IN_FAST_POLLING,
+    CONF_SPIN,
     CONF_VEHICLE_INTERVALS,
+    DEFAULT_AUX_DURATION_MINUTES,
     DEFAULT_ALERT_GRACE_MINUTES,
     DEFAULT_CHARGING_SCAN_INTERVAL_MINUTES,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DOMAIN,
     EXPECTED_STATE_MINUTES,
     KEY_ALERT_GRACE,
+    KEY_AUX_DURATION,
     KEY_AUTO_WAKE,
     KEY_PLUGGED_IN,
     MIN_AUTO_WAKE_MINUTES,
@@ -71,6 +75,23 @@ WAKE_STOP_COMMANDS: tuple[tuple[str, str, tuple[str, ...], str], ...] = (
 # airConditioning.state / activeVentilation.state values while the climate runs.
 CLIMATE_ACTIVE_STATES = ("COOLING", "HEATING", "HEATING_AUXILIARY", "VENTILATION")
 VENTILATION_ACTIVE_STATES = ("VENTILATION", "PREHEATING")
+# auxiliaryHeating.state values while the auxiliary heating runs.
+AUXILIARY_HEATING_ACTIVE_STATES = ("PREHEATING", "HEATING_AUXILIARY", "VENTILATION")
+
+# Parts of the vehicle data the API reports as ``<PART>_UNAVAILABLE`` (could not be retrieved
+# right now, as opposed to unsupported or disabled), by the section they are missing from.
+UNAVAILABLE_SECTIONS = {
+    "VEHICLE_STATUS_UNAVAILABLE": "status",
+    "FUEL_STATUS_UNAVAILABLE": "fuelStatus",
+    "ODOMETER_UNAVAILABLE": "odometer",
+    "PARKING_POSITION_UNAVAILABLE": "parkingPosition",
+    "AIR_CONDITIONING_UNAVAILABLE": "airConditioning",
+    "AUXILIARY_HEATING_UNAVAILABLE": "auxiliaryHeating",
+    "ACTIVE_VENTILATION_UNAVAILABLE": "activeVentilation",
+    "CHARGING_UNAVAILABLE": "charging",
+    "CHARGING_PROFILES_UNAVAILABLE": "chargingProfiles",
+    "OPERATIONS_UNAVAILABLE": "operations",
+}
 
 STATUS_OK = "ok"
 STATUS_PARTIAL = "partial"
@@ -230,6 +251,7 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         return (
             vehicle.get("airConditioning", "state") in CLIMATE_ACTIVE_STATES
             or vehicle.get("activeVentilation", "state") in VENTILATION_ACTIVE_STATES
+            or vehicle.get("auxiliaryHeating", "state") in AUXILIARY_HEATING_ACTIVE_STATES
         )
 
     def uses_charging_interval(self, vin: str) -> bool:
@@ -408,7 +430,7 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
                 if self.data and vin in self.data.vehicles:
                     vehicles[vin] = self.data.vehicles[vin]
                 continue
-            vehicles[vin] = result
+            vehicles[vin] = await self._async_keep_unavailable(vin, result)
             self._last_fetch[vin] = time.monotonic()
 
         if failures and len(failures) == len(fetched):
@@ -474,6 +496,34 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
             if vehicle.lists(operation) and vehicle.get(section, "state") in idle:
                 return partial(getattr(self.api, method), vin)
         return None
+
+    async def _async_keep_unavailable(self, vin: str, result: SkodaVehicle) -> SkodaVehicle:
+        """Fill sections the API could not retrieve right now with their last known data.
+
+        Without this a section that is missing from one response, for example right when
+        Home Assistant starts, would remove its entities (the climate, a sensor) for good,
+        because entities are only created for the data present at setup. The last known
+        data comes from the previous poll or, at startup, from the stored copy; its
+        carCapturedTimestamp stays the old one, so its age remains visible. Unsupported or
+        disabled parts are not filled in.
+        """
+        missing = {
+            section
+            for error in result.errors
+            if (section := UNAVAILABLE_SECTIONS.get(error)) and section not in result.data
+        }
+        if not missing:
+            return result
+        previous = self.data.vehicles.get(vin) if self.data else None
+        if previous is None:
+            cached = await self._async_load_cached()
+            previous = cached.vehicles.get(vin) if cached else None
+        if previous is None:
+            return result
+        kept = {section: previous.data[section] for section in missing if section in previous.data}
+        if not kept:
+            return result
+        return SkodaVehicle(vin=vin, data={**result.data, **kept}, errors=result.errors)
 
     def _should_auto_wake(self, vin: str) -> bool:
         """Return whether a charging vehicle has been silent long enough to be woken."""
@@ -552,6 +602,67 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         self._cancel_refresh = async_call_later(
             self.hass, POST_COMMAND_REFRESH_DELAY, self._async_delayed_refresh
         )
+
+    def spin(self) -> str:
+        """Return the S-PIN for the auxiliary heating, or raise if it is not set."""
+        spin = self.config_entry.options.get(CONF_SPIN)
+        if not spin:
+            raise HomeAssistantError(
+                "Set the S-PIN in the integration options to start the auxiliary heating"
+            )
+        return str(spin)
+
+    def aux_duration_minutes(self, vin: str) -> int:
+        """Return how long the auxiliary heating runs after it was started, in minutes."""
+        overrides = self.config_entry.options.get(CONF_VEHICLE_INTERVALS, {})
+        return int(overrides.get(vin, {}).get(KEY_AUX_DURATION, DEFAULT_AUX_DURATION_MINUTES))
+
+    async def async_set_profile_setting(
+        self, vin: str, profile_id: int, key: str, path: tuple[str, ...], value: Any
+    ) -> None:
+        """Change one setting of a charging profile (``path`` leads into its ``settings``)."""
+
+        def mutate(body: dict[str, Any]) -> None:
+            node = body.setdefault("settings", {})
+            for name in path[:-1]:
+                node = node.setdefault(name, {})
+            node[path[-1]] = value
+
+        await self.async_update_profile(
+            vin,
+            profile_id,
+            mutate,
+            Expectation(f"profile_{profile_id}_{key}", value, "chargingProfiles"),
+        )
+
+    async def async_update_profile(
+        self,
+        vin: str,
+        profile_id: int,
+        mutate: Callable[[dict[str, Any]], None],
+        expect: Expectation | None = None,
+    ) -> None:
+        """Change a charging profile with ``mutate``, which edits a fresh copy of it.
+
+        The vehicle applies a profile as a whole, so the profile is fetched again right
+        before it is sent: a copy cached from an earlier poll could undo a change made in
+        the app meanwhile (timers, preferred charging times). Costs two requests plus the
+        follow-up refresh.
+        """
+        await self.async_command(
+            vin, self._update_profile(vin, profile_id, mutate), expect
+        )
+
+    async def _update_profile(
+        self, vin: str, profile_id: int, mutate: Callable[[dict[str, Any]], None]
+    ) -> None:
+        fresh = await self.api.get_vehicle(vin, include=["chargingProfiles"])
+        profile = fresh.charging_profile(profile_id)
+        if profile is None:
+            raise HomeAssistantError("The vehicle does not report this charging profile (any more)")
+        body = copy.deepcopy(profile)
+        mutate(body)
+        await self.api.update_charging_profile(vin, profile_id, body)
 
     async def async_refresh_vehicle(self, vin: str) -> None:
         """Poll one vehicle now, regardless of its polling interval.

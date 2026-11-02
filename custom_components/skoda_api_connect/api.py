@@ -186,6 +186,27 @@ class SkodaVehicle:
             return True
         return any(op.get("name") == operation for op in operations)
 
+    def has_auxiliary_heating(self) -> bool:
+        """Return whether the vehicle has an auxiliary heating that can be started.
+
+        It must list the operation (not guessed at) and report the function: a state of
+        UNSUPPORTED means the vehicle does not have it.
+        """
+        return self.lists("startAuxiliaryHeating") and self.get(
+            "auxiliaryHeating", "state"
+        ) not in (None, "UNSUPPORTED")
+
+    def charging_profiles(self) -> list[dict[str, Any]]:
+        """Return the charging profiles (saved charging locations) the vehicle reports."""
+        profiles = self.get("chargingProfiles", "profiles")
+        if not isinstance(profiles, list):
+            return []
+        return [p for p in profiles if isinstance(p, dict) and p.get("id") is not None]
+
+    def charging_profile(self, profile_id: int) -> dict[str, Any] | None:
+        """Return one charging profile by its id, or None if the vehicle does not report it."""
+        return next((p for p in self.charging_profiles() if p.get("id") == profile_id), None)
+
     def lists(self, operation: str) -> bool:
         """Return whether the vehicle explicitly lists the given remote operation.
 
@@ -318,6 +339,31 @@ class SkodaApi:
     async def stop_air_conditioning(self, vin: str) -> None:
         """Stop air conditioning."""
         await self._command("POST", vin, "air-conditioning/stop")
+
+    async def start_auxiliary_heating(
+        self,
+        vin: str,
+        spin: str,
+        *,
+        mode: str,
+        duration_seconds: int,
+        temperature: float | None = None,
+    ) -> None:
+        """Start the auxiliary heating (``mode`` is HEATING or VENTILATION); needs the S-PIN."""
+        body: dict[str, Any] = {
+            "spin": spin,
+            "startMode": mode,
+            "durationInSeconds": duration_seconds,
+        }
+        if temperature is not None:
+            body["targetTemperature"] = {"value": temperature, "unit": "CELSIUS"}
+        await self._command("POST", vin, "auxiliary-heating/start", body)
+
+    async def update_charging_profile(
+        self, vin: str, profile_id: int, profile: dict[str, Any]
+    ) -> None:
+        """Replace a charging profile; the vehicle applies the submitted profile as a whole."""
+        await self._command("PUT", vin, f"charging-profiles/{profile_id}", profile)
 
     async def stop_auxiliary_heating(self, vin: str) -> None:
         """Stop the auxiliary heating."""

@@ -48,10 +48,14 @@
           "charging_scan_interval": "Abfrageintervall beim Laden (Minuten)",
           "plugged_in_fast_polling": "Ladeintervall auch bei eingestecktem Ladekabel verwenden",
           "read_only": "Nur-Lese-Modus (alle Fernsteuerungen deaktivieren)",
-          "notify_targets": "Empfänger des Parkalarms"
+          "notify_targets": "Empfänger des Parkalarms",
+          "spin": "S-PIN (für die Standheizung)",
+          "remove_deleted_profiles": "Entitäten gelöschter Ladeprofile entfernen"
         },
         "data_description": {
-          "notify_targets": "Benachrichtigungsdienste, die einen kritischen Alarm erhalten, wenn ein Fahrzeug geparkt, aber nicht verriegelt und geschlossen ist, z. B. notify.mobile_app_mein_telefon. Leer lassen für keine Alarme. Die Verzögerung wird pro Fahrzeug mit dem Regler „Parkalarm-Wartezeit“ eingestellt."
+          "notify_targets": "Benachrichtigungsdienste, die einen kritischen Alarm erhalten, wenn ein Fahrzeug geparkt, aber nicht verriegelt und geschlossen ist, z. B. notify.mobile_app_mein_telefon. Leer lassen für keine Alarme. Die Verzögerung wird pro Fahrzeug mit dem Regler „Parkalarm-Wartezeit“ eingestellt.",
+          "spin": "Die Sicherheits-PIN deines MyŠkoda-Kontos. Nur nötig, um die Standheizung zu starten. Sie wird wie der API-Schlüssel in Home Assistant gespeichert. Leer lassen, wenn du sie nicht nutzt.",
+          "remove_deleted_profiles": "Wurde ein Ladeprofil im Fahrzeug gelöscht (in drei Abrufen hintereinander gesehen), werden seine Entitäten aus Home Assistant entfernt, samt eigenen Namen und Bereichen. Ohne diese Option bleiben sie als nicht verfügbare Entitäten, die du von Hand löschst."
         }
       }
     },
@@ -192,6 +196,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Klimaanlage"
+      },
+      "auxiliary_heating": {
+        "name": "Standheizung"
       }
     },
     "switch": {
@@ -200,6 +207,12 @@
       },
       "poll_when_plugged_in": {
         "name": "Wenn eingesteckt schnell abfragen"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: Stecker nach dem Laden entriegeln"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimale Ladegrenze aktiv"
       }
     },
     "number": {
@@ -217,11 +230,59 @@
       },
       "parking_alert_grace": {
         "name": "Parkalarm-Wartezeit"
+      },
+      "aux_duration": {
+        "name": "Standheizung: Laufzeit"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: Ladeziel"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimale Ladegrenze"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Lademodus"
+      },
+      "profile_max_current": {
+        "name": "{profile}: Ladestrom"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Ladeprofil ändern",
+      "description": "Ändert Einstellungen, bevorzugte Ladezeiten und Timer eines Ladeprofils (eines gespeicherten Ladestandorts). Nur die angegebenen Felder werden geändert, der Rest des Profils bleibt. Kostet zwei Anfragen des API-Kontingents.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Ladestrom",
+          "description": "MAXIMUM, oder REDUCED, um den Strom zu begrenzen (vermeidet das Auslösen des Leistungsschalters)."
+        },
+        "target_charge": {
+          "name": "Ladeziel",
+          "description": "Ziel-Ladezustand in Prozent."
+        },
+        "auto_unlock_plug": {
+          "name": "Stecker nach dem Laden entriegeln",
+          "description": "Den Stecker entriegeln, wenn das Laden beendet ist."
+        },
+        "min_charge": {
+          "name": "Minimale Ladegrenze",
+          "description": "Unter diesem Ladezustand lädt das Fahrzeug sofort."
+        },
+        "min_charge_enabled": {
+          "name": "Minimale Ladegrenze aktiv",
+          "description": "Nur für Fahrzeuge, die es melden."
+        },
+        "preferred_charging_times": {
+          "name": "Bevorzugte Ladezeiten",
+          "description": "Liste von Änderungen: number (1 bis 4), enabled, start und end als HH:MM. Oder statt number die ID, die die API meldet (sie zählt über alle Profile hinweg)."
+        },
+        "timers": {
+          "name": "Timer (Abfahrtszeiten)",
+          "description": "Liste von Änderungen: number (1 bis 3), enabled, time als HH:MM sowie days (MONDAY bis SUNDAY) für einen wiederkehrenden oder one_off_day für einen einmaligen Timer. Oder statt number die ID, die die API meldet (sie zählt über alle Profile hinweg)."
+        }
       }
     }
   }

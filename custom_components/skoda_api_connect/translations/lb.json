@@ -48,10 +48,14 @@
           "charging_scan_interval": "Ofrointervall beim Oplueden (Minutten)",
           "plugged_in_fast_polling": "Kuerzen Opluedintervall och benotzen, wann de Ladekabel ugeschloss ass",
           "read_only": "Nëmme-Lies-Modus (all Fernsteierung deaktivéieren)",
-          "notify_targets": "Empfänger vum Parkalarm"
+          "notify_targets": "Empfänger vum Parkalarm",
+          "spin": "S-PIN (fir d'Standheizung)",
+          "remove_deleted_profiles": "Entitéite vu geläschte Luedprofiler ewechhuelen"
         },
         "data_description": {
-          "notify_targets": "Notify-Servicer, déi e kriteschen Alarm kréien, wann e Gefier geparkt ass, mee net gespaart an zou, z. B. notify.mobile_app_mäin_telefon. Eidel loossen fir keng Alarmer. D'Verzögerung gëtt pro Gefier mam Regler „Waardezäit vum Parkalarm“ agestallt."
+          "notify_targets": "Notify-Servicer, déi e kriteschen Alarm kréien, wann e Gefier geparkt ass, mee net gespaart an zou, z. B. notify.mobile_app_mäin_telefon. Eidel loossen fir keng Alarmer. D'Verzögerung gëtt pro Gefier mam Regler „Waardezäit vum Parkalarm“ agestallt.",
+          "spin": "D'Sécherheets-PIN vun denger MyŠkoda-Kont. Nëmmen néideg fir d'Standheizung ze starten. Si gëtt wéi den API-Schlëssel an Home Assistant gespäichert. Loss et eidel, wann s du se net notzt.",
+          "remove_deleted_profiles": "Wann e Luedprofil am Gefier geläscht gouf (an dräi Ufroe hannereneen gesinn), ginn seng Entitéite aus Home Assistant ewechgeholl, mat hiren eegenen Nimm a Beräicher. Ouni dës Optioun bleiwen se als net verfügbar Entitéiten, déi s du vun Hand läschs."
         }
       }
     },
@@ -192,6 +196,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Klimaanlag"
+      },
+      "auxiliary_heating": {
+        "name": "Standheizung"
       }
     },
     "switch": {
@@ -200,6 +207,12 @@
       },
       "poll_when_plugged_in": {
         "name": "Bei ugeschlossener Ladekabelverbindung méi dacks ofruffen"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: Stecker nom Lueden entriegelen"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: Mindestluedstand aktiv"
       }
     },
     "number": {
@@ -217,11 +230,59 @@
       },
       "parking_alert_grace": {
         "name": "Waardezäit vum Parkalarm"
+      },
+      "aux_duration": {
+        "name": "Standheizung: Dauer"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: Luedziel"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: Mindestluedstand"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Opluedmodus"
+      },
+      "profile_max_current": {
+        "name": "{profile}: Luedstroum"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Luedprofil änneren",
+      "description": "Ännert Astellungen, bevorzugt Luedzäiten an Timer vun engem Luedprofil (engem gespäicherten Luedstanduert). Nëmmen déi uginn Felder ginn geännert, de Rescht vum Profil bleift. Kascht zwou Ufroe vum API-Kontingent.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Luedstroum",
+          "description": "MAXIMUM, oder REDUCED fir de Stroum ze begrenzen (verhënnert d'Ausléise vum Leeschtungsschalter)."
+        },
+        "target_charge": {
+          "name": "Luedziel",
+          "description": "Zil-Luedzoustand a Prozent."
+        },
+        "auto_unlock_plug": {
+          "name": "Stecker nom Lueden entriegelen",
+          "description": "Den Stecker entriegelen, wann d'Lueden fäerdeg ass."
+        },
+        "min_charge": {
+          "name": "Mindestluedstand",
+          "description": "Ënnert dësem Luedzoustand lued d'Gefier direkt."
+        },
+        "min_charge_enabled": {
+          "name": "Mindestluedstand aktiv",
+          "description": "Nëmme fir Gefierer, déi et mellen."
+        },
+        "preferred_charging_times": {
+          "name": "Bevorzugt Luedzäiten",
+          "description": "Lëscht vun Ännerungen: number (1 bis 4), enabled, start an end als HH:MM. Oder amplaz number d'ID, déi d'API mellt (se zielt iwwer all Profiler)."
+        },
+        "timers": {
+          "name": "Timer",
+          "description": "Lëscht vun Ännerungen: number (1 bis 3), enabled, time als HH:MM, an days (MONDAY bis SUNDAY) fir e widderhuelenden oder one_off_day fir een eemolegen Timer. Oder amplaz number d'ID, déi d'API mellt (se zielt iwwer all Profiler)."
+        }
       }
     }
   }

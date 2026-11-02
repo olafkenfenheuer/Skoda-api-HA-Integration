@@ -60,4 +60,16 @@ POST_COMMAND_REFRESH_DELAY: Final = 30
 EXPECTED_STATE_MINUTES: Final = 5
 EXPECTED_CLIMATE_MINUTES: Final = 3
 
+# Remove the entities of a charging profile that was deleted in the vehicle (default on).
+CONF_REMOVE_DELETED_PROFILES: Final = "remove_deleted_profiles"
+
+# S-PIN of the MyŠkoda account: the API needs it to start the auxiliary heating. Stored in the
+# entry options (like the API key it is a secret) and never logged.
+CONF_SPIN: Final = "spin"
+# Key of the per-vehicle running time of the auxiliary heating (minutes) inside CONF_VEHICLE_INTERVALS[vin].
+KEY_AUX_DURATION: Final = "aux_duration"
+DEFAULT_AUX_DURATION_MINUTES: Final = 30
+MIN_AUX_DURATION_MINUTES: Final = 10
+MAX_AUX_DURATION_MINUTES: Final = 60
+
 MANUFACTURER: Final = "Škoda"

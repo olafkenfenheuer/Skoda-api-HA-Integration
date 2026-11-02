@@ -48,10 +48,14 @@
           "charging_scan_interval": "Intervalle d'interrogation pendant la charge (minutes)",
           "plugged_in_fast_polling": "Utiliser l'intervalle de charge dès que le câble est branché",
           "read_only": "Mode lecture seule (désactive toutes les commandes à distance)",
-          "notify_targets": "Destinataires de l'alerte de stationnement"
+          "notify_targets": "Destinataires de l'alerte de stationnement",
+          "spin": "S-PIN (pour le chauffage auxiliaire)",
+          "remove_deleted_profiles": "Supprimer les entités des profils de charge supprimés"
         },
         "data_description": {
-          "notify_targets": "Services de notification qui reçoivent une alerte critique lorsqu'un véhicule est garé mais n'est pas verrouillé et fermé, p. ex. notify.mobile_app_mon_telephone. Laisser vide pour ne recevoir aucune alerte. Le délai se règle par véhicule avec le curseur « Délai de l'alerte de stationnement »."
+          "notify_targets": "Services de notification qui reçoivent une alerte critique lorsqu'un véhicule est garé mais n'est pas verrouillé et fermé, p. ex. notify.mobile_app_mon_telephone. Laisser vide pour ne recevoir aucune alerte. Le délai se règle par véhicule avec le curseur « Délai de l'alerte de stationnement ».",
+          "spin": "Le code PIN de sécurité de votre compte MyŠkoda. Nécessaire uniquement pour démarrer le chauffage auxiliaire. Il est stocké dans Home Assistant comme la clé d'API. Laissez vide si vous ne l'utilisez pas.",
+          "remove_deleted_profiles": "Quand un profil de charge a été supprimé dans le véhicule (constaté lors de trois interrogations de suite), ses entités sont supprimées de Home Assistant, avec leurs noms et zones personnalisés. Sans cette option, elles restent comme entités indisponibles que vous supprimez à la main."
         }
       }
     },
@@ -192,6 +196,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Climatisation"
+      },
+      "auxiliary_heating": {
+        "name": "Chauffage auxiliaire"
       }
     },
     "switch": {
@@ -200,6 +207,12 @@
       },
       "poll_when_plugged_in": {
         "name": "Interrogation rapide quand branché"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile} : déverrouiller la prise après la charge"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile} : charge minimale active"
       }
     },
     "number": {
@@ -217,11 +230,59 @@
       },
       "parking_alert_grace": {
         "name": "Délai de l'alerte de stationnement"
+      },
+      "aux_duration": {
+        "name": "Chauffage auxiliaire : durée"
+      },
+      "profile_target_soc": {
+        "name": "{profile} : objectif de charge"
+      },
+      "profile_min_charge": {
+        "name": "{profile} : charge minimale"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Mode de charge"
+      },
+      "profile_max_current": {
+        "name": "{profile} : courant de charge"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Modifier le profil de charge",
+      "description": "Modifie les réglages, les heures de charge préférées et les minuteries d'un profil de charge (un lieu de charge enregistré). Seuls les champs indiqués sont modifiés, le reste du profil reste tel quel. Coûte deux requêtes du quota de l'API.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Courant de charge",
+          "description": "MAXIMUM, ou REDUCED pour limiter le courant (évite le déclenchement du disjoncteur)."
+        },
+        "target_charge": {
+          "name": "Objectif de charge",
+          "description": "Niveau de charge cible en pourcentage."
+        },
+        "auto_unlock_plug": {
+          "name": "Déverrouiller la prise après la charge",
+          "description": "Déverrouille la prise quand la charge est terminée."
+        },
+        "min_charge": {
+          "name": "Charge minimale",
+          "description": "Sous ce niveau de charge, le véhicule charge immédiatement."
+        },
+        "min_charge_enabled": {
+          "name": "Charge minimale active",
+          "description": "Uniquement pour les véhicules qui le signalent."
+        },
+        "preferred_charging_times": {
+          "name": "Heures de charge préférées",
+          "description": "Liste de modifications : number (1 à 4), enabled, start et end au format HH:MM. Ou indiquez à la place de number l'id que l'API signale (il compte sur tous les profils)."
+        },
+        "timers": {
+          "name": "Minuteries",
+          "description": "Liste de modifications : number (1 à 3), enabled, time au format HH:MM, et days (MONDAY à SUNDAY) pour une minuterie récurrente ou one_off_day pour une minuterie unique. Ou indiquez à la place de number l'id que l'API signale (il compte sur tous les profils)."
+        }
       }
     }
   }

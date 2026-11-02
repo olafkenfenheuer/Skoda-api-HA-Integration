@@ -1,0 +1,39 @@
+update_charging_profile:
+  target:
+    entity:
+      integration: skoda_api_connect
+  fields:
+    max_charging_current:
+      selector:
+        select:
+          options:
+            - MAXIMUM
+            - REDUCED
+    target_charge:
+      selector:
+        number:
+          min: 50
+          max: 100
+          step: 10
+          unit_of_measurement: "%"
+    auto_unlock_plug:
+      selector:
+        boolean:
+    min_charge:
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 10
+          unit_of_measurement: "%"
+    min_charge_enabled:
+      selector:
+        boolean:
+    preferred_charging_times:
+      example: '[{"number": 1, "enabled": true, "start": "22:00", "end": "06:00"}]'
+      selector:
+        object:
+    timers:
+      example: '[{"number": 1, "enabled": true, "time": "07:00", "days": ["MONDAY", "TUESDAY"]}]'
+      selector:
+        object:

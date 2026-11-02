@@ -37,6 +37,7 @@ class SkodaSensorEntityDescription(SensorEntityDescription):
 
     value_fn: Callable[[Vehicle], StateType]
     exists_fn: Callable[[Vehicle], bool] = lambda vehicle: True
+    attrs_fn: Callable[[Vehicle], dict[str, Any]] | None = None
 
 
 def _battery_percent(vehicle: Vehicle) -> StateType:
@@ -78,6 +79,47 @@ def _charging_location_profile(vehicle: Vehicle) -> StateType:
     if not vehicle.get("charging", "isVehicleInSavedLocation"):
         return None
     return vehicle.get("chargingProfiles", "currentVehiclePositionProfile", "name")
+
+
+def _charging_location_attributes(vehicle: Vehicle) -> dict[str, Any]:
+    """Return the details of the current charging profile, and which profiles exist."""
+    attributes: dict[str, Any] = {
+        "profiles": [
+            {"id": profile["id"], "name": profile.get("name")}
+            for profile in vehicle.charging_profiles()
+        ]
+    }
+    if _charging_location_profile(vehicle) is None:
+        return attributes
+    current = vehicle.get("chargingProfiles", "currentVehiclePositionProfile") or {}
+    for key, name in (
+        ("id", "profile_id"),
+        ("targetStateOfChargeInPercent", "target_state_of_charge"),
+        ("nextChargingTime", "next_charging_time"),
+    ):
+        if current.get(key) is not None:
+            attributes[name] = current[key]
+    if profile := vehicle.charging_profile(current.get("id")):
+        attributes["preferred_charging_times"] = [
+            {
+                "id": slot.get("id"),
+                "enabled": slot.get("enabled"),
+                "start": slot.get("startTime"),
+                "end": slot.get("endTime"),
+            }
+            for slot in profile.get("preferredChargingTimes") or []
+        ]
+        attributes["timers"] = [
+            {
+                "id": timer.get("id"),
+                "enabled": timer.get("enabled"),
+                "type": timer.get("type"),
+                "time": timer.get("time"),
+                "days": timer.get("recurringOn") or timer.get("oneOffDay"),
+            }
+            for timer in profile.get("timers") or []
+        ]
+    return attributes
 
 
 SENSOR_DESCRIPTIONS: tuple[SkodaSensorEntityDescription, ...] = (
@@ -208,6 +250,7 @@ SENSOR_DESCRIPTIONS: tuple[SkodaSensorEntityDescription, ...] = (
         icon="mdi:map-marker-radius",
         value_fn=_charging_location_profile,
         exists_fn=_exists("chargingProfiles"),
+        attrs_fn=_charging_location_attributes,
     ),
 )
 
@@ -254,6 +297,17 @@ class SkodaSensor(SkodaVehicleEntity, SensorEntity):
         """Return the current value, tolerating missing upstream data."""
         try:
             return self.entity_description.value_fn(self.vehicle)
+        except (KeyError, TypeError):
+            return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return the extra attributes of the description, if any."""
+        attrs_fn = self.entity_description.attrs_fn
+        if attrs_fn is None:
+            return super().extra_state_attributes
+        try:
+            return attrs_fn(self.vehicle)
         except (KeyError, TypeError):
             return None
 

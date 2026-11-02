@@ -48,10 +48,14 @@
           "charging_scan_interval": "Pollinginterval tijdens laden (minuten)",
           "plugged_in_fast_polling": "Laadinterval ook gebruiken zolang de laadkabel is aangesloten",
           "read_only": "Alleen-lezen modus (alle bedieningsfuncties uitschakelen)",
-          "notify_targets": "Ontvangers van het parkeeralarm"
+          "notify_targets": "Ontvangers van het parkeeralarm",
+          "spin": "S-PIN (voor de standkachel)",
+          "remove_deleted_profiles": "Entiteiten van verwijderde laadprofielen verwijderen"
         },
         "data_description": {
-          "notify_targets": "Notify-services die een kritieke melding krijgen als een voertuig geparkeerd staat maar niet vergrendeld en gesloten is, bijv. notify.mobile_app_mijn_telefoon. Leeg laten voor geen meldingen. De vertraging stel je per voertuig in met de schuifregelaar \"Wachttijd parkeeralarm\"."
+          "notify_targets": "Notify-services die een kritieke melding krijgen als een voertuig geparkeerd staat maar niet vergrendeld en gesloten is, bijv. notify.mobile_app_mijn_telefoon. Leeg laten voor geen meldingen. De vertraging stel je per voertuig in met de schuifregelaar \"Wachttijd parkeeralarm\".",
+          "spin": "De beveiligingspincode van je MyŠkoda-account. Alleen nodig om de standkachel te starten. Hij wordt net als de API-sleutel in Home Assistant opgeslagen. Laat leeg als je hem niet gebruikt.",
+          "remove_deleted_profiles": "Als een laadprofiel in het voertuig is verwijderd (in drie polls achter elkaar gezien), worden de entiteiten ervan uit Home Assistant verwijderd, inclusief eigen namen en gebieden. Zonder deze optie blijven ze staan als niet-beschikbare entiteiten die je handmatig verwijdert."
         }
       }
     },
@@ -192,6 +196,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Airconditioning"
+      },
+      "auxiliary_heating": {
+        "name": "Standkachel"
       }
     },
     "switch": {
@@ -200,6 +207,12 @@
       },
       "poll_when_plugged_in": {
         "name": "Snel pollen als kabel is aangesloten"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: stekker na het laden ontgrendelen"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimale laadgrens actief"
       }
     },
     "number": {
@@ -217,11 +230,59 @@
       },
       "parking_alert_grace": {
         "name": "Wachttijd parkeeralarm"
+      },
+      "aux_duration": {
+        "name": "Standkachel: looptijd"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: laaddoel"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimale laadgrens"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Laadmodus"
+      },
+      "profile_max_current": {
+        "name": "{profile}: laadstroom"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Laadprofiel wijzigen",
+      "description": "Wijzigt instellingen, voorkeurslaadtijden en timers van een laadprofiel (een opgeslagen laadlocatie). Alleen de opgegeven velden worden gewijzigd, de rest van het profiel blijft. Kost twee verzoeken van het API-quotum.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Laadstroom",
+          "description": "MAXIMUM, of REDUCED om de stroom te beperken (voorkomt het uitvallen van de automaat)."
+        },
+        "target_charge": {
+          "name": "Laaddoel",
+          "description": "Doel-laadniveau in procent."
+        },
+        "auto_unlock_plug": {
+          "name": "Stekker na het laden ontgrendelen",
+          "description": "De stekker ontgrendelen als het laden klaar is."
+        },
+        "min_charge": {
+          "name": "Minimale laadgrens",
+          "description": "Onder dit laadniveau laadt het voertuig meteen."
+        },
+        "min_charge_enabled": {
+          "name": "Minimale laadgrens actief",
+          "description": "Alleen voor voertuigen die het melden."
+        },
+        "preferred_charging_times": {
+          "name": "Voorkeurslaadtijden",
+          "description": "Lijst van wijzigingen: number (1 tot 4), enabled, start en end als HH:MM. Of geef in plaats van number het id dat de API meldt (het telt over alle profielen heen)."
+        },
+        "timers": {
+          "name": "Timers",
+          "description": "Lijst van wijzigingen: number (1 tot 3), enabled, time als HH:MM, en days (MONDAY tot SUNDAY) voor een terugkerende of one_off_day voor een eenmalige timer. Of geef in plaats van number het id dat de API meldt (het telt over alle profielen heen)."
+        }
       }
     }
   }

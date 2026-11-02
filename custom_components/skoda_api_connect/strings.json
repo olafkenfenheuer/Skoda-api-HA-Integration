@@ -48,10 +48,14 @@
           "charging_scan_interval": "Polling interval while charging (minutes)",
           "plugged_in_fast_polling": "Use the charging interval while the cable is plugged in",
           "read_only": "Read-only mode (disable all remote controls)",
-          "notify_targets": "Parking alert notification targets"
+          "notify_targets": "Parking alert notification targets",
+          "spin": "S-PIN (for the auxiliary heating)",
+          "remove_deleted_profiles": "Remove the entities of deleted charging profiles"
         },
         "data_description": {
-          "notify_targets": "Notify services that get a critical alert when a vehicle is parked but not locked and closed, e.g. notify.mobile_app_my_phone. Leave empty for no alerts. The delay is set per vehicle with the \"Parking alert grace period\" slider."
+          "notify_targets": "Notify services that get a critical alert when a vehicle is parked but not locked and closed, e.g. notify.mobile_app_my_phone. Leave empty for no alerts. The delay is set per vehicle with the \"Parking alert grace period\" slider.",
+          "spin": "The security PIN of your MyŠkoda account. Only needed to start the auxiliary heating. It is stored in Home Assistant like the API key. Leave empty if you do not use it.",
+          "remove_deleted_profiles": "When a charging profile was deleted in the vehicle (seen in three polls in a row), its entities are removed from Home Assistant, including their own names and areas. Without it they stay as unavailable entities that you delete by hand."
         }
       }
     },
@@ -192,6 +196,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Air conditioning"
+      },
+      "auxiliary_heating": {
+        "name": "Auxiliary heating"
       }
     },
     "switch": {
@@ -200,6 +207,12 @@
       },
       "poll_when_plugged_in": {
         "name": "Fast polling while plugged in"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: unlock plug after charging"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimum charge active"
       }
     },
     "number": {
@@ -217,11 +230,59 @@
       },
       "parking_alert_grace": {
         "name": "Parking alert grace period"
+      },
+      "aux_duration": {
+        "name": "Auxiliary heating duration"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: target charge"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimum charge"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Charge mode"
+      },
+      "profile_max_current": {
+        "name": "{profile}: charging current"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Update charging profile",
+      "description": "Changes settings, preferred charging times and timers of a charging profile (a saved charging location). Only the fields you give are changed, the rest of the profile stays as it is. Costs two requests of the API quota.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Charging current",
+          "description": "MAXIMUM, or REDUCED to limit the current (avoids tripping the circuit breaker)."
+        },
+        "target_charge": {
+          "name": "Target charge",
+          "description": "Target state of charge in percent."
+        },
+        "auto_unlock_plug": {
+          "name": "Unlock plug after charging",
+          "description": "Unlock the plug when charging has finished."
+        },
+        "min_charge": {
+          "name": "Minimum charge",
+          "description": "Below this state of charge the vehicle charges at once."
+        },
+        "min_charge_enabled": {
+          "name": "Minimum charge active",
+          "description": "Only for vehicles that report it."
+        },
+        "preferred_charging_times": {
+          "name": "Preferred charging times",
+          "description": "List of changes: number (1 to 4), enabled, start and end as HH:MM. Or give the id the API reports (it counts across all profiles) instead of number."
+        },
+        "timers": {
+          "name": "Timers",
+          "description": "List of changes: number (1 to 3), enabled, time as HH:MM, and days (MONDAY to SUNDAY) for a recurring timer or one_off_day for a one-off timer. Or give the id the API reports (it counts across all profiles) instead of number."
+        }
       }
     }
   }

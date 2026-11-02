@@ -48,10 +48,14 @@
           "charging_scan_interval": "Intervalo de consulta durante la carga (minutos)",
           "plugged_in_fast_polling": "Usar también el intervalo de carga cuando el cable esté conectado",
           "read_only": "Modo de solo lectura (desactivar todos los controles remotos)",
-          "notify_targets": "Destinatarios de la alerta de aparcamiento"
+          "notify_targets": "Destinatarios de la alerta de aparcamiento",
+          "spin": "S-PIN (para la calefacción auxiliar)",
+          "remove_deleted_profiles": "Eliminar las entidades de los perfiles de carga borrados"
         },
         "data_description": {
-          "notify_targets": "Servicios de notificación que reciben una alerta crítica cuando un vehículo está aparcado pero no está bloqueado y cerrado, p. ej. notify.mobile_app_mi_telefono. Déjalo vacío para no recibir alertas. El retraso se ajusta por vehículo con el control deslizante «Tiempo de espera de la alerta de aparcamiento»."
+          "notify_targets": "Servicios de notificación que reciben una alerta crítica cuando un vehículo está aparcado pero no está bloqueado y cerrado, p. ej. notify.mobile_app_mi_telefono. Déjalo vacío para no recibir alertas. El retraso se ajusta por vehículo con el control deslizante «Tiempo de espera de la alerta de aparcamiento».",
+          "spin": "El PIN de seguridad de tu cuenta MyŠkoda. Solo es necesario para arrancar la calefacción auxiliar. Se guarda en Home Assistant igual que la clave de API. Déjalo vacío si no la usas.",
+          "remove_deleted_profiles": "Cuando se borra un perfil de carga en el vehículo (visto en tres consultas seguidas), sus entidades se eliminan de Home Assistant, con sus nombres y áreas propios. Sin esta opción quedan como entidades no disponibles que borras a mano."
         }
       }
     },
@@ -192,6 +196,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Aire acondicionado"
+      },
+      "auxiliary_heating": {
+        "name": "Calefacción auxiliar"
       }
     },
     "switch": {
@@ -200,6 +207,12 @@
       },
       "poll_when_plugged_in": {
         "name": "Consultar con más frecuencia cuando esté conectado"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: desbloquear el enchufe tras la carga"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: carga mínima activa"
       }
     },
     "number": {
@@ -217,11 +230,59 @@
       },
       "parking_alert_grace": {
         "name": "Tiempo de espera de la alerta de aparcamiento"
+      },
+      "aux_duration": {
+        "name": "Calefacción auxiliar: duración"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: carga objetivo"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: carga mínima"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Modo de carga"
+      },
+      "profile_max_current": {
+        "name": "{profile}: corriente de carga"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Modificar el perfil de carga",
+      "description": "Cambia los ajustes, los horarios de carga preferidos y los temporizadores de un perfil de carga (una ubicación de carga guardada). Solo se cambian los campos indicados, el resto del perfil se mantiene. Cuesta dos solicitudes de la cuota de la API.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Corriente de carga",
+          "description": "MAXIMUM, o REDUCED para limitar la corriente (evita que salte el magnetotérmico)."
+        },
+        "target_charge": {
+          "name": "Carga objetivo",
+          "description": "Nivel de carga objetivo en porcentaje."
+        },
+        "auto_unlock_plug": {
+          "name": "Desbloquear el enchufe tras la carga",
+          "description": "Desbloquea el enchufe cuando termina la carga."
+        },
+        "min_charge": {
+          "name": "Carga mínima",
+          "description": "Por debajo de este nivel de carga, el vehículo carga de inmediato."
+        },
+        "min_charge_enabled": {
+          "name": "Carga mínima activa",
+          "description": "Solo para vehículos que lo informan."
+        },
+        "preferred_charging_times": {
+          "name": "Horarios de carga preferidos",
+          "description": "Lista de cambios: number (1 a 4), enabled, start y end como HH:MM. O indica en lugar de number el id que informa la API (cuenta en todos los perfiles)."
+        },
+        "timers": {
+          "name": "Temporizadores",
+          "description": "Lista de cambios: number (1 a 3), enabled, time como HH:MM, y days (MONDAY a SUNDAY) para uno recurrente o one_off_day para uno único. O indica en lugar de number el id que informa la API (cuenta en todos los perfiles)."
+        }
       }
     }
   }

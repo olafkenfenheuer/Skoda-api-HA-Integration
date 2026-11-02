@@ -11,7 +11,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import KEY_PLUGGED_IN
 from .coordinator import Expectation, SkodaConfigEntry, SkodaDataUpdateCoordinator
-from .entity import SkodaVehicleEntity
+from .entity import SkodaProfileEntity, SkodaVehicleEntity
 
 
 async def async_setup_entry(
@@ -28,6 +28,23 @@ async def async_setup_entry(
             if vehicle.has("charging", "status") and vehicle.supports("startCharging")
         ]
         + [SkodaPluggedInPollingSwitch(coordinator, vin) for vin in coordinator.data.vehicles]
+        + [
+            SkodaProfileAutoUnlockSwitch(
+                coordinator, vin, profile["id"], str(profile.get("name") or profile["id"])
+            )
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vehicle.lists("updateChargingProfile")
+            for profile in vehicle.charging_profiles()
+        ]
+        + [
+            SkodaProfileMinChargeSwitch(
+                coordinator, vin, profile["id"], str(profile.get("name") or profile["id"])
+            )
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vehicle.lists("updateChargingProfile")
+            for profile in vehicle.charging_profiles()
+            if "enabled" in (profile.get("settings", {}).get("minBatteryStateOfCharge") or {})
+        ]
     )
 
 
@@ -95,3 +112,47 @@ class SkodaPluggedInPollingSwitch(SkodaVehicleEntity, SwitchEntity):
         """Disable the faster interval while plugged in."""
         self.coordinator.set_vehicle_option(self.vin, KEY_PLUGGED_IN, False)
         self.async_write_ha_state()
+
+
+class SkodaProfileAutoUnlockSwitch(SkodaProfileEntity, SwitchEntity):
+    """Whether the plug is unlocked when charging with a charging profile has finished."""
+
+    _attr_translation_key = "profile_auto_unlock"
+    _key = "auto_unlock"
+    _setting = ("autoUnlockPlugWhenCharged",)
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return true if the plug is unlocked automatically (the API calls it PERMANENT)."""
+        value = self._value
+        return None if value is None else value == "PERMANENT"
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Unlock the plug automatically when charging has finished."""
+        await self._async_set("PERMANENT")
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Do not unlock the plug automatically."""
+        await self._async_set("OFF")
+
+
+class SkodaProfileMinChargeSwitch(SkodaProfileEntity, SwitchEntity):
+    """Whether the minimum charge of a charging profile is active (only if reported)."""
+
+    _attr_translation_key = "profile_min_charge_enabled"
+    _key = "min_charge_enabled"
+    _setting = ("minBatteryStateOfCharge", "enabled")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return true if the vehicle charges at once below the minimum charge."""
+        value = self._value
+        return value if isinstance(value, bool) else None
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Activate the minimum charge."""
+        await self._async_set(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Deactivate the minimum charge."""
+        await self._async_set(False)

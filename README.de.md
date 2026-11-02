@@ -19,14 +19,14 @@ Options-Flow, Reauthentifizierung und Diagnose-Download.
 
 | Plattform | Entitäten |
 |---|---|
-| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Türen verriegelt, zuverlässiger Verriegelungsstatus und Parkstatus (wie von der API gemeldet, z. B. `YES`, `TRUNK_OPENED`, `PARKED`), Name des aktuell aktiven Ladestandort-Profils, API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter API-Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), API-Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose), Aktuelles Abrufintervall (Minuten, normales oder Ladeintervall, Attribut `mode`, Diagnose) |
+| `sensor` | Batteriestand, Ladeleistung, Ladegrenze (nur lesend), Laderate, verbleibende Ladezeit, Batterie-/Gesamtreichweite, Kraftstoffstand, AdBlue-Reichweite, Kilometerstand, Zieltemperatur, Adresse der Parkposition, Türen verriegelt, zuverlässiger Verriegelungsstatus und Parkstatus (wie von der API gemeldet, z. B. `YES`, `TRUNK_OPENED`, `PARKED`), Name des aktuell aktiven Ladestandort-Profils (mit ID, Ladeziel, nächster Ladezeit und der Liste aller Profile als Attribute), API-Status (Ergebnis der letzten Abfrage, Diagnose), Letzter API-Abruf (Datum und Uhrzeit des letzten erfolgreichen Abrufs, Diagnose), Letzte Fahrzeugdaten (wann das Fahrzeug selbst zuletzt Daten an die Škoda-Server gemeldet hat, Diagnose), API-Rate-Limit bis (wann das Anfragekontingent nach einem Rate-Limit wieder verfügbar ist, Diagnose), Verbleibende API-Anfragen (Rest des Stundenkontingents laut letzter Antwort, mit den Attributen `limit` und `reset_at`, Diagnose), Aktuelles Abrufintervall (Minuten, normales oder Ladeintervall, Attribut `mode`, Diagnose) |
 | `binary_sensor` | Türen, Fenster, Kofferraum, Motorhaube, Beleuchtung, Zentralverriegelung, Laden, Ladekabel angesteckt, Ladekabel-Verriegelung, Fahrzeug an gespeichertem Ladestandort, Geparkt, nicht gesichert (siehe [Parkalarm](#parkalarm)) |
 | `device_tracker` | Parkposition (erscheint auf dem Karten-Dashboard; während der Fahrt unbekannt) |
-| `climate` | Standklimatisierung (an/aus, aktive Belüftung wenn das Fahrzeug sie unterstützt, Zieltemperatur) |
-| `switch` | Laden starten/stoppen |
+| `climate` | Standklimatisierung (an/aus, aktive Belüftung wenn das Fahrzeug sie unterstützt, Zieltemperatur), Standheizung (nur bei Fahrzeugen, die sie haben, siehe [Standheizung](#standheizung)) |
+| `switch` | Laden starten/stoppen, Stecker nach dem Laden entriegeln pro Ladeprofil (siehe [Ladeprofile](#ladeprofile)) |
 | `button` | API jetzt abrufen (ruft die MyŠkoda-API für das Fahrzeug sofort ab; kostet eine Anfrage des API-Kontingents und wird bei aktivem Rate-Limit abgelehnt), Fahrzeug aufwecken (siehe unten) |
-| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs, Parkalarm-Wartezeit |
-| `select` | Lademodus (nur wenn das Fahrzeug seine verfügbaren Lademodi meldet) |
+| `number` | Ladelimit (Ziel-Ladezustand), Abfrageintervalle pro Fahrzeug (normal / beim Laden), automatisches Wecken eines ladenden Fahrzeugs, Parkalarm-Wartezeit, Laufzeit der Standheizung, Ladeziel pro Ladeprofil |
+| `select` | Lademodus (nur wenn das Fahrzeug seine verfügbaren Lademodi meldet), Ladestrom pro Ladeprofil |
 
 Sensoren und Steuerungen werden nur für die Daten und Fernbedienungen angelegt, die dein
 Fahrzeug tatsächlich meldet. Die Entitätenliste passt sich also an dein Auto an (Elektro, Plug-in-Hybrid
@@ -39,8 +39,8 @@ Fernsteuerungen deaktiviert und alle Sensoren aktiv lässt.
 
 Die Integration nutzt ausschließlich die öffentliche MyŠkoda-API. Folgende Funktionen sind daher
 nicht möglich, weil die öffentliche API dafür keinen Endpunkt hat: Ver-/Entriegeln, Hupen &
-Blinken, ein echter Wake-up-Aufruf (der Button „Fahrzeug aufwecken" ist nur ein Umweg, siehe unten), Scheibenheizung, Batterieschonmodus, reduzierter Ladestrom,
-Außentemperatur und Softwareversion. Die Verriegelung ist ein reiner `binary_sensor`.
+Blinken, ein echter Wake-up-Aufruf (der Button „Fahrzeug aufwecken" ist nur ein Umweg, siehe unten), Scheibenheizung, Batterieschonmodus,
+Außentemperatur und Softwareversion. Der maximale Ladestrom lässt sich nur pro Ladeprofil ändern (siehe unten), nicht als allgemeine Einstellung. Die Verriegelung ist ein reiner `binary_sensor`.
 
 ## Unterstützte Sprachen
 
@@ -91,8 +91,18 @@ oder du eine Vorabversion testen möchtest), füge sie stattdessen als benutzerd
 
 ## Einrichtung
 
-1. Erstelle in der MyŠkoda-App unter <https://go.skoda.eu/api-keys> einen API-Schlüssel und wähle
-   die Fahrzeuge aus, für die er gelten soll. Schlüssel sind an diese Fahrzeuge gebunden und laufen ab.
+1. Erstelle in der MyŠkoda-App einen API-Schlüssel: Öffne **Profil → Smart home → Keys → Create key** (die
+   Bezeichnungen in deiner App-Sprache können abweichen) und wähle die Fahrzeuge aus, für die er gelten soll. Auf
+   einem Handy mit der App sollte <https://go.skoda.eu/api-keys> diesen Bildschirm direkt öffnen (am Rechner den
+   QR-Code auf der Škoda-Seite scannen). Schlüssel sind an diese Fahrzeuge gebunden und laufen ab (die App zeigt
+   das Datum neben jedem Schlüssel), und du kannst bis zu 5 haben. Derselbe Bildschirm zeigt die **VIN** des
+   Fahrzeugs mit einem Kopierknopf, die du in Schritt 3 brauchst.
+
+   <p>
+     <img src="docs/images/myskoda-profile.png" alt="MyŠkoda app: Profile" width="240">
+     <img src="docs/images/myskoda-smart-home-keys.png" alt="MyŠkoda app: Smart home, Keys, Create key" width="240">
+   </p>
+   (Screenshots der App-Version 8.18, englisch; Name und VIN sind geschwärzt.)
 2. Gehe zu **Einstellungen → Geräte & Dienste → Integration hinzufügen** und suche nach „Škoda API Connect“.
 3. Gib den API-Schlüssel und die VIN jedes Fahrzeugs ein (mehrere VINs durch Komma getrennt). Die API
    bietet keine Fahrzeugliste, daher müssen die VINs manuell eingegeben werden.
@@ -102,7 +112,12 @@ oder du eine Vorabversion testen möchtest), füge sie stattdessen als benutzerd
    - das kürzere Intervall **während des Ladens** (Standard 5),
    - ob dieses Ladeintervall **auch bei eingestecktem Ladekabel** gilt (Standard aus),
    - den Nur-Lese-Modus,
-   - die Benachrichtigungsdienste, die den [Parkalarm](#parkalarm) erhalten.
+   - die Benachrichtigungsdienste, die den [Parkalarm](#parkalarm) erhalten,
+   - ob die Entitäten eines gelöschten [Ladeprofils](#ladeprofile) entfernt werden (nur bei Fahrzeugen mit
+     Ladeprofilen sichtbar, Standard an),
+   - die **S-PIN** für die [Standheizung](#standheizung) (nur sichtbar, wenn ein Fahrzeug eine hat).
+
+   Läuft die Klimaanlage oder die Standheizung, wird das Fahrzeug ebenfalls mit dem Ladeintervall abgefragt.
 
 Den API-Schlüssel (oder die VINs) kannst du jederzeit ersetzen – vor dem Ablauf oder nachdem du einen
 neuen erstellt hast – unter **Einstellungen → Geräte & Dienste → Škoda API Connect → ⋮ → Neu konfigurieren**.
@@ -117,6 +132,95 @@ um die Verbindung wiederherzustellen, ohne den Verlauf der Entitäten zu verlier
 Die Integration nutzt ausschließlich die dokumentierten Endpunkte unter
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` und authentifiziert sich über den
 Header `X-API-Key`. Die Daten werden per Polling aktualisiert.
+
+Die API lässt einen Teil der Daten weg, wenn sie ihn gerade nicht abrufen kann (gemeldet als
+`<TEIL>_UNAVAILABLE`, sichtbar in den Attributen des API-Status-Sensors). Für einen solchen Teil behält die
+Integration die zuletzt bekannten Daten mit ihrem alten Zeitstempel, statt sie zu verwerfen: Sonst würden die
+Entitäten dieses Teils nach einem Neustart von Home Assistant im ungünstigen Moment fehlen. Nicht unterstützte
+oder deaktivierte Teile werden nicht aufgefüllt.
+
+### Ladeprofile
+
+Ein Ladeprofil ist ein gespeicherter Ladestandort der MyŠkoda-App. Bei Fahrzeugen, die die Operation
+`updateChargingProfile` nennen und mindestens ein Profil melden, bekommt jedes Profil drei Steuerungen mit
+dem Namen des Profils: **Ladestrom** (`MAXIMUM` oder `REDUCED`, die „Strombegrenzung“ der App), **Ladeziel** (50 bis 100 %) und
+**Stecker nach dem Laden entriegeln**, dazu die **minimale Ladegrenze** (darunter lädt das Fahrzeug sofort) und,
+wenn das Fahrzeug es meldet, ein Schalter zum Aktivieren. Ein Fahrzeug übernimmt ein Profil als Ganzes, deshalb holt die Integration das
+Profil unmittelbar vor dem Senden neu und ändert nur die eine Einstellung; Timer und bevorzugte Ladezeiten
+bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus das Nachladen.
+
+An einem Enyaq erprobt (2026): Ladestrom, Ladeziel, minimale Ladegrenze, „Stecker entriegeln“, bevorzugte Ladezeiten
+und Timer (die App nennt sie „Abfahrtszeiten“) eines Profils, ein- und ausgeschaltet und mit anderen Zeiten und
+Tagen, alles in einem Befehl; Hinzufügen und Löschen eines Profils. Nicht erprobt: einmalige Timer (`one_off_day`)
+und der Schalter für die minimale Ladegrenze (der Enyaq meldet ihn nicht). Die bevorzugten Ladezeiten gelten für
+alle Abfahrtszeiten des Profils, wie die App sagt.
+
+**Wann die Profile in Home Assistant erscheinen**
+
+- Ein Profil erscheint erst, wenn das **Fahrzeug es den Škoda-Servern gemeldet** hat. Nach dem Anlegen in der
+  App braucht das Fahrzeug eventuell einen Moment oder einen Anstoß: **Fahrzeug aufwecken** drücken, danach
+  **API jetzt abrufen**. Der Sensor **Ladestandort** (Attribut `profiles`) listet, was die API meldet; solange
+  die Liste leer ist, gibt es nichts anzuzeigen. Ein Fahrzeug ohne gespeicherte Ladestandorte hat keine Profile
+  und deshalb keine dieser Entitäten.
+- Die Entitäten eines Profils werden beim Einrichten der Integration angelegt, deshalb **lädt sich die
+  Integration selbst neu**, wenn sich die Profile eines Fahrzeugs ändern: ein Profil wurde hinzugefügt,
+  gelöscht oder umbenannt (die Namen der Entitäten werden beim Einrichten übernommen). Eine Änderung muss in
+  **zwei Abrufen hintereinander** auftauchen (ein Löschen in drei), damit eine kurz falsche Antwort kein Neuladen
+  auslöst; bei normalem Abfrageintervall dauert das 10 bis 30 Minuten. Beobachtet werden nur Fahrzeuge, die
+  `updateChargingProfile` nennen. Du kannst auch von Hand neu laden (Einstellungen > Geräte & Dienste > Škoda
+  API Connect > die drei Punkte > Neu laden).
+
+**Wenn ein Profil im Fahrzeug oder in der App gelöscht wird**
+
+- Seine Entitäten werden **nicht verfügbar**, sobald das Fahrzeug das Profil nicht mehr meldet. An ein
+  gelöschtes Profil wird nichts gesendet: Die Aktion `update_charging_profile` lehnt es ab („The vehicle does
+  not report this charging profile (any more)“), bevor sie etwas schreibt.
+- Ein Löschen muss in **drei Abrufen hintereinander** auftauchen. Dann entfernt die Integration die Entitäten des
+  gelöschten Profils aus Home Assistant und lädt sich selbst neu. Das Entfernen ist eine Option (**Konfigurieren** >
+  **Entitäten gelöschter Ladeprofile entfernen**, standardmäßig an, nur bei Fahrzeugen mit Ladeprofilen sichtbar); ist
+  sie aus, bleiben die Entitäten als nicht verfügbare Entitäten stehen, die du von Hand löschst, und das Neuladen
+  geschieht nach zwei Abrufen. Das geschieht nur, solange das Fahrzeug
+  `updateChargingProfile` noch nennt, damit ein Fahrzeug, dessen Operationen kurz fehlen, seine Entitäten nicht
+  verliert. Hast du Name oder Bereich einer solchen Entität geändert, ist das damit weg.
+- Legst du danach ein neues Profil an, kann es die ID des gelöschten bekommen; es bekommt dann frische
+  Entitäten mit denselben IDs.
+
+Timer und bevorzugte Ladezeiten sind keine Entitäten (ein Profil hat bis zu 4 bevorzugte Ladezeiten und 3
+Timer). Der Sensor **Ladestandort** zeigt die des Profils, in dem das Fahrzeug steht, als Attribute, und die
+Aktion `skoda_api_connect.update_charging_profile` ändert beliebige Einstellungen, bevorzugte Ladezeiten und
+Timer eines Profils: Als Ziel eine Entität des Profils wählen und nur angeben, was sich ändern soll. Ein Timer (die App
+nennt sie „Abfahrtszeiten“) oder eine bevorzugte Ladezeit wird über ihre `number` im Profil benannt (die erste ist 1)
+oder über die `id`, die die API meldet; diese IDs zählen über alle Profile hinweg, das zweite Profil eines
+Fahrzeugs kann also bei 5 beginnen (siehe das Beispiel in der englischen README).
+
+### Standheizung
+
+Fahrzeuge mit Standheizung (das Fahrzeug nennt `startAuxiliaryHeating` und meldet ihren Zustand) bekommen
+eine `climate`-Entität **Standheizung** (aus, Heizen, nur Lüften für die Belüftung) und eine Zahl
+**Standheizung: Laufzeit** (10 bis 60 Minuten, Standard 30). Fahrzeuge ohne Standheizung bekommen beides nicht.
+
+Die API startet die Heizung nur mit der **S-PIN** deines MyŠkoda-Kontos. Trage sie unter **Konfigurieren**
+ein (das Feld erscheint nur, wenn ein Fahrzeug eine Standheizung hat). Sie wird wie der API-Schlüssel in
+Home Assistant gespeichert, in der Diagnose geschwärzt und nie protokolliert. Ohne sie wird das Starten
+abgelehnt, bevor etwas gesendet wird. Eine falsche S-PIN kann die S-PIN sperren, prüfe sie deshalb zuerst in
+der App. Die Zieltemperatur wird bei jedem Start mitgesendet. Nicht erprobt.
+
+### Blueprint: ein Ladeprofil mit Schutzregeln ändern
+
+[![Blueprint importieren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Folafkenfenheuer%2FSkoda-api-HA-Integration%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fskoda_api_connect%2Fupdate_charging_profile.yaml)
+
+Der Blueprint **Škoda charging profile - change settings with safeguards** ruft die obige Aktion auf, wenn dein
+Auslöser feuert und deine Bedingungen gelten, für langsame, seltene Änderungen: eine Tageszeit, eine Jahreszeit,
+die Hauslast. Du wählst das Profil, die zu ändernden Felder (Felder auf „nicht ändern“ bleiben, wie sie sind), den
+Sensor **Verbleibende API-Anfragen** und eine Pause. Gesendet wird nur, wenn die API noch genug Anfragen hat (eine
+Änderung kostet drei von 20 pro Stunde), keine frühere Änderung noch beim Fahrzeug aussteht, das Profil verfügbar
+ist und, wenn du den API-Status-Sensor wählst, die API funktioniert. Nach einer Änderung wartet er die Pause ab;
+Auslöser in dieser Zeit werden ignoriert.
+
+Er ist nicht dafür gemacht, jede Minute einem Überschuss zu folgen: Das Fahrzeug braucht 20 Sekunden bis einige
+Minuten, um eine Änderung zu übernehmen, und das Kontingent ist klein. Dafür nimm die Wallbox. Ändere dasselbe
+Profil nicht gleichzeitig in der MyŠkoda-App. Der Blueprint liegt unter `blueprints/automation/skoda_api_connect/`
+in diesem Repository (der Import funktioniert erst, wenn er auf dem Standard-Branch liegt).
 
 ### Sofortige Rückmeldung nach Befehlen
 
@@ -237,6 +341,25 @@ Ein Poll kostet eine Anfrage pro Fahrzeug, jeder Fernbefehl eine weitere. Deshal
 Teile des Fahrzeugs, die die API nicht melden kann (zum Beispiel weil das Fahrzeug schläft), fehlen
 in der Antwort einfach; die zugehörigen Entitäten werden angelegt, sobald die Daten verfügbar sind,
 was ein Neuladen der Integration erfordern kann.
+
+## Fehlerbehebung
+
+- **Der Link öffnet nur die Startseite der App.** Öffne **Profil → Smart home** in der App von Hand (siehe die
+  Screenshots oben). Škoda dokumentiert nicht, in welchen App-Versionen oder Märkten dieser Bildschirm existiert;
+  hast du keinen Eintrag „Smart home“, aktualisiere die App und frage den Škoda-Support.
+- **API-Status „partial“ oder Entitäten zeigen alte Werte.** Die API lässt einen Teil der Daten weg, wenn sie ihn
+  gerade nicht abrufen kann (`…_UNAVAILABLE`, aufgeführt in den Attributen des API-Status-Sensors). Die
+  Integration behält dann die zuletzt bekannten Daten dieses Teils mit ihrem alten Zeitstempel; der Sensor
+  **Letzte Fahrzeugdaten** zeigt, wie alt er ist. Meist vergeht das von selbst.
+- **Das API-Kontingent ist aufgebraucht (20 Anfragen pro Stunde und Fahrzeug).** Die Integration pausiert das
+  Abfragen, bis es zurück ist (API-Status „rate_limited“). Alles, was denselben Schlüssel nutzt, zählt mit, etwa die
+  Swagger-Seite von Škoda oder andere Werkzeuge. Auch Befehle kosten Anfragen; eine Änderung an einem Ladeprofil
+  kostet drei.
+- **Eine Änderung in der App und eine aus Home Assistant überschreiben sich.** Das Fahrzeug übernimmt ein
+  Ladeprofil als Ganzes, und die App speichert ohne Knopf. Schließe die App, während du ein Profil aus Home
+  Assistant änderst, und prüfe in den Daten, dass es angekommen ist.
+- **Ein Fahrzeug, das sich selten meldet.** Ein parkendes oder ladendes Fahrzeug kann eine Stunde schweigen. Nutze
+  den Button **Fahrzeug aufwecken** oder die Option, ein ladendes Fahrzeug automatisch zu wecken.
 
 ## Entwicklung
 

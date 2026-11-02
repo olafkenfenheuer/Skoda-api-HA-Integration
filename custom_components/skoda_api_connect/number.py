@@ -12,13 +12,16 @@ from .const import (
     AUTO_WAKE_NUMBER_MAX_MINUTES,
     KEY_ALERT_GRACE,
     KEY_AUTO_WAKE,
+    KEY_AUX_DURATION,
     MAX_ALERT_GRACE_MINUTES,
+    MAX_AUX_DURATION_MINUTES,
+    MIN_AUX_DURATION_MINUTES,
     MIN_AUTO_WAKE_MINUTES,
     MIN_SCAN_INTERVAL_MINUTES,
     POLL_INTERVAL_NUMBER_MAX_MINUTES,
 )
 from .coordinator import Expectation, SkodaConfigEntry, SkodaDataUpdateCoordinator
-from .entity import SkodaVehicleEntity
+from .entity import SkodaProfileEntity, SkodaVehicleEntity
 
 
 def _has_charge_limit(vehicle: SkodaVehicle) -> bool:
@@ -51,6 +54,29 @@ async def async_setup_entry(
         + [
             SkodaParkingAlertGraceNumber(coordinator, vin)
             for vin in coordinator.data.vehicles
+        ]
+        + [
+            SkodaAuxDurationNumber(coordinator, vin)
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vehicle.has_auxiliary_heating() and not coordinator.read_only
+        ]
+        + [
+            SkodaProfileTargetNumber(
+                coordinator, vin, profile["id"], str(profile.get("name") or profile["id"])
+            )
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vehicle.lists("updateChargingProfile")
+            for profile in vehicle.charging_profiles()
+        ]
+        + [
+            SkodaProfileMinChargeNumber(
+                coordinator, vin, profile["id"], str(profile.get("name") or profile["id"])
+            )
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vehicle.lists("updateChargingProfile")
+            for profile in vehicle.charging_profiles()
+            if "minimumBatteryStateOfChargeInPercent"
+            in (profile.get("settings", {}).get("minBatteryStateOfCharge") or {})
         ]
     )
 
@@ -185,3 +211,84 @@ class SkodaParkingAlertGraceNumber(SkodaVehicleEntity, NumberEntity):
         """Persist the new grace period; the parking alert applies it to an open incident."""
         self.coordinator.set_vehicle_option(self.vin, KEY_ALERT_GRACE, int(value))
         self.async_write_ha_state()
+
+
+class SkodaAuxDurationNumber(SkodaVehicleEntity, NumberEntity):
+    """How long the auxiliary heating runs after it was started, in minutes.
+
+    Stored in the entry options like the polling intervals and sent with every start.
+    """
+
+    _attr_translation_key = "aux_duration"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+    _attr_native_min_value = MIN_AUX_DURATION_MINUTES
+    _attr_native_max_value = MAX_AUX_DURATION_MINUTES
+    _attr_native_step = 5
+    _attr_mode = NumberMode.SLIDER
+
+    def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
+        """Initialize the number entity."""
+        super().__init__(coordinator, vin)
+        self._attr_unique_id = f"{vin}_aux_duration"
+
+    @property
+    def native_value(self) -> float:
+        """Return the running time in minutes."""
+        return self.coordinator.aux_duration_minutes(self.vin)
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Persist the new running time."""
+        self.coordinator.set_vehicle_option(self.vin, KEY_AUX_DURATION, int(value))
+        self.async_write_ha_state()
+
+
+class SkodaProfileTargetNumber(SkodaProfileEntity, NumberEntity):
+    """The target state of charge of a charging profile (saved charging location)."""
+
+    _attr_translation_key = "profile_target_soc"
+    _key = "target_soc"
+    _setting = ("targetStateOfChargeInPercent",)
+    _attr_native_unit_of_measurement = PERCENTAGE
+    # Vehicles typically accept 50-100 in steps of 10 and reject other values.
+    _attr_native_min_value = 50
+    _attr_native_max_value = 100
+    _attr_native_step = 10
+    _attr_mode = NumberMode.SLIDER
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the target state of charge of the profile."""
+        value = self._value
+        return value if isinstance(value, (int, float)) else None
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Change the target state of charge of the profile."""
+        await self._async_set(int(value))
+
+
+class SkodaProfileMinChargeNumber(SkodaProfileEntity, NumberEntity):
+    """The minimum charge of a charging profile: below it the vehicle charges at once.
+
+    The app calls it "minimum charging limit". Whether it is active is a separate switch,
+    for vehicles that report that.
+    """
+
+    _attr_translation_key = "profile_min_charge"
+    _key = "min_charge"
+    _setting = ("minBatteryStateOfCharge", "minimumBatteryStateOfChargeInPercent")
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_native_min_value = 0
+    _attr_native_max_value = 100
+    _attr_native_step = 10
+    _attr_mode = NumberMode.SLIDER
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the minimum charge of the profile."""
+        value = self._value
+        return value if isinstance(value, (int, float)) else None
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Change the minimum charge of the profile."""
+        await self._async_set(int(value))

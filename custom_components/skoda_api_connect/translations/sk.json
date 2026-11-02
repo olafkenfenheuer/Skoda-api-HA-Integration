@@ -48,10 +48,14 @@
           "charging_scan_interval": "Interval dopytovania pri nabíjaní (minúty)",
           "plugged_in_fast_polling": "Použiť interval nabíjania aj pri zapojenom kábli",
           "read_only": "Režim iba na čítanie (vypne všetko diaľkové ovládanie)",
-          "notify_targets": "Príjemcovia upozornenia na parkovanie"
+          "notify_targets": "Príjemcovia upozornenia na parkovanie",
+          "spin": "S-PIN (pre nezávislé kúrenie)",
+          "remove_deleted_profiles": "Odstrániť entity zmazaných nabíjacích profilov"
         },
         "data_description": {
-          "notify_targets": "Služby notify, ktoré dostanú kritické upozornenie, keď vozidlo parkuje, ale nie je zamknuté a zatvorené, napr. notify.mobile_app_moj_telefon. Nechajte prázdne, ak upozornenia nechcete. Oneskorenie sa nastavuje pre každé vozidlo posuvníkom „Oneskorenie upozornenia na parkovanie“."
+          "notify_targets": "Služby notify, ktoré dostanú kritické upozornenie, keď vozidlo parkuje, ale nie je zamknuté a zatvorené, napr. notify.mobile_app_moj_telefon. Nechajte prázdne, ak upozornenia nechcete. Oneskorenie sa nastavuje pre každé vozidlo posuvníkom „Oneskorenie upozornenia na parkovanie“.",
+          "spin": "Bezpečnostný PIN vášho účtu MyŠkoda. Potrebný len na spustenie nezávislého kúrenia. Ukladá sa v Home Assistante rovnako ako kľúč API. Ak ho nepoužívate, nechajte prázdne.",
+          "remove_deleted_profiles": "Keď je nabíjací profil vo vozidle zmazaný (zistené v troch dopytoch po sebe), jeho entity sa odstránia z Home Assistanta, vrátane vlastných názvov a oblastí. Bez tejto voľby zostanú ako nedostupné entity, ktoré zmažete ručne."
         }
       }
     },
@@ -192,6 +196,9 @@
     "climate": {
       "air_conditioning": {
         "name": "Klimatizácia"
+      },
+      "auxiliary_heating": {
+        "name": "Nezávislé kúrenie"
       }
     },
     "switch": {
@@ -200,6 +207,12 @@
       },
       "poll_when_plugged_in": {
         "name": "Rýchle dopytovanie pri zapojenom kábli"
+      },
+      "profile_auto_unlock": {
+        "name": "{profile}: odomknúť zástrčku po nabití"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimálne nabitie aktívne"
       }
     },
     "number": {
@@ -217,11 +230,59 @@
       },
       "parking_alert_grace": {
         "name": "Oneskorenie upozornenia na parkovanie"
+      },
+      "aux_duration": {
+        "name": "Nezávislé kúrenie: doba chodu"
+      },
+      "profile_target_soc": {
+        "name": "{profile}: cieľové nabitie"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimálne nabitie"
       }
     },
     "select": {
       "charge_mode": {
         "name": "Režim nabíjania"
+      },
+      "profile_max_current": {
+        "name": "{profile}: nabíjací prúd"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Zmeniť nabíjací profil",
+      "description": "Mení nastavenia, preferované časy nabíjania a časovače nabíjacieho profilu (uloženej nabíjacej lokality). Zmenia sa len zadané polia, zvyšok profilu zostane. Stojí dva požiadavky z kvóty API.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Nabíjací prúd",
+          "description": "MAXIMUM, alebo REDUCED na obmedzenie prúdu (zabráni vypnutiu ističa)."
+        },
+        "target_charge": {
+          "name": "Cieľové nabitie",
+          "description": "Cieľový stav nabitia v percentách."
+        },
+        "auto_unlock_plug": {
+          "name": "Odomknúť zástrčku po nabití",
+          "description": "Odomkne zástrčku po skončení nabíjania."
+        },
+        "min_charge": {
+          "name": "Minimálne nabitie",
+          "description": "Pod touto úrovňou nabitia vozidlo nabíja hneď."
+        },
+        "min_charge_enabled": {
+          "name": "Minimálne nabitie aktívne",
+          "description": "Len pre vozidlá, ktoré to hlásia."
+        },
+        "preferred_charging_times": {
+          "name": "Preferované časy nabíjania",
+          "description": "Zoznam zmien: number (1 až 4), enabled, start a end ako HH:MM. Alebo namiesto number uveďte id, ktoré hlási API (počíta sa naprieč všetkými profilmi)."
+        },
+        "timers": {
+          "name": "Časovače",
+          "description": "Zoznam zmien: number (1 až 3), enabled, time ako HH:MM a days (MONDAY až SUNDAY) pre opakovaný alebo one_off_day pre jednorazový časovač. Alebo namiesto number uveďte id, ktoré hlási API (počíta sa naprieč všetkými profilmi)."
+        }
       }
     }
   }
