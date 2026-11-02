@@ -91,8 +91,18 @@ oder du eine Vorabversion testen möchtest), füge sie stattdessen als benutzerd
 
 ## Einrichtung
 
-1. Erstelle in der MyŠkoda-App unter <https://go.skoda.eu/api-keys> einen API-Schlüssel und wähle
-   die Fahrzeuge aus, für die er gelten soll. Schlüssel sind an diese Fahrzeuge gebunden und laufen ab.
+1. Erstelle in der MyŠkoda-App einen API-Schlüssel: Öffne **Profil → Smart home → Keys → Create key** (die
+   Bezeichnungen in deiner App-Sprache können abweichen) und wähle die Fahrzeuge aus, für die er gelten soll. Auf
+   einem Handy mit der App sollte <https://go.skoda.eu/api-keys> diesen Bildschirm direkt öffnen (am Rechner den
+   QR-Code auf der Škoda-Seite scannen). Schlüssel sind an diese Fahrzeuge gebunden und laufen ab (die App zeigt
+   das Datum neben jedem Schlüssel), und du kannst bis zu 5 haben. Derselbe Bildschirm zeigt die **VIN** des
+   Fahrzeugs mit einem Kopierknopf, die du in Schritt 3 brauchst.
+
+   <p>
+     <img src="docs/images/myskoda-profile.png" alt="MyŠkoda app: Profile" width="240">
+     <img src="docs/images/myskoda-smart-home-keys.png" alt="MyŠkoda app: Smart home, Keys, Create key" width="240">
+   </p>
+   (Screenshots der App-Version 8.18, englisch; Name und VIN sind geschwärzt.)
 2. Gehe zu **Einstellungen → Geräte & Dienste → Integration hinzufügen** und suche nach „Škoda API Connect“.
 3. Gib den API-Schlüssel und die VIN jedes Fahrzeugs ein (mehrere VINs durch Komma getrennt). Die API
    bietet keine Fahrzeugliste, daher müssen die VINs manuell eingegeben werden.
@@ -326,6 +336,25 @@ Ein Poll kostet eine Anfrage pro Fahrzeug, jeder Fernbefehl eine weitere. Deshal
 Teile des Fahrzeugs, die die API nicht melden kann (zum Beispiel weil das Fahrzeug schläft), fehlen
 in der Antwort einfach; die zugehörigen Entitäten werden angelegt, sobald die Daten verfügbar sind,
 was ein Neuladen der Integration erfordern kann.
+
+## Fehlerbehebung
+
+- **Der Link öffnet nur die Startseite der App.** Öffne **Profil → Smart home** in der App von Hand (siehe die
+  Screenshots oben). Škoda dokumentiert nicht, in welchen App-Versionen oder Märkten dieser Bildschirm existiert;
+  hast du keinen Eintrag „Smart home“, aktualisiere die App und frage den Škoda-Support.
+- **API-Status „partial“ oder Entitäten zeigen alte Werte.** Die API lässt einen Teil der Daten weg, wenn sie ihn
+  gerade nicht abrufen kann (`…_UNAVAILABLE`, aufgeführt in den Attributen des API-Status-Sensors). Die
+  Integration behält dann die zuletzt bekannten Daten dieses Teils mit ihrem alten Zeitstempel; der Sensor
+  **Letzte Fahrzeugdaten** zeigt, wie alt er ist. Meist vergeht das von selbst.
+- **Das API-Kontingent ist aufgebraucht (20 Anfragen pro Stunde und Fahrzeug).** Die Integration pausiert das
+  Abfragen, bis es zurück ist (API-Status „rate_limited“). Alles, was denselben Schlüssel nutzt, zählt mit, etwa die
+  Swagger-Seite von Škoda oder andere Werkzeuge. Auch Befehle kosten Anfragen; eine Änderung an einem Ladeprofil
+  kostet drei.
+- **Eine Änderung in der App und eine aus Home Assistant überschreiben sich.** Das Fahrzeug übernimmt ein
+  Ladeprofil als Ganzes, und die App speichert ohne Knopf. Schließe die App, während du ein Profil aus Home
+  Assistant änderst, und prüfe in den Daten, dass es angekommen ist.
+- **Ein Fahrzeug, das sich selten meldet.** Ein parkendes oder ladendes Fahrzeug kann eine Stunde schweigen. Nutze
+  den Button **Fahrzeug aufwecken** oder die Option, ein ladendes Fahrzeug automatisch zu wecken.
 
 ## Entwicklung
 

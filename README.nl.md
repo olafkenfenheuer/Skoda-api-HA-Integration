@@ -83,8 +83,18 @@ vernieuwd, of je wilt een pre-release uitproberen), voeg ze dan als aangepaste r
 
 ## Configuratie
 
-1. Maak in de MyŠkoda-app een API-sleutel aan via <https://go.skoda.eu/api-keys> en kies de
-   voertuig(en) waarvoor hij geldt. Sleutels zijn aan die voertuigen gebonden en verlopen.
+1. Maak in de MyŠkoda-app een API-sleutel aan: open **Profiel → Smart home → Keys → Create key** (de namen in
+   de taal van je app kunnen afwijken) en kies de voertuig(en) waarvoor hij geldt. Op een telefoon met de app moet
+   <https://go.skoda.eu/api-keys> dit scherm direct openen (op een computer scan je de QR-code op de Škoda-pagina).
+   Sleutels zijn aan die voertuigen gebonden en verlopen (de app toont de datum naast elke sleutel), en je kunt er
+   maximaal 5 hebben. Hetzelfde scherm toont het **VIN** van het voertuig met een kopieerknop, dat je in stap 3
+   nodig hebt.
+
+   <p>
+     <img src="docs/images/myskoda-profile.png" alt="MyŠkoda app: Profile" width="240">
+     <img src="docs/images/myskoda-smart-home-keys.png" alt="MyŠkoda app: Smart home, Keys, Create key" width="240">
+   </p>
+   (Schermafbeeldingen van app-versie 8.18, Engels; naam en VIN zijn zwartgemaakt.)
 2. Ga naar **Instellingen → Apparaten & services → Integratie toevoegen** en zoek "Škoda API Connect".
 3. Voer de API-sleutel en het VIN van elk voertuig in (meerdere VIN's gescheiden door komma's).
    De API heeft geen voertuiglijst, dus de VIN's moeten handmatig worden ingevoerd.
@@ -301,6 +311,24 @@ De API staat momenteel **20 verzoeken per uur per VIN** toe (niet definitief). E
 - worden HTTP 429-antwoorden herkend en wordt het pollen gepauzeerd voor de door de API gemelde wachttijd (`Retry-After`,
   `RateLimit-Reset` of foutmelding; plus 30 seconden; maximaal 1 uur, 15 minuten als de API geen wachttijd geeft);
 - blijft de laatst bekende status van een voertuig behouden als alleen zijn verzoek mislukt.
+
+## Problemen oplossen
+
+- **De link opent alleen het startscherm van de app.** Open **Profiel → Smart home** in de app handmatig (zie de
+  schermafbeeldingen hierboven). Škoda documenteert niet in welke appversies of markten dit scherm bestaat; heb je
+  geen item "Smart home", werk dan de app bij en vraag de Škoda-support.
+- **API-status "partial" of entiteiten tonen oude waarden.** De API laat een deel van de gegevens weg als ze dat nu
+  niet kan ophalen (`…_UNAVAILABLE`, vermeld in de attributen van de API-statussensor). De integratie bewaart dan
+  de laatst bekende gegevens van dat deel met hun oude tijdstempel; de sensor **Laatste voertuiggegevens** toont
+  hoe oud ze zijn. Meestal gaat het vanzelf over.
+- **Het API-quotum is op (20 verzoeken per uur en voertuig).** De integratie pauzeert het pollen tot het terug is
+  (API-status "rate_limited"). Alles wat dezelfde sleutel gebruikt telt mee, zoals de Swagger-pagina van Škoda of
+  andere tools. Ook commando's kosten verzoeken; een wijziging van een laadprofiel kost er drie.
+- **Een wijziging in de app en een vanuit Home Assistant overschrijven elkaar.** Het voertuig neemt een laadprofiel
+  als geheel over, en de app slaat op zonder knop. Sluit de app terwijl je een profiel vanuit Home Assistant
+  wijzigt, en controleer in de gegevens of het is aangekomen.
+- **Een voertuig dat zich zelden meldt.** Een geparkeerd of ladend voertuig kan een uur zwijgen. Gebruik de knop
+  **Voertuig wakker maken** of de optie om een ladend voertuig automatisch te wekken.
 
 ## Ontwikkeling
 

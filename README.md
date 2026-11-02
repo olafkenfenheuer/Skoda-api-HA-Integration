@@ -88,8 +88,17 @@ want to try a pre-release), add it as a custom repository instead:
 
 ## Configuration
 
-1. In the MyŠkoda app, create an API key at <https://go.skoda.eu/api-keys> and select the
-   vehicle(s) it should be valid for. Keys are bound to those vehicles and expire.
+1. In the MyŠkoda app, create an API key: open **Profile → Smart home → Keys → Create key** and select the
+   vehicle(s) it should be valid for. On a phone with the app, <https://go.skoda.eu/api-keys> should open
+   this screen directly (on a computer, scan the QR code on the Škoda page). Keys are bound to those vehicles and
+   expire (the app shows the date next to each key), and you can have up to 5 of them. The same screen shows the
+   **VIN** of the vehicle with a copy button, which you need in step 3.
+
+   <p>
+     <img src="docs/images/myskoda-profile.png" alt="MyŠkoda app: Profile" width="240">
+     <img src="docs/images/myskoda-smart-home-keys.png" alt="MyŠkoda app: Smart home, Keys, Create key" width="240">
+   </p>
+   (Screenshots of app version 8.18, English; names and VIN are blacked out.)
 2. Go to **Settings → Devices & Services → Add Integration** and search for "Škoda API Connect".
 3. Enter the API key and the VIN of each vehicle (several VINs separated by commas). The API
    has no vehicle list endpoint, so the VINs have to be entered manually.
@@ -335,6 +344,24 @@ integration:
 Parts of the vehicle the API cannot report (for example because the vehicle is asleep) are
 simply omitted from its response; the corresponding entities are created once the data is
 available, which can require reloading the integration.
+
+## Troubleshooting
+
+- **The link opens only the app's home screen.** Open **Profile → Smart home** in the app by hand (see the
+  screenshots above). Škoda does not document in which app versions or markets this screen exists; if you
+  have no "Smart home" entry, update the app and ask Škoda support.
+- **API status "partial" or entities show old values.** The API leaves out a part of the data when it cannot
+  retrieve it right now (`…_UNAVAILABLE`, listed in the attributes of the API status sensor). The integration then
+  keeps the last known data of that part with its old timestamp; the sensor **Last vehicle data** shows how old it
+  is. It usually passes by itself.
+- **The API quota is used up (20 requests per hour and vehicle).** The integration pauses polling until it is back
+  (API status "rate limited"). Everything that uses the same key counts, such as the Swagger page of Škoda or other
+  tools. Commands cost requests too; a change to a charging profile costs three.
+- **A change in the app and one from Home Assistant overwrite each other.** The vehicle takes a charging profile as
+  a whole, and the app saves without a button. Close the app while you change a profile from Home Assistant, and
+  check in the data that it arrived.
+- **A vehicle that reports rarely.** A parked or charging vehicle can stay silent for an hour. Use the button
+  **Wake vehicle** or the option to wake a charging vehicle automatically.
 
 ## Development
 
