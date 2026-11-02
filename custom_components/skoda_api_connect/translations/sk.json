@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Pripojenie účtu Škoda",
-        "description": "Vytvorte v aplikácii MyŠkoda kľúč API ({api_keys_url}) a zadajte ho spolu s VIN každého vozidla, pre ktoré bol vytvorený (viac VIN oddeľte čiarkami).",
+        "description": "Vytvorte v aplikácii MyŠkoda kľúč API (Profil → Smart home → Keys → Create key) a zadajte ho spolu s VIN každého vozidla, pre ktoré bol vytvorený (viac VIN oddeľte čiarkami).",
         "data": {
           "api_key": "Kľúč API",
           "vins": "VIN"
@@ -11,7 +11,7 @@
       },
       "reauth_confirm": {
         "title": "Aktualizácia kľúča API Škoda API Connect",
-        "description": "Váš kľúč API je neplatný alebo vypršal. Vytvorte nový v aplikácii MyŠkoda ({api_keys_url}) a zadajte ho spolu s VIN svojich vozidiel.",
+        "description": "Váš kľúč API je neplatný alebo vypršal. Vytvorte nový v aplikácii MyŠkoda (Profil → Smart home → Keys → Create key) a zadajte ho spolu s VIN svojich vozidiel.",
         "data": {
           "api_key": "Kľúč API",
           "vins": "VIN"
@@ -19,7 +19,7 @@
       },
       "reconfigure": {
         "title": "Zmena kľúča API Škoda API Connect",
-        "description": "Zadajte nový kľúč API z aplikácie MyŠkoda ({api_keys_url}), napr. pred vypršaním aktuálneho. Môžete zmeniť aj VIN.",
+        "description": "Zadajte nový kľúč API z aplikácie MyŠkoda (Profil → Smart home → Keys → Create key), napr. pred vypršaním aktuálneho. Môžete zmeniť aj VIN.",
         "data": {
           "api_key": "Kľúč API",
           "vins": "VIN"

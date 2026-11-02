@@ -84,9 +84,8 @@ vernieuwd, of je wilt een pre-release uitproberen), voeg ze dan als aangepaste r
 ## Configuratie
 
 1. Maak in de MyŠkoda-app een API-sleutel aan: open **Profiel → Smart home → Keys → Create key** (de namen in
-   de taal van je app kunnen afwijken) en kies de voertuig(en) waarvoor hij geldt. Op een telefoon met de app moet
-   <https://go.skoda.eu/api-keys> dit scherm direct openen (op een computer scan je de QR-code op de Škoda-pagina).
-   Sleutels zijn aan die voertuigen gebonden en verlopen (de app toont de datum naast elke sleutel), en je kunt er
+   de taal van je app kunnen afwijken) en kies de voertuig(en) waarvoor hij geldt. Sleutels worden alleen in de app
+   aangemaakt. Ze zijn aan die voertuigen gebonden en verlopen (de app toont de datum naast elke sleutel), en je kunt er
    maximaal 5 hebben. Hetzelfde scherm toont het **VIN** van het voertuig met een kopieerknop, dat je in stap 3
    nodig hebt.
 
@@ -317,7 +316,7 @@ De API staat momenteel **20 verzoeken per uur per VIN** toe (niet definitief). E
 
 ## Problemen oplossen
 
-- **De link opent alleen het startscherm van de app.** Open **Profiel → Smart home** in de app handmatig (zie de
+- **Je vindt het scherm voor de API-sleutels niet.** Open **Profiel → Smart home** in de app (zie de
   schermafbeeldingen hierboven). Škoda documenteert niet in welke appversies of markten dit scherm bestaat; heb je
   geen item "Smart home", werk dan de app bij en vraag de Škoda-support.
 - **API-status "partial" of entiteiten tonen oude waarden.** De API laat een deel van de gegevens weg als ze dat nu

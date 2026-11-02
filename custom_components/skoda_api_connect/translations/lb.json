@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Škoda-Kont verbannen",
-        "description": "Erstell an der MyŠkoda-App en API-Schlëssel ({api_keys_url}) a gitt en zesumme mat der FIN/VIN vun all Gefier an, fir dat en erstallt gouf (méi VINen duerch Komma trennen).",
+        "description": "Erstell an der MyŠkoda-App en API-Schlëssel (Profil → Smart home → Keys → Create key) a gitt en zesumme mat der FIN/VIN vun all Gefier an, fir dat en erstallt gouf (méi VINen duerch Komma trennen).",
         "data": {
           "api_key": "API-Schlëssel",
           "vins": "VIN(en)"
@@ -11,7 +11,7 @@
       },
       "reauth_confirm": {
         "title": "Škoda-API-Schlëssel aktualiséieren",
-        "description": "Däin API-Schlëssel ass ongülteg oder ofgelaf. Erstell en neien an der MyŠkoda-App ({api_keys_url}) a gitt en zesumme mat der/den VIN(en) vun dengen Gefierer an.",
+        "description": "Däin API-Schlëssel ass ongülteg oder ofgelaf. Erstell en neien an der MyŠkoda-App (Profil → Smart home → Keys → Create key) a gitt en zesumme mat der/den VIN(en) vun dengen Gefierer an.",
         "data": {
           "api_key": "API-Schlëssel",
           "vins": "VIN(en)"
@@ -19,7 +19,7 @@
       },
       "reconfigure": {
         "title": "Škoda-API-Schlëssel änneren",
-        "description": "Gëff en neien API-Schlëssel aus der MyŠkoda-App an ({api_keys_url}), zum Beispill ier den aktuelle ofleeft. Du kanns och d'VIN(en) änneren.",
+        "description": "Gëff en neien API-Schlëssel aus der MyŠkoda-App an (Profil → Smart home → Keys → Create key), zum Beispill ier den aktuelle ofleeft. Du kanns och d'VIN(en) änneren.",
         "data": {
           "api_key": "API-Schlëssel",
           "vins": "VIN(en)"

@@ -89,8 +89,7 @@ want to try a pre-release), add it as a custom repository instead:
 ## Configuration
 
 1. In the MyŠkoda app, create an API key: open **Profile → Smart home → Keys → Create key** and select the
-   vehicle(s) it should be valid for. On a phone with the app, <https://go.skoda.eu/api-keys> should open
-   this screen directly (on a computer, scan the QR code on the Škoda page). Keys are bound to those vehicles and
+   vehicle(s) it should be valid for. Keys are created in the app only. They are bound to those vehicles and
    expire (the app shows the date next to each key), and you can have up to 5 of them. The same screen shows the
    **VIN** of the vehicle with a copy button, which you need in step 3.
 
@@ -352,7 +351,7 @@ available, which can require reloading the integration.
 
 ## Troubleshooting
 
-- **The link opens only the app's home screen.** Open **Profile → Smart home** in the app by hand (see the
+- **You cannot find the screen for the API keys.** Open **Profile → Smart home** in the app (see the
   screenshots above). Škoda does not document in which app versions or markets this screen exists; if you
   have no "Smart home" entry, update the app and ask Škoda support.
 - **API status "partial" or entities show old values.** The API leaves out a part of the data when it cannot

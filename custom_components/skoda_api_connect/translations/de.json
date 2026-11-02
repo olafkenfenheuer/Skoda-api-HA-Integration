@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Škoda-Konto verbinden",
-        "description": "Erstelle in der MyŠkoda-App einen API-Schlüssel ({api_keys_url}) und gib ihn zusammen mit der FIN/VIN jedes Fahrzeugs ein, für das er erstellt wurde (mehrere VINs durch Komma trennen).",
+        "description": "Erstelle in der MyŠkoda-App einen API-Schlüssel (Profil → Smart home → Keys → Create key) und gib ihn zusammen mit der FIN/VIN jedes Fahrzeugs ein, für das er erstellt wurde (mehrere VINs durch Komma trennen).",
         "data": {
           "api_key": "API-Schlüssel",
           "vins": "VIN(s)"
@@ -11,7 +11,7 @@
       },
       "reauth_confirm": {
         "title": "Škoda API-Schlüssel aktualisieren",
-        "description": "Dein API-Schlüssel ist ungültig oder abgelaufen. Erstelle einen neuen in der MyŠkoda-App ({api_keys_url}) und gib ihn zusammen mit der/den VIN(s) deiner Fahrzeuge ein.",
+        "description": "Dein API-Schlüssel ist ungültig oder abgelaufen. Erstelle einen neuen in der MyŠkoda-App (Profil → Smart home → Keys → Create key) und gib ihn zusammen mit der/den VIN(s) deiner Fahrzeuge ein.",
         "data": {
           "api_key": "API-Schlüssel",
           "vins": "VIN(s)"
@@ -19,7 +19,7 @@
       },
       "reconfigure": {
         "title": "Škoda API-Schlüssel ändern",
-        "description": "Gib einen neuen API-Schlüssel aus der MyŠkoda-App ein ({api_keys_url}), z. B. bevor der aktuelle abläuft. Auch die VIN(s) können geändert werden.",
+        "description": "Gib einen neuen API-Schlüssel aus der MyŠkoda-App ein (Profil → Smart home → Keys → Create key), z. B. bevor der aktuelle abläuft. Auch die VIN(s) können geändert werden.",
         "data": {
           "api_key": "API-Schlüssel",
           "vins": "VIN(s)"
