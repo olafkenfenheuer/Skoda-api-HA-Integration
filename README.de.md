@@ -92,9 +92,8 @@ oder du eine Vorabversion testen möchtest), füge sie stattdessen als benutzerd
 ## Einrichtung
 
 1. Erstelle in der MyŠkoda-App einen API-Schlüssel: Öffne **Profil → Smart home → Keys → Create key** (die
-   Bezeichnungen in deiner App-Sprache können abweichen) und wähle die Fahrzeuge aus, für die er gelten soll. Auf
-   einem Handy mit der App sollte <https://go.skoda.eu/api-keys> diesen Bildschirm direkt öffnen (am Rechner den
-   QR-Code auf der Škoda-Seite scannen). Schlüssel sind an diese Fahrzeuge gebunden und laufen ab (die App zeigt
+   Bezeichnungen in deiner App-Sprache können abweichen) und wähle die Fahrzeuge aus, für die er gelten soll. 
+   Schlüssel werden nur in der App erstellt. Sie sind an diese Fahrzeuge gebunden und laufen ab (die App zeigt
    das Datum neben jedem Schlüssel), und du kannst bis zu 5 haben. Derselbe Bildschirm zeigt die **VIN** des
    Fahrzeugs mit einem Kopierknopf, die du in Schritt 3 brauchst.
 
@@ -344,7 +343,7 @@ was ein Neuladen der Integration erfordern kann.
 
 ## Fehlerbehebung
 
-- **Der Link öffnet nur die Startseite der App.** Öffne **Profil → Smart home** in der App von Hand (siehe die
+- **Du findest den Bildschirm für die API-Schlüssel nicht.** Öffne **Profil → Smart home** in der App (siehe die
   Screenshots oben). Škoda dokumentiert nicht, in welchen App-Versionen oder Märkten dieser Bildschirm existiert;
   hast du keinen Eintrag „Smart home“, aktualisiere die App und frage den Škoda-Support.
 - **API-Status „partial“ oder Entitäten zeigen alte Werte.** Die API lässt einen Teil der Daten weg, wenn sie ihn

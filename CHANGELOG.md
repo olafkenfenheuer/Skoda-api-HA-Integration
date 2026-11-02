@@ -7,6 +7,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- README: the API key is created in the MyŠkoda app (Profile > Smart home > Keys > Create key); the web link and the remark about a QR code are gone.
+
 ## [0.5.1]
 
 ### Added
