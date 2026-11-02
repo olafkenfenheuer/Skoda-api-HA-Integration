@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect your Škoda account",
-        "description": "Create an API key in the MyŠkoda app (Profile → Smart home → Keys → Create key) and enter it together with the VIN of each vehicle it was created for (separate several VINs with commas).",
+        "description": "Create an API key in the MyŠkoda app (Profile → Smart home → Keys → Create key; or open {api_keys_url} on your phone) and enter it together with the VIN of each vehicle it was created for (separate several VINs with commas).",
         "data": {
           "api_key": "API key",
           "vins": "VIN(s)"
@@ -11,7 +11,7 @@
       },
       "reauth_confirm": {
         "title": "Update the Škoda API key",
-        "description": "Your API key is invalid or has expired. Create a new one in the MyŠkoda app (Profile → Smart home → Keys → Create key) and enter it with the VIN(s) of your vehicle(s).",
+        "description": "Your API key is invalid or has expired. Create a new one in the MyŠkoda app (Profile → Smart home → Keys → Create key; or open {api_keys_url} on your phone) and enter it with the VIN(s) of your vehicle(s).",
         "data": {
           "api_key": "API key",
           "vins": "VIN(s)"
@@ -19,7 +19,7 @@
       },
       "reconfigure": {
         "title": "Change the Škoda API key",
-        "description": "Enter a new API key from the MyŠkoda app (Profile → Smart home → Keys → Create key), e.g. before the current one expires. You can also change the VIN(s).",
+        "description": "Enter a new API key from the MyŠkoda app (Profile → Smart home → Keys → Create key; or open {api_keys_url} on your phone), e.g. before the current one expires. You can also change the VIN(s).",
         "data": {
           "api_key": "API key",
           "vins": "VIN(s)"

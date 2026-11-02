@@ -30,6 +30,7 @@ from homeassistant.helpers.selector import (
 
 from .api import SkodaApi, SkodaApiError, SkodaAuthError, SkodaRateLimitError
 from .const import (
+    API_KEYS_URL,
     CONF_API_KEY,
     CONF_CHARGING_SCAN_INTERVAL,
     CONF_NOTIFY_TARGETS,
@@ -129,6 +130,7 @@ class SkodaConnectConfigFlow(ConfigFlow, domain=DOMAIN):
                 STEP_USER_DATA_SCHEMA, user_input
             ),
             errors=errors,
+            description_placeholders={"api_keys_url": API_KEYS_URL},
         )
 
     async def async_step_reauth(
@@ -194,6 +196,7 @@ class SkodaConnectConfigFlow(ConfigFlow, domain=DOMAIN):
                 user_input or {CONF_VINS: ", ".join(entry.data[CONF_VINS])},
             ),
             errors=errors,
+            description_placeholders={"api_keys_url": API_KEYS_URL},
         )
 
     @staticmethod

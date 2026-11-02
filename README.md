@@ -10,6 +10,10 @@ directly with an **API key** - no username/password and no third-party client li
 > **Unofficial project.** This integration is not affiliated with, endorsed by, or associated
 > with Škoda Auto. Use at your own risk.
 
+> **Developed with AI support.** The programming of this integration was done with the support of
+> [Claude](https://claude.com), an AI assistant by Anthropic. Features are tested on the maintainer's own
+> vehicle (an Enyaq) as far as this README says so; everything else is untested.
+
 ## Features
 
 Built following Home Assistant's current integration best practices: a UI-only config flow,
@@ -89,7 +93,9 @@ want to try a pre-release), add it as a custom repository instead:
 ## Configuration
 
 1. In the MyŠkoda app, create an API key: open **Profile → Smart home → Keys → Create key** and select the
-   vehicle(s) it should be valid for. Keys are created in the app only. They are bound to those vehicles and
+   vehicle(s) it should be valid for. Keys are created in the app only. On a phone with the app,
+   <https://go.skoda.eu/api-keys> opens this screen directly (the link does not work on a computer). Keys are bound
+   to those vehicles and
    expire (the app shows the date next to each key), and you can have up to 5 of them. The same screen shows the
    **VIN** of the vehicle with a copy button, which you need in step 3.
 
@@ -351,8 +357,8 @@ available, which can require reloading the integration.
 
 ## Troubleshooting
 
-- **You cannot find the screen for the API keys.** Open **Profile → Smart home** in the app (see the
-  screenshots above). Škoda does not document in which app versions or markets this screen exists; if you
+- **The link or the menu does not lead to the API keys.** On some phones the link opens only the home screen of
+  the app. Open **Profile → Smart home** in the app by hand (see the screenshots above). Škoda does not document in which app versions or markets this screen exists; if you
   have no "Smart home" entry, update the app and ask Škoda support.
 - **API status "partial" or entities show old values.** The API leaves out a part of the data when it cannot
   retrieve it right now (`…_UNAVAILABLE`, listed in the attributes of the API status sensor). The integration then
@@ -383,4 +389,6 @@ See [CHANGELOG.md](CHANGELOG.md) for release notes.
 ## Disclaimer
 
 Provided as-is, without warranty. Škoda Auto may change its API at any time, which can break
-this integration. Use of the MyŠkoda Public API is subject to Škoda's own terms of service.
+this integration. Use of the MyŠkoda Public API is subject to Škoda's own terms of service. The code was
+written with the support of Claude, an AI assistant by Anthropic, and tested as described above, but it may
+contain mistakes.

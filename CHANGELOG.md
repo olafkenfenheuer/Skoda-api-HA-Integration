@@ -9,7 +9,8 @@ All notable changes to this integration are documented here. The format follows
 
 ### Changed
 
-- The API key is created in the MyŠkoda app (Profile > Smart home > Keys > Create key): the README and the texts of the setup, reauthentication and reconfiguration dialogs name that path instead of the web link `go.skoda.eu/api-keys`, and the remark about a QR code is gone.
+- README: a note that the programming of the integration was done with the support of Claude (an AI assistant by Anthropic).
+- The API key is created in the MyŠkoda app (Profile > Smart home > Keys > Create key): the README and the texts of the setup, reauthentication and reconfiguration dialogs name that path next to the link `go.skoda.eu/api-keys`, which only works on a phone with the app (the remark about a QR code is gone).
 
 ## [0.5.1]
 

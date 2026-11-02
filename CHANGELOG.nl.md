@@ -7,9 +7,13 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+### Changed
+
+- README: een opmerking dat de programmering van de integratie is gedaan met ondersteuning van Claude (een AI-assistent van Anthropic).
+
 ### Gewijzigd
 
-- De API-sleutel wordt in de MyŠkoda-app aangemaakt (Profiel > Smart home > Keys > Create key): de README en de teksten van de dialogen voor instellen, opnieuw aanmelden en opnieuw configureren noemen dat pad in plaats van de weblink `go.skoda.eu/api-keys`, en de opmerking over een QR-code is vervallen.
+- De API-sleutel wordt in de MyŠkoda-app aangemaakt (Profiel > Smart home > Keys > Create key): de README en de teksten van de dialogen voor instellen, opnieuw aanmelden en opnieuw configureren noemen dat pad naast de link `go.skoda.eu/api-keys`, die alleen op een telefoon met de app werkt (de opmerking over een QR-code is vervallen).
 
 ## [0.5.1]
 
