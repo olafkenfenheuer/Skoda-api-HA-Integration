@@ -13,10 +13,15 @@ All notable changes to this integration are documented here. The format follows
 
 - Charging profiles: for vehicles that list `updateChargingProfile` and report profiles (the saved charging locations of the MyŠkoda app), every profile gets a select **charging current** (`MAXIMUM`/`REDUCED`), a number **target charge** and a switch **unlock plug after charging**. The profile is fetched again right before it is sent, with only the one setting changed, because the vehicle applies a profile as a whole. Untested.
 - Auxiliary heating: vehicles that list `startAuxiliaryHeating` and report the function get a `climate` entity **Auxiliary heating** (off, heat, fan only) and a number **Auxiliary heating duration**. Starting it needs the S-PIN of the MyŠkoda account, entered in the options (the field only appears if a vehicle has an auxiliary heating); it is redacted in the diagnostics. The vehicle polls faster while the heating runs, and a stop of it is used to wake vehicles without a charge mode. Untested.
+- The charging location sensor shows the id, the target charge and the next charging time of the current charging profile, and the list of all profiles, as attributes.
 
 ### Changed
 
 - The diagnostics redact the names of charging profiles, which are usually addresses.
+
+### Fixed
+
+- A part of the vehicle data that the API reports as `<PART>_UNAVAILABLE` (could not be retrieved right now) is now filled in with its last known data, from the previous poll or, at startup, from the stored copy. Before, the entities of that part (the climate and the target temperature, for example) were not created when Home Assistant started while the API left that part out, and stayed unavailable until the integration was reloaded. The old timestamp stays visible. Unsupported or disabled parts are not filled in.
 
 ## [0.4.5]
 

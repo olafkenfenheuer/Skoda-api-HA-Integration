@@ -13,10 +13,15 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 - Laadprofielen: voor voertuigen die `updateChargingProfile` vermelden en profielen melden (de opgeslagen laadlocaties van de MyŠkoda-app) krijgt elk profiel een selectie **laadstroom** (`MAXIMUM`/`REDUCED`), een getal **laaddoel** en een schakelaar **stekker na het laden ontgrendelen**. Het profiel wordt vlak voor het verzenden opnieuw opgehaald, met alleen die ene instelling gewijzigd, omdat het voertuig een profiel als geheel overneemt. Niet getest.
 - Standkachel: voertuigen die `startAuxiliaryHeating` vermelden en de functie melden krijgen een `climate`-entiteit **Standkachel** (uit, verwarmen, alleen ventileren) en een getal **Standkachel: looptijd**. Starten vereist de S-PIN van het MyŠkoda-account, ingevoerd in de opties (het veld verschijnt alleen als een voertuig een standkachel heeft); in de diagnostiek wordt hij geanonimiseerd. Het voertuig wordt sneller gepolld zolang de verwarming draait, en een stop ervan wordt gebruikt om voertuigen zonder laadmodus te wekken. Niet getest.
+- De sensor voor de laadlocatie toont het id, het laaddoel en de volgende laadtijd van het huidige laadprofiel, en de lijst van alle profielen, als attributen.
 
 ### Gewijzigd
 
 - De diagnostiek anonimiseert de namen van laadprofielen, die meestal adressen zijn.
+
+### Opgelost
+
+- Een deel van de voertuiggegevens dat de API meldt als `<DEEL>_UNAVAILABLE` (nu niet op te halen) wordt nu aangevuld met zijn laatst bekende gegevens, van de vorige poll of, bij het opstarten, uit de opgeslagen kopie. Eerder werden de entiteiten van dat deel (bijvoorbeeld de airco en de doeltemperatuur) niet aangemaakt als Home Assistant opstartte terwijl de API dat deel wegliet, en bleven ze niet beschikbaar tot de integratie werd herladen. De oude tijdstempel blijft zichtbaar. Niet-ondersteunde of uitgeschakelde delen worden niet aangevuld.
 
 ## [0.4.5]
 

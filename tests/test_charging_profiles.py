@@ -158,3 +158,27 @@ async def test_profile_gone_in_the_fresh_data_sends_nothing(
     put.assert_not_awaited()
     assert c.expected(VIN, "profile_7_max_current") is None
     await c.async_shutdown()
+
+
+async def test_charging_location_sensor_shows_the_current_profile(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    vehicle = _vehicle(_profile())
+    vehicle.data["charging"] = {"isVehicleInSavedLocation": True}
+    vehicle.data["chargingProfiles"]["currentVehiclePositionProfile"] = {
+        "id": 7,
+        "name": "Home",
+        "targetStateOfChargeInPercent": 80,
+        "nextChargingTime": "22:00",
+    }
+    c, _ = await _setup(hass, mock_entry, vehicle)
+    sensor = er.async_get(hass).async_get_entity_id(
+        "sensor", "skoda_api_connect", f"{VIN}_charging_location_profile"
+    )
+    state = hass.states.get(sensor)
+    assert state.state == "Home"
+    assert state.attributes["profile_id"] == 7
+    assert state.attributes["target_state_of_charge"] == 80
+    assert state.attributes["next_charging_time"] == "22:00"
+    assert state.attributes["profiles"] == [{"id": 7, "name": "Home"}]
+    await c.async_shutdown()

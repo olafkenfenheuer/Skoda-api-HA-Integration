@@ -78,6 +78,21 @@ VENTILATION_ACTIVE_STATES = ("VENTILATION", "PREHEATING")
 # auxiliaryHeating.state values while the auxiliary heating runs.
 AUXILIARY_HEATING_ACTIVE_STATES = ("PREHEATING", "HEATING_AUXILIARY", "VENTILATION")
 
+# Parts of the vehicle data the API reports as ``<PART>_UNAVAILABLE`` (could not be retrieved
+# right now, as opposed to unsupported or disabled), by the section they are missing from.
+UNAVAILABLE_SECTIONS = {
+    "VEHICLE_STATUS_UNAVAILABLE": "status",
+    "FUEL_STATUS_UNAVAILABLE": "fuelStatus",
+    "ODOMETER_UNAVAILABLE": "odometer",
+    "PARKING_POSITION_UNAVAILABLE": "parkingPosition",
+    "AIR_CONDITIONING_UNAVAILABLE": "airConditioning",
+    "AUXILIARY_HEATING_UNAVAILABLE": "auxiliaryHeating",
+    "ACTIVE_VENTILATION_UNAVAILABLE": "activeVentilation",
+    "CHARGING_UNAVAILABLE": "charging",
+    "CHARGING_PROFILES_UNAVAILABLE": "chargingProfiles",
+    "OPERATIONS_UNAVAILABLE": "operations",
+}
+
 STATUS_OK = "ok"
 STATUS_PARTIAL = "partial"
 STATUS_AUTH_ERROR = "auth_error"
@@ -415,7 +430,7 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
                 if self.data and vin in self.data.vehicles:
                     vehicles[vin] = self.data.vehicles[vin]
                 continue
-            vehicles[vin] = result
+            vehicles[vin] = await self._async_keep_unavailable(vin, result)
             self._last_fetch[vin] = time.monotonic()
 
         if failures and len(failures) == len(fetched):
@@ -481,6 +496,34 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
             if vehicle.lists(operation) and vehicle.get(section, "state") in idle:
                 return partial(getattr(self.api, method), vin)
         return None
+
+    async def _async_keep_unavailable(self, vin: str, result: SkodaVehicle) -> SkodaVehicle:
+        """Fill sections the API could not retrieve right now with their last known data.
+
+        Without this a section that is missing from one response, for example right when
+        Home Assistant starts, would remove its entities (the climate, a sensor) for good,
+        because entities are only created for the data present at setup. The last known
+        data comes from the previous poll or, at startup, from the stored copy; its
+        carCapturedTimestamp stays the old one, so its age remains visible. Unsupported or
+        disabled parts are not filled in.
+        """
+        missing = {
+            section
+            for error in result.errors
+            if (section := UNAVAILABLE_SECTIONS.get(error)) and section not in result.data
+        }
+        if not missing:
+            return result
+        previous = self.data.vehicles.get(vin) if self.data else None
+        if previous is None:
+            cached = await self._async_load_cached()
+            previous = cached.vehicles.get(vin) if cached else None
+        if previous is None:
+            return result
+        kept = {section: previous.data[section] for section in missing if section in previous.data}
+        if not kept:
+            return result
+        return SkodaVehicle(vin=vin, data={**result.data, **kept}, errors=result.errors)
 
     def _should_auto_wake(self, vin: str) -> bool:
         """Return whether a charging vehicle has been silent long enough to be woken."""

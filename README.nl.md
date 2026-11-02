@@ -15,7 +15,7 @@ externe client-bibliotheek.
 
 | Platform | Entiteiten |
 |---|---|
-| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, deuren vergrendeld, betrouwbare vergrendelingsstatus en parkeerstatus (zoals de API ze meldt, bijv. `YES`, `TRUNK_OPENED`, `PARKED`), naam van het actieve laadlocatieprofiel, API-status (resultaat van de laatste poll, diagnostisch), laatste API-poll (datum en tijd van de laatste geslaagde poll, diagnostisch), huidig pollinginterval (minuten, normaal of laadinterval, attribuut `mode`, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
+| `sensor` | Accuniveau, laadvermogen, laadlimiet (alleen lezen), laadsnelheid, resterende laadtijd, accu-/totaalbereik, brandstofniveau, AdBlue-bereik, kilometerstand, doeltemperatuur, adres van de parkeerpositie, deuren vergrendeld, betrouwbare vergrendelingsstatus en parkeerstatus (zoals de API ze meldt, bijv. `YES`, `TRUNK_OPENED`, `PARKED`), naam van het actieve laadlocatieprofiel (met id, laaddoel, volgende laadtijd en de lijst van alle profielen als attributen), API-status (resultaat van de laatste poll, diagnostisch), laatste API-poll (datum en tijd van de laatste geslaagde poll, diagnostisch), huidig pollinginterval (minuten, normaal of laadinterval, attribuut `mode`, diagnostisch), laatste voertuiggegevens (wanneer het voertuig zelf voor het laatst gegevens naar de Škoda-servers stuurde, diagnostisch) |
 | `binary_sensor` | Deuren, ramen, kofferbak, motorkap, verlichting, centrale vergrendeling, laden, laadkabel aangesloten, vergrendeling laadkabel, voertuig op opgeslagen laadlocatie, geparkeerd, niet beveiligd (zie [Parkeeralarm](#parkeeralarm)) |
 | `device_tracker` | Parkeerpositie (zichtbaar op de kaart; onbekend tijdens het rijden) |
 | `climate` | Airco op afstand (aan/uit, actieve ventilatie als het voertuig die ondersteunt, doeltemperatuur), standkachel (alleen voor voertuigen die er een hebben, zie [Standkachel](#standkachel)) |
@@ -104,6 +104,12 @@ aan en voer die in.
 De integratie gebruikt uitsluitend de gedocumenteerde endpoints onder
 `https://public.api.connect.skoda-auto.cz/api/v1/vehicles/{vin}` en authenticeert met de
 `X-API-Key`-header.
+
+De API laat een deel van de gegevens weg als ze dat nu niet kan ophalen (gemeld als `<DEEL>_UNAVAILABLE`,
+zichtbaar in de attributen van de API-statussensor). Voor zo'n deel bewaart de integratie de laatst bekende
+gegevens met hun oude tijdstempel in plaats van ze te laten vallen: anders zouden de entiteiten van dat deel
+ontbreken na een herstart van Home Assistant op het verkeerde moment. Niet-ondersteunde of uitgeschakelde delen
+worden niet aangevuld.
 
 ### Laadprofielen
 
