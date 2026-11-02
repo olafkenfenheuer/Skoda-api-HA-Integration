@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Conectar cuenta de Škoda",
-        "description": "Crea una clave de API en la aplicación MyŠkoda ({api_keys_url}) e introdúcela junto con el VIN de cada vehículo para el que se haya creado (separa varios VIN con comas).",
+        "description": "Crea una clave de API en la aplicación MyŠkoda (Perfil → Smart home → Keys → Create key) e introdúcela junto con el VIN de cada vehículo para el que se haya creado (separa varios VIN con comas).",
         "data": {
           "api_key": "Clave de API",
           "vins": "VIN(es)"
@@ -11,7 +11,7 @@
       },
       "reauth_confirm": {
         "title": "Actualizar clave de API de Škoda",
-        "description": "Tu clave de API no es válida o ha caducado. Crea una nueva en la aplicación MyŠkoda ({api_keys_url}) e introdúcela junto con el/los VIN de tus vehículos.",
+        "description": "Tu clave de API no es válida o ha caducado. Crea una nueva en la aplicación MyŠkoda (Perfil → Smart home → Keys → Create key) e introdúcela junto con el/los VIN de tus vehículos.",
         "data": {
           "api_key": "Clave de API",
           "vins": "VIN(es)"
@@ -19,7 +19,7 @@
       },
       "reconfigure": {
         "title": "Cambiar clave de API de Škoda",
-        "description": "Introduce una nueva clave de API de la aplicación MyŠkoda ({api_keys_url}), por ejemplo, antes de que caduque la actual. También puedes cambiar los VIN.",
+        "description": "Introduce una nueva clave de API de la aplicación MyŠkoda (Perfil → Smart home → Keys → Create key), por ejemplo, antes de que caduque la actual. También puedes cambiar los VIN.",
         "data": {
           "api_key": "Clave de API",
           "vins": "VIN(es)"

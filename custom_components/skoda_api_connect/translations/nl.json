@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Je Škoda-account koppelen",
-        "description": "Maak in de MyŠkoda-app een API-sleutel aan ({api_keys_url}) en voer deze in samen met het VIN van elk voertuig waarvoor hij is aangemaakt (meerdere VIN's scheiden met komma's).",
+        "description": "Maak in de MyŠkoda-app een API-sleutel aan (Profiel → Smart home → Keys → Create key) en voer deze in samen met het VIN van elk voertuig waarvoor hij is aangemaakt (meerdere VIN's scheiden met komma's).",
         "data": {
           "api_key": "API-sleutel",
           "vins": "VIN(s)"
@@ -11,7 +11,7 @@
       },
       "reauth_confirm": {
         "title": "Škoda API-sleutel vernieuwen",
-        "description": "Je API-sleutel is ongeldig of verlopen. Maak een nieuwe aan in de MyŠkoda-app ({api_keys_url}) en voer hem in met het/de VIN(s) van je voertuig(en).",
+        "description": "Je API-sleutel is ongeldig of verlopen. Maak een nieuwe aan in de MyŠkoda-app (Profiel → Smart home → Keys → Create key) en voer hem in met het/de VIN(s) van je voertuig(en).",
         "data": {
           "api_key": "API-sleutel",
           "vins": "VIN(s)"
@@ -19,7 +19,7 @@
       },
       "reconfigure": {
         "title": "Škoda API-sleutel wijzigen",
-        "description": "Voer een nieuwe API-sleutel uit de MyŠkoda-app in ({api_keys_url}), bijvoorbeeld voordat de huidige verloopt. Je kunt ook het/de VIN(s) wijzigen.",
+        "description": "Voer een nieuwe API-sleutel uit de MyŠkoda-app in (Profiel → Smart home → Keys → Create key), bijvoorbeeld voordat de huidige verloopt. Je kunt ook het/de VIN(s) wijzigen.",
         "data": {
           "api_key": "API-sleutel",
           "vins": "VIN(s)"
