@@ -73,7 +73,7 @@ class SkodaProfileMaxCurrentSelect(SkodaProfileEntity, SelectEntity):
 
     _attr_translation_key = "profile_max_current"
     _key = "max_current"
-    _setting = "maxChargingCurrent"
+    _setting = ("maxChargingCurrent",)
     _attr_options = ["MAXIMUM", "REDUCED"]
 
     @property

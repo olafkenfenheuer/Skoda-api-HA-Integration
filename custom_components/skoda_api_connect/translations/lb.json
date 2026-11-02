@@ -208,6 +208,9 @@
       },
       "profile_auto_unlock": {
         "name": "{profile}: Stecker nom Lueden entriegelen"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: Mindestluedstand aktiv"
       }
     },
     "number": {
@@ -231,6 +234,9 @@
       },
       "profile_target_soc": {
         "name": "{profile}: Luedziel"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: Mindestluedstand"
       }
     },
     "select": {
@@ -239,6 +245,42 @@
       },
       "profile_max_current": {
         "name": "{profile}: Luedstroum"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Luedprofil änneren",
+      "description": "Ännert Astellungen, bevorzugt Luedzäiten an Timer vun engem Luedprofil (engem gespäicherten Luedstanduert). Nëmmen déi uginn Felder ginn geännert, de Rescht vum Profil bleift. Kascht zwou Ufroe vum API-Kontingent.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Luedstroum",
+          "description": "MAXIMUM, oder REDUCED fir de Stroum ze begrenzen (verhënnert d'Ausléise vum Leeschtungsschalter)."
+        },
+        "target_charge": {
+          "name": "Luedziel",
+          "description": "Zil-Luedzoustand a Prozent."
+        },
+        "auto_unlock_plug": {
+          "name": "Stecker nom Lueden entriegelen",
+          "description": "Den Stecker entriegelen, wann d'Lueden fäerdeg ass."
+        },
+        "min_charge": {
+          "name": "Mindestluedstand",
+          "description": "Ënnert dësem Luedzoustand lued d'Gefier direkt."
+        },
+        "min_charge_enabled": {
+          "name": "Mindestluedstand aktiv",
+          "description": "Nëmme fir Gefierer, déi et mellen."
+        },
+        "preferred_charging_times": {
+          "name": "Bevorzugt Luedzäiten",
+          "description": "Lëscht vun Ännerungen: id (1 bis 4), enabled, start an end als HH:MM."
+        },
+        "timers": {
+          "name": "Timer",
+          "description": "Lëscht vun Ännerungen: id (1 bis 3), enabled, time als HH:MM, an days (MONDAY bis SUNDAY) fir e widderhuelenden oder one_off_day fir een eemolegen Timer."
+        }
       }
     }
   }

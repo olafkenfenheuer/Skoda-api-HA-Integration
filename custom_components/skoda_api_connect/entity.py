@@ -61,12 +61,12 @@ class SkodaVehicleEntity(CoordinatorEntity[SkodaDataUpdateCoordinator]):
 class SkodaProfileEntity(SkodaVehicleEntity):
     """Base class for an entity of one charging profile (a saved charging location).
 
-    ``_key`` names the entity, ``_setting`` the field of the profile's ``settings`` it shows
-    and changes.
+    ``_key`` names the entity, ``_setting`` the path into the profile's ``settings`` of the
+    value it shows and changes.
     """
 
     _key: str
-    _setting: str
+    _setting: tuple[str, ...]
 
     def __init__(
         self,
@@ -92,9 +92,12 @@ class SkodaProfileEntity(SkodaVehicleEntity):
         """Return the reported value of the setting, or the one a command is expected to set."""
         if (expected := self._expected()) is not None:
             return expected
-        profile = self.vehicle.charging_profile(self.profile_id)
-        settings = profile.get("settings") if profile else None
-        return settings.get(self._setting) if isinstance(settings, dict) else None
+        node: Any = self.vehicle.charging_profile(self.profile_id)
+        for name in ("settings", *self._setting):
+            if not isinstance(node, dict):
+                return None
+            node = node.get(name)
+        return node
 
     async def _async_set(self, value: Any) -> None:
         await self.coordinator.async_set_profile_setting(

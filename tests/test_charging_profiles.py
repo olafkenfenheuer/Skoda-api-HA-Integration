@@ -182,3 +182,100 @@ async def test_charging_location_sensor_shows_the_current_profile(
     assert state.attributes["next_charging_time"] == "22:00"
     assert state.attributes["profiles"] == [{"id": 7, "name": "Home"}]
     await c.async_shutdown()
+
+
+async def test_minimum_charge_entities(hass: HomeAssistant, mock_entry: MockConfigEntry) -> None:
+    c, _ = await _setup(hass, mock_entry, _vehicle(_profile()))
+    assert float(hass.states.get(_entity(hass, "number", "min_charge")).state) == 20
+    assert hass.states.get(_entity(hass, "switch", "min_charge_enabled")).state == "on"
+    with patch(PUT, new=AsyncMock()) as put:
+        await hass.services.async_call(
+            "number",
+            "set_value",
+            {"entity_id": _entity(hass, "number", "min_charge"), "value": 30},
+            blocking=True,
+        )
+        await hass.services.async_call(
+            "switch",
+            "turn_off",
+            {"entity_id": _entity(hass, "switch", "min_charge_enabled")},
+            blocking=True,
+        )
+    first, second = (call.args[2]["settings"]["minBatteryStateOfCharge"] for call in put.await_args_list)
+    assert first == {"enabled": True, "minimumBatteryStateOfChargeInPercent": 30}
+    assert second == {"enabled": False, "minimumBatteryStateOfChargeInPercent": 20}
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_switch_for_the_minimum_charge_only_if_the_vehicle_reports_it(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    # Like a vehicle that reports only the value, without "enabled".
+    profile = _profile()
+    profile["settings"]["minBatteryStateOfCharge"] = {"minimumBatteryStateOfChargeInPercent": 0}
+    c, _ = await _setup(hass, mock_entry, _vehicle(profile))
+    assert _entity(hass, "number", "min_charge") is not None
+    assert _entity(hass, "switch", "min_charge_enabled") is None
+    await c.async_shutdown()
+
+
+async def test_action_changes_the_given_fields_of_the_whole_profile(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    cached = _vehicle(_profile())
+    c, _ = await _setup(hass, mock_entry, cached)
+    with patch(PUT, new=AsyncMock()) as put:
+        await hass.services.async_call(
+            "skoda_api_connect",
+            "update_charging_profile",
+            {
+                "entity_id": [_entity(hass, "select", "max_current")],
+                "max_charging_current": "REDUCED",
+                "preferred_charging_times": [{"id": 1, "enabled": False, "start": "23:00"}],
+                "timers": [{"id": 3, "enabled": True, "time": "08:30", "days": ["MONDAY"]}],
+            },
+            blocking=True,
+        )
+    body = put.await_args.args[2]
+    assert body["settings"]["maxChargingCurrent"] == "REDUCED"
+    assert body["settings"]["targetStateOfChargeInPercent"] == 80  # untouched
+    assert body["preferredChargingTimes"] == [
+        {"id": 1, "enabled": False, "startTime": "23:00", "endTime": "06:00"}
+    ]
+    assert body["timers"] == [
+        {"id": 3, "enabled": True, "time": "08:30", "type": "RECURRING", "recurringOn": ["MONDAY"]}
+    ]
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_action_refuses_what_it_cannot_apply(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    from homeassistant.exceptions import ServiceValidationError
+
+    c, _ = await _setup(hass, mock_entry, _vehicle(_profile()))
+    select = _entity(hass, "select", "max_current")
+    refuse = pytest.raises((HomeAssistantError, ServiceValidationError))
+    with patch(PUT, new=AsyncMock()) as put:
+        with refuse:  # a timer the profile does not have
+            await hass.services.async_call(
+                "skoda_api_connect",
+                "update_charging_profile",
+                {"entity_id": [select], "timers": [{"id": 9, "enabled": True}]},
+                blocking=True,
+            )
+        with refuse:  # nothing to change
+            await hass.services.async_call(
+                "skoda_api_connect", "update_charging_profile", {"entity_id": [select]}, blocking=True
+            )
+        with refuse:  # not an entity of a charging profile
+            await hass.services.async_call(
+                "skoda_api_connect",
+                "update_charging_profile",
+                {"entity_id": ["sensor.auto_enyaq_letzter_abruf"], "target_charge": 90},
+                blocking=True,
+            )
+    put.assert_not_awaited()
+    await c.async_shutdown()

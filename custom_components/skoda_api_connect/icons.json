@@ -55,6 +55,9 @@
       },
       "profile_target_soc": {
         "default": "mdi:battery-charging-high"
+      },
+      "profile_min_charge": {
+        "default": "mdi:battery-low"
       }
     },
     "button": {
@@ -74,6 +77,9 @@
       },
       "profile_auto_unlock": {
         "default": "mdi:lock-open-variant"
+      },
+      "profile_min_charge_enabled": {
+        "default": "mdi:battery-alert-variant-outline"
       }
     },
     "select": {
@@ -88,6 +94,11 @@
       "auxiliary_heating": {
         "default": "mdi:radiator"
       }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "service": "mdi:ev-station"
     }
   }
 }

@@ -208,6 +208,9 @@
       },
       "profile_auto_unlock": {
         "name": "{profile}: desbloquear el enchufe tras la carga"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: carga mínima activa"
       }
     },
     "number": {
@@ -231,6 +234,9 @@
       },
       "profile_target_soc": {
         "name": "{profile}: carga objetivo"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: carga mínima"
       }
     },
     "select": {
@@ -239,6 +245,42 @@
       },
       "profile_max_current": {
         "name": "{profile}: corriente de carga"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Modificar el perfil de carga",
+      "description": "Cambia los ajustes, los horarios de carga preferidos y los temporizadores de un perfil de carga (una ubicación de carga guardada). Solo se cambian los campos indicados, el resto del perfil se mantiene. Cuesta dos solicitudes de la cuota de la API.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Corriente de carga",
+          "description": "MAXIMUM, o REDUCED para limitar la corriente (evita que salte el magnetotérmico)."
+        },
+        "target_charge": {
+          "name": "Carga objetivo",
+          "description": "Nivel de carga objetivo en porcentaje."
+        },
+        "auto_unlock_plug": {
+          "name": "Desbloquear el enchufe tras la carga",
+          "description": "Desbloquea el enchufe cuando termina la carga."
+        },
+        "min_charge": {
+          "name": "Carga mínima",
+          "description": "Por debajo de este nivel de carga, el vehículo carga de inmediato."
+        },
+        "min_charge_enabled": {
+          "name": "Carga mínima activa",
+          "description": "Solo para vehículos que lo informan."
+        },
+        "preferred_charging_times": {
+          "name": "Horarios de carga preferidos",
+          "description": "Lista de cambios: id (1 a 4), enabled, start y end como HH:MM."
+        },
+        "timers": {
+          "name": "Temporizadores",
+          "description": "Lista de cambios: id (1 a 3), enabled, time como HH:MM, y days (MONDAY a SUNDAY) para uno recurrente o one_off_day para uno único."
+        }
       }
     }
   }

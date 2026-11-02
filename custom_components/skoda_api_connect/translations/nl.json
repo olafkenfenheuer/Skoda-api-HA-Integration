@@ -208,6 +208,9 @@
       },
       "profile_auto_unlock": {
         "name": "{profile}: stekker na het laden ontgrendelen"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimale laadgrens actief"
       }
     },
     "number": {
@@ -231,6 +234,9 @@
       },
       "profile_target_soc": {
         "name": "{profile}: laaddoel"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimale laadgrens"
       }
     },
     "select": {
@@ -239,6 +245,42 @@
       },
       "profile_max_current": {
         "name": "{profile}: laadstroom"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Laadprofiel wijzigen",
+      "description": "Wijzigt instellingen, voorkeurslaadtijden en timers van een laadprofiel (een opgeslagen laadlocatie). Alleen de opgegeven velden worden gewijzigd, de rest van het profiel blijft. Kost twee verzoeken van het API-quotum.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Laadstroom",
+          "description": "MAXIMUM, of REDUCED om de stroom te beperken (voorkomt het uitvallen van de automaat)."
+        },
+        "target_charge": {
+          "name": "Laaddoel",
+          "description": "Doel-laadniveau in procent."
+        },
+        "auto_unlock_plug": {
+          "name": "Stekker na het laden ontgrendelen",
+          "description": "De stekker ontgrendelen als het laden klaar is."
+        },
+        "min_charge": {
+          "name": "Minimale laadgrens",
+          "description": "Onder dit laadniveau laadt het voertuig meteen."
+        },
+        "min_charge_enabled": {
+          "name": "Minimale laadgrens actief",
+          "description": "Alleen voor voertuigen die het melden."
+        },
+        "preferred_charging_times": {
+          "name": "Voorkeurslaadtijden",
+          "description": "Lijst van wijzigingen: id (1 tot 4), enabled, start en end als HH:MM."
+        },
+        "timers": {
+          "name": "Timers",
+          "description": "Lijst van wijzigingen: id (1 tot 3), enabled, time als HH:MM, en days (MONDAY tot SUNDAY) voor een terugkerende of one_off_day voor een eenmalige timer."
+        }
       }
     }
   }

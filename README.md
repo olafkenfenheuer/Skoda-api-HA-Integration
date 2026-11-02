@@ -126,12 +126,36 @@ parts are not filled in.
 
 A charging profile is a saved charging location of the MyŠkoda app. For vehicles that list the operation
 `updateChargingProfile` and report at least one profile, every profile gets three controls, named after
-the profile: **charging current** (`MAXIMUM` or `REDUCED`), **target charge** (50 to 100 %) and
-**unlock plug after charging**. A vehicle applies a profile as a whole, so the integration fetches the
+the profile: **charging current** (`MAXIMUM` or `REDUCED`, the "current limit" of the app), **target charge**
+(50 to 100 %) and **unlock plug after charging**, plus the **minimum charge** (below it the vehicle charges at once) and,
+if the vehicle reports it, a switch to activate it. A vehicle applies a profile as a whole, so the integration fetches the
 profile again right before it sends it, with only the one setting changed; timers and preferred charging
 times stay as they are. A change costs two requests of the quota plus the follow-up refresh. New profiles
 only show up after the integration is reloaded. Untested; a vehicle without saved charging locations has
 no profiles and therefore none of these entities.
+
+Timers and preferred charging times are not entities (a profile has up to 4 preferred charging times and 3
+timers). The sensor **Charging location** shows those of the profile the vehicle is at as attributes, and the
+action `skoda_api_connect.update_charging_profile` changes any of the settings, preferred charging times and
+timers of a profile: pick an entity of the profile as the target and name only what should change, for example
+
+```yaml
+action: skoda_api_connect.update_charging_profile
+target:
+  entity_id: select.my_car_home_charging_current
+data:
+  max_charging_current: REDUCED
+  timers:
+    - id: 1
+      enabled: true
+      time: "07:30"
+      days: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+  preferred_charging_times:
+    - id: 1
+      enabled: true
+      start: "22:00"
+      end: "06:00"
+```
 
 ### Auxiliary heating
 

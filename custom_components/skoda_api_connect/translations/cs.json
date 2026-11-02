@@ -208,6 +208,9 @@
       },
       "profile_auto_unlock": {
         "name": "{profile}: odemknout zástrčku po nabití"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimální nabití aktivní"
       }
     },
     "number": {
@@ -231,6 +234,9 @@
       },
       "profile_target_soc": {
         "name": "{profile}: cílové nabití"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimální nabití"
       }
     },
     "select": {
@@ -239,6 +245,42 @@
       },
       "profile_max_current": {
         "name": "{profile}: nabíjecí proud"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Změnit nabíjecí profil",
+      "description": "Mění nastavení, preferované časy nabíjení a časovače nabíjecího profilu (uložené nabíjecí lokality). Změní se jen zadaná pole, zbytek profilu zůstane. Stojí dva požadavky z kvóty API.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Nabíjecí proud",
+          "description": "MAXIMUM, nebo REDUCED pro omezení proudu (zabrání vypnutí jističe)."
+        },
+        "target_charge": {
+          "name": "Cílové nabití",
+          "description": "Cílový stav nabití v procentech."
+        },
+        "auto_unlock_plug": {
+          "name": "Odemknout zástrčku po nabití",
+          "description": "Odemkne zástrčku po skončení nabíjení."
+        },
+        "min_charge": {
+          "name": "Minimální nabití",
+          "description": "Pod touto úrovní nabití vozidlo nabíjí ihned."
+        },
+        "min_charge_enabled": {
+          "name": "Minimální nabití aktivní",
+          "description": "Jen pro vozidla, která to hlásí."
+        },
+        "preferred_charging_times": {
+          "name": "Preferované časy nabíjení",
+          "description": "Seznam změn: id (1 až 4), enabled, start a end jako HH:MM."
+        },
+        "timers": {
+          "name": "Časovače",
+          "description": "Seznam změn: id (1 až 3), enabled, time jako HH:MM a days (MONDAY až SUNDAY) pro opakovaný nebo one_off_day pro jednorázový časovač."
+        }
       }
     }
   }

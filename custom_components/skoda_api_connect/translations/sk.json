@@ -208,6 +208,9 @@
       },
       "profile_auto_unlock": {
         "name": "{profile}: odomknúť zástrčku po nabití"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimálne nabitie aktívne"
       }
     },
     "number": {
@@ -231,6 +234,9 @@
       },
       "profile_target_soc": {
         "name": "{profile}: cieľové nabitie"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimálne nabitie"
       }
     },
     "select": {
@@ -239,6 +245,42 @@
       },
       "profile_max_current": {
         "name": "{profile}: nabíjací prúd"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Zmeniť nabíjací profil",
+      "description": "Mení nastavenia, preferované časy nabíjania a časovače nabíjacieho profilu (uloženej nabíjacej lokality). Zmenia sa len zadané polia, zvyšok profilu zostane. Stojí dva požiadavky z kvóty API.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Nabíjací prúd",
+          "description": "MAXIMUM, alebo REDUCED na obmedzenie prúdu (zabráni vypnutiu ističa)."
+        },
+        "target_charge": {
+          "name": "Cieľové nabitie",
+          "description": "Cieľový stav nabitia v percentách."
+        },
+        "auto_unlock_plug": {
+          "name": "Odomknúť zástrčku po nabití",
+          "description": "Odomkne zástrčku po skončení nabíjania."
+        },
+        "min_charge": {
+          "name": "Minimálne nabitie",
+          "description": "Pod touto úrovňou nabitia vozidlo nabíja hneď."
+        },
+        "min_charge_enabled": {
+          "name": "Minimálne nabitie aktívne",
+          "description": "Len pre vozidlá, ktoré to hlásia."
+        },
+        "preferred_charging_times": {
+          "name": "Preferované časy nabíjania",
+          "description": "Zoznam zmien: id (1 až 4), enabled, start a end ako HH:MM."
+        },
+        "timers": {
+          "name": "Časovače",
+          "description": "Zoznam zmien: id (1 až 3), enabled, time ako HH:MM a days (MONDAY až SUNDAY) pre opakovaný alebo one_off_day pre jednorazový časovač."
+        }
       }
     }
   }

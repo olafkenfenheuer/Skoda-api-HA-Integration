@@ -68,6 +68,16 @@ async def async_setup_entry(
             if vehicle.lists("updateChargingProfile")
             for profile in vehicle.charging_profiles()
         ]
+        + [
+            SkodaProfileMinChargeNumber(
+                coordinator, vin, profile["id"], str(profile.get("name") or profile["id"])
+            )
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vehicle.lists("updateChargingProfile")
+            for profile in vehicle.charging_profiles()
+            if "minimumBatteryStateOfChargeInPercent"
+            in (profile.get("settings", {}).get("minBatteryStateOfCharge") or {})
+        ]
     )
 
 
@@ -238,7 +248,7 @@ class SkodaProfileTargetNumber(SkodaProfileEntity, NumberEntity):
 
     _attr_translation_key = "profile_target_soc"
     _key = "target_soc"
-    _setting = "targetStateOfChargeInPercent"
+    _setting = ("targetStateOfChargeInPercent",)
     _attr_native_unit_of_measurement = PERCENTAGE
     # Vehicles typically accept 50-100 in steps of 10 and reject other values.
     _attr_native_min_value = 50
@@ -254,4 +264,31 @@ class SkodaProfileTargetNumber(SkodaProfileEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Change the target state of charge of the profile."""
+        await self._async_set(int(value))
+
+
+class SkodaProfileMinChargeNumber(SkodaProfileEntity, NumberEntity):
+    """The minimum charge of a charging profile: below it the vehicle charges at once.
+
+    The app calls it "minimum charging limit". Whether it is active is a separate switch,
+    for vehicles that report that.
+    """
+
+    _attr_translation_key = "profile_min_charge"
+    _key = "min_charge"
+    _setting = ("minBatteryStateOfCharge", "minimumBatteryStateOfChargeInPercent")
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_native_min_value = 0
+    _attr_native_max_value = 100
+    _attr_native_step = 10
+    _attr_mode = NumberMode.SLIDER
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the minimum charge of the profile."""
+        value = self._value
+        return value if isinstance(value, (int, float)) else None
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Change the minimum charge of the profile."""
         await self._async_set(int(value))

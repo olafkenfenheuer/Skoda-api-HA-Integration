@@ -128,12 +128,19 @@ oder deaktivierte Teile werden nicht aufgefüllt.
 
 Ein Ladeprofil ist ein gespeicherter Ladestandort der MyŠkoda-App. Bei Fahrzeugen, die die Operation
 `updateChargingProfile` nennen und mindestens ein Profil melden, bekommt jedes Profil drei Steuerungen mit
-dem Namen des Profils: **Ladestrom** (`MAXIMUM` oder `REDUCED`), **Ladeziel** (50 bis 100 %) und **Stecker
-nach dem Laden entriegeln**. Ein Fahrzeug übernimmt ein Profil als Ganzes, deshalb holt die Integration das
+dem Namen des Profils: **Ladestrom** (`MAXIMUM` oder `REDUCED`, die „Strombegrenzung“ der App), **Ladeziel** (50 bis 100 %) und
+**Stecker nach dem Laden entriegeln**, dazu die **minimale Ladegrenze** (darunter lädt das Fahrzeug sofort) und,
+wenn das Fahrzeug es meldet, ein Schalter zum Aktivieren. Ein Fahrzeug übernimmt ein Profil als Ganzes, deshalb holt die Integration das
 Profil unmittelbar vor dem Senden neu und ändert nur die eine Einstellung; Timer und bevorzugte Ladezeiten
 bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus das Nachladen. Neue Profile
 erscheinen erst nach einem Neuladen der Integration. Nicht erprobt; ein Fahrzeug ohne gespeicherte
 Ladestandorte hat keine Profile und deshalb keine dieser Entitäten.
+
+Timer und bevorzugte Ladezeiten sind keine Entitäten (ein Profil hat bis zu 4 bevorzugte Ladezeiten und 3
+Timer). Der Sensor **Ladestandort** zeigt die des Profils, in dem das Fahrzeug steht, als Attribute, und die
+Aktion `skoda_api_connect.update_charging_profile` ändert beliebige Einstellungen, bevorzugte Ladezeiten und
+Timer eines Profils: Als Ziel eine Entität des Profils wählen und nur angeben, was sich ändern soll (siehe das
+Beispiel in der englischen README).
 
 ### Standheizung
 

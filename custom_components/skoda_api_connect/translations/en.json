@@ -208,6 +208,9 @@
       },
       "profile_auto_unlock": {
         "name": "{profile}: unlock plug after charging"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile}: minimum charge active"
       }
     },
     "number": {
@@ -231,6 +234,9 @@
       },
       "profile_target_soc": {
         "name": "{profile}: target charge"
+      },
+      "profile_min_charge": {
+        "name": "{profile}: minimum charge"
       }
     },
     "select": {
@@ -239,6 +245,42 @@
       },
       "profile_max_current": {
         "name": "{profile}: charging current"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Update charging profile",
+      "description": "Changes settings, preferred charging times and timers of a charging profile (a saved charging location). Only the fields you give are changed, the rest of the profile stays as it is. Costs two requests of the API quota.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Charging current",
+          "description": "MAXIMUM, or REDUCED to limit the current (avoids tripping the circuit breaker)."
+        },
+        "target_charge": {
+          "name": "Target charge",
+          "description": "Target state of charge in percent."
+        },
+        "auto_unlock_plug": {
+          "name": "Unlock plug after charging",
+          "description": "Unlock the plug when charging has finished."
+        },
+        "min_charge": {
+          "name": "Minimum charge",
+          "description": "Below this state of charge the vehicle charges at once."
+        },
+        "min_charge_enabled": {
+          "name": "Minimum charge active",
+          "description": "Only for vehicles that report it."
+        },
+        "preferred_charging_times": {
+          "name": "Preferred charging times",
+          "description": "List of changes: id (1 to 4), enabled, start and end as HH:MM."
+        },
+        "timers": {
+          "name": "Timers",
+          "description": "List of changes: id (1 to 3), enabled, time as HH:MM, and days (MONDAY to SUNDAY) for a recurring timer or one_off_day for a one-off timer."
+        }
       }
     }
   }

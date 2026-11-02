@@ -36,6 +36,15 @@ async def async_setup_entry(
             if vehicle.lists("updateChargingProfile")
             for profile in vehicle.charging_profiles()
         ]
+        + [
+            SkodaProfileMinChargeSwitch(
+                coordinator, vin, profile["id"], str(profile.get("name") or profile["id"])
+            )
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vehicle.lists("updateChargingProfile")
+            for profile in vehicle.charging_profiles()
+            if "enabled" in (profile.get("settings", {}).get("minBatteryStateOfCharge") or {})
+        ]
     )
 
 
@@ -110,7 +119,7 @@ class SkodaProfileAutoUnlockSwitch(SkodaProfileEntity, SwitchEntity):
 
     _attr_translation_key = "profile_auto_unlock"
     _key = "auto_unlock"
-    _setting = "autoUnlockPlugWhenCharged"
+    _setting = ("autoUnlockPlugWhenCharged",)
 
     @property
     def is_on(self) -> bool | None:
@@ -125,3 +134,25 @@ class SkodaProfileAutoUnlockSwitch(SkodaProfileEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Do not unlock the plug automatically."""
         await self._async_set("OFF")
+
+
+class SkodaProfileMinChargeSwitch(SkodaProfileEntity, SwitchEntity):
+    """Whether the minimum charge of a charging profile is active (only if reported)."""
+
+    _attr_translation_key = "profile_min_charge_enabled"
+    _key = "min_charge_enabled"
+    _setting = ("minBatteryStateOfCharge", "enabled")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return true if the vehicle charges at once below the minimum charge."""
+        value = self._value
+        return value if isinstance(value, bool) else None
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Activate the minimum charge."""
+        await self._async_set(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Deactivate the minimum charge."""
+        await self._async_set(False)

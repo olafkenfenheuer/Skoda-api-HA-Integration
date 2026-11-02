@@ -208,6 +208,9 @@
       },
       "profile_auto_unlock": {
         "name": "{profile} : déverrouiller la prise après la charge"
+      },
+      "profile_min_charge_enabled": {
+        "name": "{profile} : charge minimale active"
       }
     },
     "number": {
@@ -231,6 +234,9 @@
       },
       "profile_target_soc": {
         "name": "{profile} : objectif de charge"
+      },
+      "profile_min_charge": {
+        "name": "{profile} : charge minimale"
       }
     },
     "select": {
@@ -239,6 +245,42 @@
       },
       "profile_max_current": {
         "name": "{profile} : courant de charge"
+      }
+    }
+  },
+  "services": {
+    "update_charging_profile": {
+      "name": "Modifier le profil de charge",
+      "description": "Modifie les réglages, les heures de charge préférées et les minuteries d'un profil de charge (un lieu de charge enregistré). Seuls les champs indiqués sont modifiés, le reste du profil reste tel quel. Coûte deux requêtes du quota de l'API.",
+      "fields": {
+        "max_charging_current": {
+          "name": "Courant de charge",
+          "description": "MAXIMUM, ou REDUCED pour limiter le courant (évite le déclenchement du disjoncteur)."
+        },
+        "target_charge": {
+          "name": "Objectif de charge",
+          "description": "Niveau de charge cible en pourcentage."
+        },
+        "auto_unlock_plug": {
+          "name": "Déverrouiller la prise après la charge",
+          "description": "Déverrouille la prise quand la charge est terminée."
+        },
+        "min_charge": {
+          "name": "Charge minimale",
+          "description": "Sous ce niveau de charge, le véhicule charge immédiatement."
+        },
+        "min_charge_enabled": {
+          "name": "Charge minimale active",
+          "description": "Uniquement pour les véhicules qui le signalent."
+        },
+        "preferred_charging_times": {
+          "name": "Heures de charge préférées",
+          "description": "Liste de modifications : id (1 à 4), enabled, start et end au format HH:MM."
+        },
+        "timers": {
+          "name": "Minuteries",
+          "description": "Liste de modifications : id (1 à 3), enabled, time au format HH:MM, et days (MONDAY à SUNDAY) pour une minuterie récurrente ou one_off_day pour une minuterie unique."
+        }
       }
     }
   }

@@ -99,6 +99,26 @@ def _charging_location_attributes(vehicle: Vehicle) -> dict[str, Any]:
     ):
         if current.get(key) is not None:
             attributes[name] = current[key]
+    if profile := vehicle.charging_profile(current.get("id")):
+        attributes["preferred_charging_times"] = [
+            {
+                "id": slot.get("id"),
+                "enabled": slot.get("enabled"),
+                "start": slot.get("startTime"),
+                "end": slot.get("endTime"),
+            }
+            for slot in profile.get("preferredChargingTimes") or []
+        ]
+        attributes["timers"] = [
+            {
+                "id": timer.get("id"),
+                "enabled": timer.get("enabled"),
+                "type": timer.get("type"),
+                "time": timer.get("time"),
+                "days": timer.get("recurringOn") or timer.get("oneOffDay"),
+            }
+            for timer in profile.get("timers") or []
+        ]
     return attributes
 
 

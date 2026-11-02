@@ -115,12 +115,19 @@ worden niet aangevuld.
 
 Een laadprofiel is een opgeslagen laadlocatie van de MyŠkoda-app. Voor voertuigen die de operatie
 `updateChargingProfile` vermelden en minstens één profiel melden, krijgt elk profiel drie bedieningen met
-de naam van het profiel: **laadstroom** (`MAXIMUM` of `REDUCED`), **laaddoel** (50 tot 100 %) en **stekker
-na het laden ontgrendelen**. Een voertuig neemt een profiel als geheel over, daarom haalt de integratie het
+de naam van het profiel: **laadstroom** (`MAXIMUM` of `REDUCED`, de "stroombegrenzing" van de app), **laaddoel** (50 tot 100 %) en
+**stekker na het laden ontgrendelen**, plus de **minimale laadgrens** (eronder laadt het voertuig meteen) en, als
+het voertuig het meldt, een schakelaar om haar te activeren. Een voertuig neemt een profiel als geheel over, daarom haalt de integratie het
 profiel vlak voor het verzenden opnieuw op en wijzigt alleen die ene instelling; timers en voorkeurslaadtijden
 blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het verversen. Nieuwe profielen
 verschijnen pas na het herladen van de integratie. Niet getest; een voertuig zonder opgeslagen laadlocaties
 heeft geen profielen en dus geen van deze entiteiten.
+
+Timers en voorkeurslaadtijden zijn geen entiteiten (een profiel heeft tot 4 voorkeurslaadtijden en 3 timers). De
+sensor **Laadlocatie** toont die van het profiel waar het voertuig staat als attributen, en de actie
+`skoda_api_connect.update_charging_profile` wijzigt elke instelling, voorkeurslaadtijd en timer van een profiel:
+kies een entiteit van het profiel als doel en geef alleen op wat moet veranderen (zie het voorbeeld in de
+Engelse README).
 
 ### Standkachel
 

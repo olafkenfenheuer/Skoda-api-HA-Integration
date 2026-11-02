@@ -618,9 +618,31 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         return int(overrides.get(vin, {}).get(KEY_AUX_DURATION, DEFAULT_AUX_DURATION_MINUTES))
 
     async def async_set_profile_setting(
-        self, vin: str, profile_id: int, key: str, setting: str, value: Any
+        self, vin: str, profile_id: int, key: str, path: tuple[str, ...], value: Any
     ) -> None:
-        """Change one setting of a charging profile.
+        """Change one setting of a charging profile (``path`` leads into its ``settings``)."""
+
+        def mutate(body: dict[str, Any]) -> None:
+            node = body.setdefault("settings", {})
+            for name in path[:-1]:
+                node = node.setdefault(name, {})
+            node[path[-1]] = value
+
+        await self.async_update_profile(
+            vin,
+            profile_id,
+            mutate,
+            Expectation(f"profile_{profile_id}_{key}", value, "chargingProfiles"),
+        )
+
+    async def async_update_profile(
+        self,
+        vin: str,
+        profile_id: int,
+        mutate: Callable[[dict[str, Any]], None],
+        expect: Expectation | None = None,
+    ) -> None:
+        """Change a charging profile with ``mutate``, which edits a fresh copy of it.
 
         The vehicle applies a profile as a whole, so the profile is fetched again right
         before it is sent: a copy cached from an earlier poll could undo a change made in
@@ -628,18 +650,18 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         follow-up refresh.
         """
         await self.async_command(
-            vin,
-            self._update_profile(vin, profile_id, setting, value),
-            Expectation(f"profile_{profile_id}_{key}", value, "chargingProfiles"),
+            vin, self._update_profile(vin, profile_id, mutate), expect
         )
 
-    async def _update_profile(self, vin: str, profile_id: int, setting: str, value: Any) -> None:
+    async def _update_profile(
+        self, vin: str, profile_id: int, mutate: Callable[[dict[str, Any]], None]
+    ) -> None:
         fresh = await self.api.get_vehicle(vin, include=["chargingProfiles"])
         profile = fresh.charging_profile(profile_id)
         if profile is None:
             raise HomeAssistantError("The vehicle does not report this charging profile (any more)")
         body = copy.deepcopy(profile)
-        body.setdefault("settings", {})[setting] = value
+        mutate(body)
         await self.api.update_charging_profile(vin, profile_id, body)
 
     async def async_refresh_vehicle(self, vin: str) -> None:

@@ -51,7 +51,7 @@ python -m compileall -q custom_components           # quick syntax check
 - Enum values may gain new members - never assume an exhaustive list; treat `UNKNOWN`/`UNSUPPORTED` as
   unknown.
 - There is **no vehicle list**, so VINs are entered by the user. There is **no lock/unlock, honk/flash,
-  wakeup (the button "Wake vehicle" is only a workaround: it re-sends the current charge mode, or stops an idle function if there is no charge mode, see `coordinator._wake_command`), window heating, battery care**; do not re-add entities for them. The maximum charging current is only writable inside a charging profile (`updateChargingProfile`, see `SkodaProfileEntity`).
+  wakeup (the button "Wake vehicle" is only a workaround: it re-sends the current charge mode, or stops an idle function if there is no charge mode, see `coordinator._wake_command`), window heating, battery care**; do not re-add entities for them. The maximum charging current is only writable inside a charging profile (`updateChargingProfile`, see `SkodaProfileEntity`; `services.py` has the action `update_charging_profile`, registered in `async_setup`, and `services.yaml` plus the `services` strings must stay in sync).
 - Errors are RFC 9457 `application/problem+json`; the type suffix (e.g. `api-key-expired`) is kept in
   `SkodaApiError.problem`. 401 -> reauth, 429 -> backoff via `Retry-After`.
 
