@@ -119,7 +119,13 @@ de naam van het profiel: **laadstroom** (`MAXIMUM` of `REDUCED`, de "stroombegre
 **stekker na het laden ontgrendelen**, plus de **minimale laadgrens** (eronder laadt het voertuig meteen) en, als
 het voertuig het meldt, een schakelaar om haar te activeren. Een voertuig neemt een profiel als geheel over, daarom haalt de integratie het
 profiel vlak voor het verzenden opnieuw op en wijzigt alleen die ene instelling; timers en voorkeurslaadtijden
-blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het verversen. Niet getest.
+blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het verversen.
+
+Getest op een Enyaq (2026): de laadstroom, het laaddoel, de minimale laadgrens, "stekker ontgrendelen", de
+voorkeurslaadtijden en de timers (de app noemt ze "vertrektijden") van een profiel, aan- en uitgezet en met andere
+tijden en dagen, alles in één commando; het toevoegen en verwijderen van een profiel. Niet getest: eenmalige
+timers (`one_off_day`) en de schakelaar voor de minimale laadgrens (de Enyaq meldt hem niet). De
+voorkeurslaadtijden gelden voor alle vertrektijden van het profiel, zoals de app zegt.
 
 **Wanneer de profielen in Home Assistant verschijnen**
 

@@ -132,7 +132,13 @@ dem Namen des Profils: **Ladestrom** (`MAXIMUM` oder `REDUCED`, die „Strombegr
 **Stecker nach dem Laden entriegeln**, dazu die **minimale Ladegrenze** (darunter lädt das Fahrzeug sofort) und,
 wenn das Fahrzeug es meldet, ein Schalter zum Aktivieren. Ein Fahrzeug übernimmt ein Profil als Ganzes, deshalb holt die Integration das
 Profil unmittelbar vor dem Senden neu und ändert nur die eine Einstellung; Timer und bevorzugte Ladezeiten
-bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus das Nachladen. Nicht erprobt.
+bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus das Nachladen.
+
+An einem Enyaq erprobt (2026): Ladestrom, Ladeziel, minimale Ladegrenze, „Stecker entriegeln“, bevorzugte Ladezeiten
+und Timer (die App nennt sie „Abfahrtszeiten“) eines Profils, ein- und ausgeschaltet und mit anderen Zeiten und
+Tagen, alles in einem Befehl; Hinzufügen und Löschen eines Profils. Nicht erprobt: einmalige Timer (`one_off_day`)
+und der Schalter für die minimale Ladegrenze (der Enyaq meldet ihn nicht). Die bevorzugten Ladezeiten gelten für
+alle Abfahrtszeiten des Profils, wie die App sagt.
 
 **Wann die Profile in Home Assistant erscheinen**
 

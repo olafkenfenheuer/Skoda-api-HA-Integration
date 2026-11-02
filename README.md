@@ -130,7 +130,13 @@ the profile: **charging current** (`MAXIMUM` or `REDUCED`, the "current limit" o
 (50 to 100 %) and **unlock plug after charging**, plus the **minimum charge** (below it the vehicle charges at once) and,
 if the vehicle reports it, a switch to activate it. A vehicle applies a profile as a whole, so the integration fetches the
 profile again right before it sends it, with only the one setting changed; timers and preferred charging
-times stay as they are. A change costs two requests of the quota plus the follow-up refresh. Untested.
+times stay as they are. A change costs two requests of the quota plus the follow-up refresh.
+
+Tested on an Enyaq (2026): the charging current, target charge, minimum charge, "unlock plug", preferred charging
+times and the timers (the app calls them "departure times") of a profile, switched on and off and with other
+times and days, all in one command; adding and deleting a profile. Not tested: one-off timers (`one_off_day`) and
+the switch for the minimum charge (the Enyaq does not report it). The preferred charging times apply to all
+departure times of the profile, as the app says.
 
 **When the profiles show up in Home Assistant**
 
