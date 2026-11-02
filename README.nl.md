@@ -131,8 +131,8 @@ blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het
 - De entiteiten van een profiel worden bij het instellen van de integratie aangemaakt, daarom **herlaadt de
   integratie zichzelf** als de profielen van een voertuig veranderen: een profiel is toegevoegd, verwijderd of
   hernoemd (de namen van de entiteiten worden bij het instellen overgenomen). Een wijziging moet in **twee
-  polls achter elkaar** voorkomen, zodat een even foutief antwoord geen herlaad veroorzaakt; bij het normale
-  pollinginterval duurt dat 10 tot 20 minuten. Alleen voertuigen die `updateChargingProfile` vermelden worden
+  polls achter elkaar** voorkomen (een verwijdering in drie), zodat een even foutief antwoord geen herlaad
+  veroorzaakt; bij het normale pollinginterval duurt dat 10 tot 30 minuten. Alleen voertuigen die `updateChargingProfile` vermelden worden
   bewaakt. Je kunt ook handmatig herladen (Instellingen > Apparaten en diensten > Škoda API Connect > de drie
   puntjes > Opnieuw laden).
 
@@ -141,12 +141,12 @@ blijven zoals ze zijn. Een wijziging kost twee verzoeken van het quotum plus het
 - De entiteiten worden **niet beschikbaar** zodra het voertuig het profiel niet meer meldt. Voor een verdwenen
   profiel wordt niets naar het voertuig gestuurd: de actie `update_charging_profile` weigert het ("The vehicle
   does not report this charging profile (any more)") voordat ze iets schrijft.
-- De integratie herlaadt zichzelf, en voor het verwijderde profiel worden geen entiteiten meer aangemaakt, maar
-  de oude **blijven in Home Assistant** staan als niet-beschikbare entiteiten. Ze worden niet automatisch
-  verwijderd, omdat ze eigen instellingen kunnen dragen (naam, gebied, geschiedenis); verwijder ze onder
-  Instellingen > Apparaten en diensten > Entiteiten als het profiel echt weg is.
-- Maak je daarna een nieuw profiel aan, dan kan het het id van het verwijderde krijgen. Zijn entiteiten zijn dan
-  weer de oude (dezelfde id's), met de naam die bij het herladen is overgenomen.
+- Een verwijdering moet in **drie polls achter elkaar** voorkomen. Dan verwijdert de integratie de entiteiten
+  van het verwijderde profiel uit Home Assistant en herlaadt ze zichzelf. Dat gebeurt alleen zolang het voertuig
+  `updateChargingProfile` nog vermeldt, zodat een voertuig waarvan de operaties even ontbreken zijn entiteiten niet
+  kwijtraakt. Heb je de naam of het gebied van zo'n entiteit aangepast, dan is dat daarmee weg.
+- Maak je daarna een nieuw profiel aan, dan kan het het id van het verwijderde krijgen; het krijgt dan verse
+  entiteiten met dezelfde id's.
 
 Timers en voorkeurslaadtijden zijn geen entiteiten (een profiel heeft tot 4 voorkeurslaadtijden en 3 timers). De
 sensor **Laadlocatie** toont die van het profiel waar het voertuig staat als attributen, en de actie

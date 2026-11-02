@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skoda_api_connect.api import SkodaVehicle
@@ -67,7 +68,46 @@ async def test_reloads_when_a_profile_is_deleted(
         mock.return_value = _vehicle((1, "Home"))
         await _poll(coordinator)
         await _poll(coordinator)
+        reload.assert_not_called()  # a deletion has to show one poll longer
+        await _poll(coordinator)
         reload.assert_called_once_with(mock_entry.entry_id)
+    await coordinator.async_shutdown()
+
+
+async def test_the_entities_of_a_deleted_profile_are_removed(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    coordinator, mock = await _setup(hass, mock_entry, _vehicle((1, "Home"), (2, "Work")))
+    registry = er.async_get(hass)
+
+    def select(profile_id: int) -> str | None:
+        return registry.async_get_entity_id(
+            "select", "skoda_api_connect", f"{VIN}_profile_{profile_id}_max_current"
+        )
+
+    assert select(1) and select(2)
+    with patch.object(hass.config_entries, "async_schedule_reload", MagicMock()):
+        mock.return_value = _vehicle((1, "Home"))
+        for _ in range(3):
+            await _poll(coordinator)
+    assert select(1) is not None  # the profile that is still there keeps its entities
+    assert select(2) is None
+    await coordinator.async_shutdown()
+
+
+async def test_nothing_is_removed_if_the_vehicle_stops_listing_the_operation(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    coordinator, mock = await _setup(hass, mock_entry, _vehicle((1, "Home")))
+    reload = MagicMock()
+    with patch.object(hass.config_entries, "async_schedule_reload", reload):
+        mock.return_value = _vehicle((1, "Home"), operations=("startCharging",))
+        for _ in range(3):
+            await _poll(coordinator)
+    reload.assert_called_once_with(mock_entry.entry_id)
+    assert er.async_get(hass).async_get_entity_id(
+        "select", "skoda_api_connect", f"{VIN}_profile_1_max_current"
+    )
     await coordinator.async_shutdown()
 
 

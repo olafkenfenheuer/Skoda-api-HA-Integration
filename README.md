@@ -141,8 +141,8 @@ times stay as they are. A change costs two requests of the quota plus the follow
   of these entities.
 - The entities of a profile are created when the integration is set up, so the integration **reloads itself**
   when the profiles of a vehicle change: a profile that was added, deleted or renamed (the names of the
-  entities are taken at setup). A change has to show in **two polls in a row**, so an answer that is wrong
-  for a moment does not cause a reload; with the normal polling interval that takes 10 to 20 minutes. Only
+  entities are taken at setup). A change has to show in **two polls in a row** (a deletion in three), so an answer that is wrong
+  for a moment does not cause a reload; with the normal polling interval that takes 10 to 30 minutes. Only
   vehicles that list `updateChargingProfile` are watched. You can also reload by hand (Settings > Devices &
   services > Škoda API Connect > the three dots > Reload).
 
@@ -151,12 +151,12 @@ times stay as they are. A change costs two requests of the quota plus the follow
 - Its entities become **unavailable** as soon as the vehicle no longer reports the profile. Nothing is sent
   to the vehicle for a profile that is gone: the action `update_charging_profile` refuses it ("The vehicle does
   not report this charging profile (any more)") before it writes anything.
-- The integration reloads itself, and no entities are created for the deleted profile any more, but the old ones
-  **stay in Home Assistant** as unavailable entities. They are not removed automatically, because they may
-  carry your own settings (name, area, history); delete them under Settings > Devices & services >
-  Entities when the profile is really gone.
-- If you create a new profile afterwards it may get the id of the deleted one. Its entities are then the old
-  ones again (the same ids), under the name taken at the reload.
+- A deletion has to show in **three polls in a row**. Then the integration removes the entities of the
+  deleted profile from Home Assistant and reloads itself. This only happens while the vehicle still lists
+  `updateChargingProfile`, so a vehicle whose operations are missing for a moment does not lose its entities. If
+  you changed the name or the area of such an entity, that is gone with it.
+- If you create a new profile afterwards it may get the id of the deleted one; it then gets fresh entities
+  with the same ids.
 
 Timers and preferred charging times are not entities (a profile has up to 4 preferred charging times and 3
 timers). The sensor **Charging location** shows those of the profile the vehicle is at as attributes, and the

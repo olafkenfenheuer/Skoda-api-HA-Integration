@@ -144,8 +144,8 @@ bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus d
 - Die Entitäten eines Profils werden beim Einrichten der Integration angelegt, deshalb **lädt sich die
   Integration selbst neu**, wenn sich die Profile eines Fahrzeugs ändern: ein Profil wurde hinzugefügt,
   gelöscht oder umbenannt (die Namen der Entitäten werden beim Einrichten übernommen). Eine Änderung muss in
-  **zwei Abrufen hintereinander** auftauchen, damit eine kurz falsche Antwort kein Neuladen auslöst; bei
-  normalem Abfrageintervall dauert das 10 bis 20 Minuten. Beobachtet werden nur Fahrzeuge, die
+  **zwei Abrufen hintereinander** auftauchen (ein Löschen in drei), damit eine kurz falsche Antwort kein Neuladen
+  auslöst; bei normalem Abfrageintervall dauert das 10 bis 30 Minuten. Beobachtet werden nur Fahrzeuge, die
   `updateChargingProfile` nennen. Du kannst auch von Hand neu laden (Einstellungen > Geräte & Dienste > Škoda
   API Connect > die drei Punkte > Neu laden).
 
@@ -154,12 +154,12 @@ bleiben unverändert. Eine Änderung kostet zwei Anfragen des Kontingents plus d
 - Seine Entitäten werden **nicht verfügbar**, sobald das Fahrzeug das Profil nicht mehr meldet. An ein
   gelöschtes Profil wird nichts gesendet: Die Aktion `update_charging_profile` lehnt es ab („The vehicle does
   not report this charging profile (any more)“), bevor sie etwas schreibt.
-- Die Integration lädt sich selbst neu, und für das gelöschte Profil werden keine Entitäten mehr angelegt, aber
-  die alten **bleiben in Home Assistant** als nicht verfügbare Entitäten. Sie werden nicht automatisch
-  entfernt, weil sie eigene Einstellungen tragen können (Name, Bereich, Verlauf); lösche sie unter
-  Einstellungen > Geräte & Dienste > Entitäten, wenn das Profil wirklich weg ist.
-- Legst du danach ein neues Profil an, kann es die ID des gelöschten bekommen. Dann sind seine Entitäten
-  wieder die alten (gleiche IDs), mit dem beim Neuladen übernommenen Namen.
+- Ein Löschen muss in **drei Abrufen hintereinander** auftauchen. Dann entfernt die Integration die Entitäten des
+  gelöschten Profils aus Home Assistant und lädt sich selbst neu. Das geschieht nur, solange das Fahrzeug
+  `updateChargingProfile` noch nennt, damit ein Fahrzeug, dessen Operationen kurz fehlen, seine Entitäten nicht
+  verliert. Hast du Name oder Bereich einer solchen Entität geändert, ist das damit weg.
+- Legst du danach ein neues Profil an, kann es die ID des gelöschten bekommen; es bekommt dann frische
+  Entitäten mit denselben IDs.
 
 Timer und bevorzugte Ladezeiten sind keine Entitäten (ein Profil hat bis zu 4 bevorzugte Ladezeiten und 3
 Timer). Der Sensor **Ladestandort** zeigt die des Profils, in dem das Fahrzeug steht, als Attribute, und die
