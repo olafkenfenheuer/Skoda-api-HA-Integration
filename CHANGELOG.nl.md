@@ -7,6 +7,8 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.2]
+
 ### Added
 
 - Sensor "API-sleutel verloopt" (diagnostisch, datum en tijd): de vervaldatum van de API-sleutel, uit de header `x-api-key-expires-at` van de API-antwoorden. Te gebruiken in een automatisering om te waarschuwen voordat de sleutel afloopt (voorgesteld in issue #26).
