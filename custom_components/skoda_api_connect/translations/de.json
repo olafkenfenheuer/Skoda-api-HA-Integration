@@ -133,6 +133,9 @@
       "rate_limit_until": {
         "name": "API-Rate-Limit bis"
       },
+      "api_key_expires": {
+        "name": "API-Schlüssel läuft ab"
+      },
       "api_requests_remaining": {
         "name": "Verbleibende API-Anfragen"
       },

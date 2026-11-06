@@ -133,6 +133,9 @@
       "rate_limit_until": {
         "name": "API rate limit until"
       },
+      "api_key_expires": {
+        "name": "API key expires"
+      },
       "api_requests_remaining": {
         "name": "API requests remaining"
       },
