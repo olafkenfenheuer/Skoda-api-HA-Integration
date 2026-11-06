@@ -7,6 +7,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Sensor "API key expires" (diagnostic, date and time): the expiry date of the API key, taken from the `x-api-key-expires-at` header of the API responses. Use it in an automation to get a warning before the key runs out (suggested in issue #26).
+
 ### Changed
 
 - README: a note that the programming of the integration was done with the support of Claude (an AI assistant by Anthropic).

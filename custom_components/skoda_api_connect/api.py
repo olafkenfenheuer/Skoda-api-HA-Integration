@@ -216,6 +216,16 @@ class SkodaVehicle:
         return operations is not None and any(op.get("name") == operation for op in operations)
 
 
+def _key_expiry(headers: Mapping[str, str]) -> datetime | None:
+    """Parse the x-api-key-expires-at header (e.g. 2027-04-06T13:54:21.23Z), or None."""
+    value = (headers.get("x-api-key-expires-at") or "").strip()
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
 class SkodaApi:
     """Thin async client for the MyŠkoda Public API."""
 
@@ -225,6 +235,8 @@ class SkodaApi:
         self._api_key = api_key
         # Latest request quota per VIN, updated from the headers of every response.
         self.rate_limits: dict[str, RateLimitInfo] = {}
+        # When the API key expires, as reported by the x-api-key-expires-at response header.
+        self.key_expires_at: datetime | None = None
 
     async def _request(
         self,
@@ -245,6 +257,8 @@ class SkodaApi:
                 headers={"X-API-Key": self._api_key, "Accept": "application/json"},
             ) as response:
                 self._record_rate_limit(path, response.headers)
+                if (expires_at := _key_expiry(response.headers)) is not None:
+                    self.key_expires_at = expires_at
                 if response.status < 400:
                     _LOGGER.debug(
                         "%s %s -> %s (rate limit remaining: %s)",

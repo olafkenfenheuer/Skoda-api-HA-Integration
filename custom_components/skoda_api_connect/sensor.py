@@ -368,6 +368,7 @@ async def async_setup_entry(
         entities.append(SkodaCarLastSeenSensor(coordinator, vin))
         entities.append(SkodaRateLimitUntilSensor(coordinator, vin))
         entities.append(SkodaApiRequestsRemainingSensor(coordinator, vin))
+        entities.append(SkodaApiKeyExpirySensor(coordinator, vin))
         entities.append(SkodaPollIntervalSensor(coordinator, vin))
     async_add_entities(entities)
 
@@ -547,6 +548,30 @@ class SkodaRateLimitUntilSensor(SkodaVehicleEntity, SensorEntity):
         """Return when the quota is back, or None unless the last poll was rate limited."""
         result = self.coordinator.poll_results.get(self.vin)
         return result.retry_at if result and result.status == STATUS_RATE_LIMITED else None
+
+
+class SkodaApiKeyExpirySensor(SkodaVehicleEntity, SensorEntity):
+    """Shows when the API key expires (a date and time), to warn before it does."""
+
+    _attr_translation_key = "api_key_expires"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:key-clock"
+
+    def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, vin)
+        self._attr_unique_id = f"{vin}_api_key_expires"
+
+    @property
+    def available(self) -> bool:
+        """Stay available while polling fails; an expired key is one possible reason."""
+        return True
+
+    @property
+    def native_value(self) -> datetime | None:
+        """Return the expiry reported with the last response, or None until one arrived."""
+        return self.coordinator.api.key_expires_at
 
 
 class SkodaApiRequestsRemainingSensor(SkodaVehicleEntity, SensorEntity):
