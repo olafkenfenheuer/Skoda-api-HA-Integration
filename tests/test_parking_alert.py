@@ -679,7 +679,7 @@ async def test_failed_wake_alerts_unconfirmed(hass: HomeAssistant) -> None:
     logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
     error = SkodaApiError("vehicle unreachable", status=500)
     with patch(SET_MODE, new=AsyncMock(side_effect=error)) as set_mode:
-        api, p = await _setup(hass, entry, api.data, fresh=False, api=api)
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
         try:
             set_mode.assert_awaited_once()
             assert len(calls) == 1
@@ -859,7 +859,7 @@ async def test_secured_while_waking(hass: HomeAssistant) -> None:
         await _poll(hass, entry)
 
     with patch(SET_MODE, new=AsyncMock(side_effect=_locked_meanwhile)) as set_mode:
-        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False, api=api)
         try:
             set_mode.assert_awaited_once()
             assert calls == []
