@@ -7,9 +7,16 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.3]
+
 ### Fixed
 
 - Het pictogram van de sensor "API-sleutel verloopt" (`mdi:key-clock`) bestaat niet, waardoor er geen pictogram werd getoond; het gebruikt nu `mdi:key-alert`.
+- Een onverwachte fout bij het wakker maken van het voertuig voor de parkeerwaarschuwing wordt gelogd in plaats van als onafgehandelde taakfout te blijven liggen; de waarschuwing volgt daarna bij de volgende poll of via de wachttimer.
+
+### Changed
+
+- De pytest-suite draait nu in de CI-workflow (enkele tests die nooit liepen zijn gerepareerd).
 
 ## [0.5.2]
 
