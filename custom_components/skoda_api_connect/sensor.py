@@ -556,7 +556,7 @@ class SkodaApiKeyExpirySensor(SkodaVehicleEntity, SensorEntity):
     _attr_translation_key = "api_key_expires"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:key-clock"
+    _attr_icon = "mdi:key-alert"
 
     def __init__(self, coordinator: SkodaDataUpdateCoordinator, vin: str) -> None:
         """Initialize the sensor."""

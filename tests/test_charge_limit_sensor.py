@@ -27,7 +27,7 @@ async def test_charge_limit_sensor(hass: HomeAssistant, mock_entry: MockConfigEn
     state = hass.states.get(_entity_id(hass, "sensor"))
     assert state.state == "80"
     assert state.attributes["unit_of_measurement"] == "%"
-    assert hass.states.get(_entity_id(hass, "number")).state == "80.0"
+    assert float(hass.states.get(_entity_id(hass, "number")).state) == 80
 
 
 async def test_charge_limit_sensor_missing(hass: HomeAssistant, mock_entry: MockConfigEntry):

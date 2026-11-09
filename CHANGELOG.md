@@ -7,6 +7,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The icon of the sensor "API key expires" (`mdi:key-clock`) does not exist, so no icon was shown; it now uses `mdi:key-alert`.
+
 ## [0.5.2]
 
 ### Added

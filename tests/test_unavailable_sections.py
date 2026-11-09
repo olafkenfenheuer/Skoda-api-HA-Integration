@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -13,6 +14,17 @@ from custom_components.skoda_api_connect.api import SkodaVehicle
 from .conftest import VIN
 
 GET = "custom_components.skoda_api_connect.api.SkodaApi.get_vehicle"
+
+_PATCHERS: list = []
+
+
+@pytest.fixture(autouse=True)
+def _stop_patches():
+    """Stop the get_vehicle patches the tests start, after each test."""
+    yield
+    while _PATCHERS:
+        _PATCHERS.pop().stop()
+
 
 CLIMATE = {
     "state": "OFF",
@@ -40,9 +52,12 @@ def _climate(hass: HomeAssistant) -> str | None:
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry, vehicle: SkodaVehicle):
     entry.add_to_hass(hass)
     mock = AsyncMock(return_value=vehicle)
-    with patch(GET, new=mock):
-        await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
+    # The patch stays active after the setup: later polls fetch the vehicle again.
+    patcher = patch(GET, new=mock)
+    patcher.start()
+    _PATCHERS.append(patcher)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
     return entry.runtime_data, mock
 
 

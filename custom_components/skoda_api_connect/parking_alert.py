@@ -314,6 +314,11 @@ class SkodaParkingAlert:
             self._async_log(vin, f"could not be woken to confirm the parking alert: {err}")
             self._async_alert(vin, confirmed=False)
             return
+        except Exception:  # noqa: BLE001
+            # Not a failed command: log it here instead of leaving it to the task, and let
+            # the next poll or the grace timer send the alert.
+            _LOGGER.exception("Unexpected error while waking %s for the parking alert", name)
+            return
         finally:
             # Also on unexpected errors: a stuck flag would hold the alert back for good.
             incident.waking = False
