@@ -115,8 +115,14 @@ def _stale(data: dict) -> dict:
     return data
 
 
-async def _setup(hass: HomeAssistant, entry: MockConfigEntry, data: dict, fresh: bool = True):
-    api = _Api(data)
+async def _setup(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    data: dict,
+    fresh: bool = True,
+    api: _Api | None = None,
+):
+    api = api or _Api(data)
     api.fresh = fresh
     patcher = patch(GET, new=api.mock)
     patcher.start()
@@ -673,7 +679,7 @@ async def test_failed_wake_alerts_unconfirmed(hass: HomeAssistant) -> None:
     logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
     error = SkodaApiError("vehicle unreachable", status=500)
     with patch(SET_MODE, new=AsyncMock(side_effect=error)) as set_mode:
-        api, p = await _setup(hass, entry, _stale(UNSECURED), fresh=False)
+        api, p = await _setup(hass, entry, api.data, fresh=False, api=api)
         try:
             set_mode.assert_awaited_once()
             assert len(calls) == 1
@@ -845,7 +851,7 @@ async def test_secured_while_waking(hass: HomeAssistant) -> None:
     calls = async_mock_service(hass, "notify", "mobile_app_phone")
     entry = _entry(targets=[PHONE])
     logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
-    api = None
+    api = _Api(_stale(UNSECURED))  # the wake-up runs during the setup, so it exists up front
 
     async def _locked_meanwhile(vin, mode) -> None:
         # A poll during the command shows the vehicle locked: the incident ends.
