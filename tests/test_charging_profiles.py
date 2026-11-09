@@ -19,6 +19,17 @@ GET = "custom_components.skoda_api_connect.api.SkodaApi.get_vehicle"
 PUT = "custom_components.skoda_api_connect.api.SkodaApi.update_charging_profile"
 
 
+_PATCHERS: list = []
+
+
+@pytest.fixture(autouse=True)
+def _stop_patches():
+    """Stop the get_vehicle patches the tests start, after each test."""
+    yield
+    while _PATCHERS:
+        _PATCHERS.pop().stop()
+
+
 def _profile(**settings) -> dict:
     return {
         "id": 7,
@@ -58,9 +69,12 @@ async def _setup(hass: HomeAssistant, entry: MockConfigEntry, cached: SkodaVehic
 
     mock = AsyncMock(side_effect=_get)
     entry.add_to_hass(hass)
-    with patch(GET, new=mock):
-        await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
+    # The patch stays active after the setup: commands and polls fetch the vehicle again.
+    patcher = patch(GET, new=mock)
+    patcher.start()
+    _PATCHERS.append(patcher)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
     return entry.runtime_data, mock
 
 
