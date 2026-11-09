@@ -7,9 +7,16 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.3]
+
 ### Fixed
 
 - The icon of the sensor "API key expires" (`mdi:key-clock`) does not exist, so no icon was shown; it now uses `mdi:key-alert`.
+- An unexpected error while waking the vehicle for the parking alert is logged instead of being left as an unhandled task error; the alert still follows with the next poll or the grace timer.
+
+### Changed
+
+- The pytest suite now runs in the CI workflow (several tests were fixed that had never run).
 
 ## [0.5.2]
 
