@@ -7,6 +7,10 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+### Fixed
+
+- Het pictogram van de sensor "API-sleutel verloopt" (`mdi:key-clock`) bestaat niet, waardoor er geen pictogram werd getoond; het gebruikt nu `mdi:key-alert`.
+
 ## [0.5.2]
 
 ### Added
