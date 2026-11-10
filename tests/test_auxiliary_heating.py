@@ -129,17 +129,41 @@ async def test_no_start_mode_is_sent_if_the_vehicle_reports_none(hass: HomeAssis
     await c.async_shutdown()
 
 
-async def test_ventilation_always_sends_its_start_mode(hass: HomeAssistant) -> None:
+async def test_ventilation_only_offered_if_the_vehicle_reports_a_start_mode(
+    hass: HomeAssistant,
+) -> None:
+    # The petrol Octavia of issue #32 reports no start mode and refuses VENTILATION.
     c = await _setup(hass, _entry(), _vehicle(start_mode=None))
-    with patch(f"{API}.start_auxiliary_heating", new=AsyncMock()) as start:
+    assert hass.states.get(_climate(hass)).attributes["hvac_modes"] == ["off", "heat"]
+    with (
+        patch(f"{API}.start_auxiliary_heating", new=AsyncMock()) as start,
+        pytest.raises(HomeAssistantError),
+    ):
         await hass.services.async_call(
             "climate",
             "set_hvac_mode",
             {"entity_id": _climate(hass), "hvac_mode": "fan_only"},
             blocking=True,
         )
-    assert start.await_args.kwargs["mode"] == "VENTILATION"
-    c._cancel_refresh()
+    start.assert_not_awaited()
+    await c.async_shutdown()
+
+
+async def test_ventilation_offered_with_a_start_mode(hass: HomeAssistant) -> None:
+    c = await _setup(hass, _entry(), _vehicle(start_mode="HEATING"))
+    assert hass.states.get(_climate(hass)).attributes["hvac_modes"] == [
+        "off",
+        "heat",
+        "fan_only",
+    ]
+    await c.async_shutdown()
+
+
+async def test_running_ventilation_is_shown_without_a_start_mode(hass: HomeAssistant) -> None:
+    c = await _setup(hass, _entry(), _vehicle(state="VENTILATION", start_mode=None))
+    state = hass.states.get(_climate(hass))
+    assert state.state == "fan_only"
+    assert "fan_only" in state.attributes["hvac_modes"]
     await c.async_shutdown()
 
 

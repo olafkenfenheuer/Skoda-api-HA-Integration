@@ -185,8 +185,9 @@ bij 5 beginnen (zie het voorbeeld in de Engelse README).
 ### Standkachel
 
 Voertuigen met een standkachel (het voertuig vermeldt `startAuxiliaryHeating` en meldt de status) krijgen een
-`climate`-entiteit **Standkachel** (uit, verwarmen, alleen ventileren) en een getal **Standkachel: looptijd**
-(10 tot 60 minuten, standaard 30). Voertuigen zonder standkachel krijgen geen van beide.
+`climate`-entiteit **Standkachel** (uit, verwarmen en, als het voertuig een startmodus meldt, alleen ventileren)
+en een getal **Standkachel: looptijd** (10 tot 60 minuten, standaard 30). Voertuigen zonder standkachel krijgen
+geen van beide.
 
 De API start de verwarming alleen met de **S-PIN** van je MyŠkoda-account. Voer hem in onder **Configureren**
 (het veld verschijnt alleen als een voertuig een standkachel heeft). Hij wordt net als de API-sleutel in Home

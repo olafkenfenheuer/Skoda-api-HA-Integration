@@ -201,13 +201,13 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
     Starting it needs the S-PIN from the integration options. It runs for the time set with
     the "Auxiliary heating duration" number. A target temperature is only sent with the start if
     the vehicle reports one or it was set here, and the start mode HEATING only if the vehicle
-    reports a start mode: not every vehicle accepts them. Ventilation always sends its mode.
+    reports a start mode: not every vehicle accepts them. Ventilation is only offered if the
+    vehicle reports a start mode, and always sends its mode.
     """
 
     _attr_translation_key = "auxiliary_heating"
     _expected_key = "aux_mode"
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.FAN_ONLY]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.TURN_OFF
@@ -223,6 +223,18 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
         self._attr_unique_id = f"{vin}_auxiliary_heating"
         # The API has no "set temperature" call: the target is sent when the heating starts.
         self._requested_temperature: float | None = None
+
+    @property
+    def hvac_modes(self) -> list[HVACMode]:
+        """Return the modes the vehicle offers: ventilation only if it reports a start mode.
+
+        A vehicle without a start mode cannot choose between heating and ventilation: the
+        petrol Octavia of issue #32 refuses VENTILATION and its app only offers on and off.
+        """
+        heating = self.vehicle.get("auxiliaryHeating") or {}
+        if heating.get("startMode") is not None or heating.get("state") == "VENTILATION":
+            return [HVACMode.OFF, HVACMode.HEAT, HVACMode.FAN_ONLY]
+        return [HVACMode.OFF, HVACMode.HEAT]
 
     @property
     def hvac_mode(self) -> HVACMode:
