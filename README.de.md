@@ -208,7 +208,10 @@ Die API startet die Heizung nur mit der **S-PIN** deines MyŠkoda-Kontos. Trage 
 ein (das Feld erscheint nur, wenn ein Fahrzeug eine Standheizung hat). Sie wird wie der API-Schlüssel in
 Home Assistant gespeichert, in der Diagnose geschwärzt und nie protokolliert. Ohne sie wird das Starten
 abgelehnt, bevor etwas gesendet wird. Eine falsche S-PIN kann die S-PIN sperren, prüfe sie deshalb zuerst in
-der App. Die Zieltemperatur wird bei jedem Start mitgesendet. Nicht erprobt.
+der App. Sie muss vier Ziffern haben; Leerzeichen davor und danach werden entfernt. Eine falsche S-PIN wird
+erst vom Fahrzeug abgelehnt, nachdem die API den Start angenommen hat; Home Assistant zeigt dann keinen Fehler.
+Eine Zieltemperatur wird nur mitgesendet, wenn das Fahrzeug eine meldet oder du sie einstellst, und der
+Startmodus `HEATING` nur, wenn das Fahrzeug einen Startmodus meldet. Noch nicht an einem echten Fahrzeug bestätigt.
 
 ### Blueprint: ein Ladeprofil mit Schutzregeln ändern
 

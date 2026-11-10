@@ -7,6 +7,13 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.6]
+
+### Fixed
+
+- De **standkachel** stuurt de startmodus `HEATING` alleen mee als het voertuig een startmodus meldt; ventileren stuurt nog steeds altijd `VENTILATION`. De benzine-Octavia uit issue #32 meldt er geen en nam de start zonder fout aan, maar verwarmde niet. De API vereist alleen de S-PIN.
+- De **S-PIN** wordt gecontroleerd bij het opslaan van de opties: hij moet uit vier cijfers bestaan en spaties eromheen worden verwijderd. Het wachtwoordveld verbergt typfouten, en een verkeerde S-PIN wordt pas later door het voertuig geweigerd, zonder fout in Home Assistant. Een S-PIN die met spaties is opgeslagen, wordt ook zonder spaties verstuurd.
+
 ## [0.5.5]
 
 ### Fixed

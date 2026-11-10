@@ -191,8 +191,11 @@ Voertuigen met een standkachel (het voertuig vermeldt `startAuxiliaryHeating` en
 De API start de verwarming alleen met de **S-PIN** van je MyŠkoda-account. Voer hem in onder **Configureren**
 (het veld verschijnt alleen als een voertuig een standkachel heeft). Hij wordt net als de API-sleutel in Home
 Assistant opgeslagen, in de diagnostiek geanonimiseerd en nooit gelogd. Zonder wordt starten geweigerd voordat
-iets wordt verzonden. Een verkeerde S-PIN kan de S-PIN blokkeren, controleer hem dus eerst in de app. De
-doeltemperatuur wordt bij elke start meegestuurd. Niet getest.
+iets wordt verzonden. Een verkeerde S-PIN kan de S-PIN blokkeren, controleer hem dus eerst in de app. Hij moet
+uit vier cijfers bestaan; spaties ervoor en erna worden verwijderd. Een verkeerde S-PIN wordt pas door het voertuig
+geweigerd nadat de API de start heeft aangenomen, dus Home Assistant toont dan geen fout. Een doeltemperatuur wordt alleen
+meegestuurd als het voertuig er een meldt of je er een instelt, en de startmodus `HEATING` alleen als het voertuig
+een startmodus meldt. Nog niet bevestigd op een echt voertuig.
 
 ### Blueprint: een laadprofiel met beveiligingen wijzigen
 

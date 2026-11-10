@@ -60,7 +60,8 @@
       }
     },
     "error": {
-      "unknown_notify_target": "There is no notify service called {target}."
+      "unknown_notify_target": "There is no notify service called {target}.",
+      "invalid_spin": "The S-PIN has four digits. Check it for typos and spaces."
     }
   },
   "entity": {

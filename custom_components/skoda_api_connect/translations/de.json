@@ -60,7 +60,8 @@
       }
     },
     "error": {
-      "unknown_notify_target": "Es gibt keinen Benachrichtigungsdienst namens {target}."
+      "unknown_notify_target": "Es gibt keinen Benachrichtigungsdienst namens {target}.",
+      "invalid_spin": "Die S-PIN hat vier Ziffern. Prüfe sie auf Tippfehler und Leerzeichen."
     }
   },
   "entity": {
