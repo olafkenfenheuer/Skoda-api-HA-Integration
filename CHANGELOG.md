@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.8]
+
+### Changed
+
+- Every release now carries the integration as `skoda_api_connect.zip`, which HACS installs. HACS can then show the number of downloads (it counts only from this release on). Nothing changes in the integration itself.
+
 ## [0.5.7]
 
 ### Fixed
