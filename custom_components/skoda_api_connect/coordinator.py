@@ -605,12 +605,12 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
 
     def spin(self) -> str:
         """Return the S-PIN for the auxiliary heating, or raise if it is not set."""
-        spin = self.config_entry.options.get(CONF_SPIN)
+        spin = str(self.config_entry.options.get(CONF_SPIN) or "").strip()
         if not spin:
             raise HomeAssistantError(
                 "Set the S-PIN in the integration options to start the auxiliary heating"
             )
-        return str(spin)
+        return spin
 
     def aux_duration_minutes(self, vin: str) -> int:
         """Return how long the auxiliary heating runs after it was started, in minutes."""

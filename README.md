@@ -220,8 +220,10 @@ heating duration** (10 to 60 minutes, default 30). Vehicles without one get neit
 The API only starts the heating with the **S-PIN** of your MyŠkoda account. Enter it under
 **Configure** (the field only appears if a vehicle has an auxiliary heating). It is stored in Home Assistant
 like the API key, redacted in the diagnostics and never logged. Without it, starting is refused before
-anything is sent. A wrong S-PIN can lock the S-PIN, so check it in the app first. The target temperature is
-sent with each start. Untested.
+anything is sent. It must have four digits; spaces around it are removed. A wrong S-PIN is only refused by
+the vehicle after the API has accepted the start, so Home Assistant shows no error, and it can lock the S-PIN:
+check it in the app first. A target temperature is only sent if the vehicle reports one or you set it, and the
+start mode `HEATING` only if the vehicle reports a start mode. Not yet confirmed on a real vehicle.
 
 ### Blueprint: change a charging profile with safeguards
 

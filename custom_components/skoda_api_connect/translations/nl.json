@@ -60,7 +60,8 @@
       }
     },
     "error": {
-      "unknown_notify_target": "Er is geen notify-service met de naam {target}."
+      "unknown_notify_target": "Er is geen notify-service met de naam {target}.",
+      "invalid_spin": "De S-PIN bestaat uit vier cijfers. Controleer hem op typfouten en spaties."
     }
   },
   "entity": {

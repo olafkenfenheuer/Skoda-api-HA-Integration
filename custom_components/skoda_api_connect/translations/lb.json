@@ -60,7 +60,8 @@
       }
     },
     "error": {
-      "unknown_notify_target": "Et gëtt keen Notify-Service mam Numm {target}."
+      "unknown_notify_target": "Et gëtt keen Notify-Service mam Numm {target}.",
+      "invalid_spin": "De S-PIN huet véier Zifferen. Kontrolléiert en op Tippfeeler an Espacen."
     }
   },
   "entity": {

@@ -49,6 +49,9 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# The S-PIN of a MyŠkoda account has four digits.
+_SPIN_PATTERN = re.compile(r"\d{4}")
+
 VIN_RE = re.compile(r"^[A-HJ-NPR-Z0-9]{17}$")
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
@@ -235,7 +238,11 @@ class SkodaConnectOptionsFlow(OptionsFlow):
             targets, unknown = _normalize_notify_targets(
                 self.hass, user_input.get(CONF_NOTIFY_TARGETS, [])
             )
-            if unknown is None:
+            # A stray space or typo is hidden by the password field and would be sent as is.
+            spin = str(user_input.get(CONF_SPIN) or "").strip()
+            if spin and not _SPIN_PATTERN.fullmatch(spin):
+                errors[CONF_SPIN] = "invalid_spin"
+            elif unknown is None:
                 # Keep the per-vehicle overrides, which are edited via number entities.
                 # The targets are always written, so clearing the field removes them.
                 return self.async_create_entry(
@@ -245,14 +252,15 @@ class SkodaConnectOptionsFlow(OptionsFlow):
                         CONF_NOTIFY_TARGETS: targets,
                         # Always written when the field is shown, so clearing it removes the S-PIN.
                         **(
-                            {CONF_SPIN: user_input.get(CONF_SPIN, "")}
+                            {CONF_SPIN: spin}
                             if self._has_auxiliary_heating()
                             else {}
                         ),
                     }
                 )
-            errors[CONF_NOTIFY_TARGETS] = "unknown_notify_target"
-            placeholders["target"] = unknown
+            if unknown is not None:
+                errors[CONF_NOTIFY_TARGETS] = "unknown_notify_target"
+                placeholders["target"] = unknown
 
         # After an error, show what the user entered rather than the stored options.
         values = {**self.config_entry.options, **(user_input or {})}

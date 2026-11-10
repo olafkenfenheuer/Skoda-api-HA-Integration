@@ -200,7 +200,8 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
 
     Starting it needs the S-PIN from the integration options. It runs for the time set with
     the "Auxiliary heating duration" number. A target temperature is only sent with the start if
-    the vehicle reports one or it was set here: not every vehicle accepts it.
+    the vehicle reports one or it was set here, and the start mode HEATING only if the vehicle
+    reports a start mode: not every vehicle accepts them. Ventilation always sends its mode.
     """
 
     _attr_translation_key = "auxiliary_heating"
@@ -276,12 +277,23 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
             coordinator.api.start_auxiliary_heating(
                 self.vin,
                 spin,
-                mode=_AUX_START_MODE[hvac_mode],
+                mode=self._start_mode(hvac_mode),
                 duration_seconds=coordinator.aux_duration_minutes(self.vin) * 60,
                 temperature=self.target_temperature,
             ),
             expect,
         )
+
+    def _start_mode(self, hvac_mode: HVACMode) -> str | None:
+        """Return the start mode to send, or None to leave it to the vehicle.
+
+        Heating is the default of the device, so HEATING is only sent if the vehicle reports a
+        start mode: the petrol Octavia of issue #32 reports none and did not heat with it.
+        """
+        mode = _AUX_START_MODE[hvac_mode]
+        if mode == "HEATING" and self.vehicle.get("auxiliaryHeating", "startMode") is None:
+            return None
+        return mode
 
     async def async_turn_on(self) -> None:
         """Start the auxiliary heating (heating)."""

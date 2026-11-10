@@ -60,7 +60,8 @@
       }
     },
     "error": {
-      "unknown_notify_target": "No existe ningún servicio de notificación llamado {target}."
+      "unknown_notify_target": "No existe ningún servicio de notificación llamado {target}.",
+      "invalid_spin": "El S-PIN tiene cuatro dígitos. Comprueba que no tenga errores ni espacios."
     }
   },
   "entity": {

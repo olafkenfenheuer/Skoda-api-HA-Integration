@@ -60,7 +60,8 @@
       }
     },
     "error": {
-      "unknown_notify_target": "Služba notify s názvom {target} neexistuje."
+      "unknown_notify_target": "Služba notify s názvom {target} neexistuje.",
+      "invalid_spin": "S-PIN má štyri číslice. Skontrolujte preklepy a medzery."
     }
   },
   "entity": {

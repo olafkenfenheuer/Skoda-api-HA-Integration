@@ -387,16 +387,17 @@ class SkodaApi:
         vin: str,
         spin: str,
         *,
-        mode: str,
+        mode: str | None,
         duration_seconds: int,
         temperature: float | None = None,
     ) -> None:
-        """Start the auxiliary heating (``mode`` is HEATING or VENTILATION); needs the S-PIN."""
-        body: dict[str, Any] = {
-            "spin": spin,
-            "startMode": mode,
-            "durationInSeconds": duration_seconds,
-        }
+        """Start the auxiliary heating (``mode`` is HEATING, VENTILATION or None); needs the S-PIN.
+
+        Only the S-PIN is required: the start mode and target temperature are left out when None.
+        """
+        body: dict[str, Any] = {"spin": spin, "durationInSeconds": duration_seconds}
+        if mode is not None:
+            body["startMode"] = mode
         if temperature is not None:
             body["targetTemperature"] = {"value": temperature, "unit": "CELSIUS"}
         await self._command("POST", vin, "auxiliary-heating/start", body)

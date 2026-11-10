@@ -11,7 +11,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.skoda_api_connect.api import SkodaVehicle
+from custom_components.skoda_api_connect.api import SkodaApi, SkodaVehicle
 from custom_components.skoda_api_connect.const import (
     CONF_API_KEY,
     CONF_SPIN,
@@ -32,10 +32,13 @@ def _vehicle(
     state: str = "OFF",
     operations=("startAuxiliaryHeating", "stopAuxiliaryHeating"),
     target: bool = True,
+    start_mode: str | None = "HEATING",
 ):
     heating: dict = {"state": state}
     if target:
         heating["targetTemperature"] = {"value": 20.0}
+    if start_mode:
+        heating["startMode"] = start_mode
     return SkodaVehicle(
         vin=VIN,
         data={
@@ -105,6 +108,51 @@ async def test_no_temperature_is_sent_if_the_vehicle_reports_none(hass: HomeAssi
     start.assert_awaited_once_with(
         VIN, "1234", mode="HEATING", duration_seconds=30 * 60, temperature=None
     )
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_no_start_mode_is_sent_if_the_vehicle_reports_none(hass: HomeAssistant) -> None:
+    # The petrol Octavia of issue #32 reports no start mode and did not start with HEATING.
+    c = await _setup(hass, _entry(), _vehicle(target=False, start_mode=None))
+    with patch(f"{API}.start_auxiliary_heating", new=AsyncMock()) as start:
+        await hass.services.async_call(
+            "climate",
+            "set_hvac_mode",
+            {"entity_id": _climate(hass), "hvac_mode": "heat"},
+            blocking=True,
+        )
+    start.assert_awaited_once_with(
+        VIN, "1234", mode=None, duration_seconds=30 * 60, temperature=None
+    )
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_ventilation_always_sends_its_start_mode(hass: HomeAssistant) -> None:
+    c = await _setup(hass, _entry(), _vehicle(start_mode=None))
+    with patch(f"{API}.start_auxiliary_heating", new=AsyncMock()) as start:
+        await hass.services.async_call(
+            "climate",
+            "set_hvac_mode",
+            {"entity_id": _climate(hass), "hvac_mode": "fan_only"},
+            blocking=True,
+        )
+    assert start.await_args.kwargs["mode"] == "VENTILATION"
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_spaces_around_a_stored_spin_are_not_sent(hass: HomeAssistant) -> None:
+    c = await _setup(hass, _entry(spin=" 1234 "), _vehicle())
+    with patch(f"{API}.start_auxiliary_heating", new=AsyncMock()) as start:
+        await hass.services.async_call(
+            "climate",
+            "set_hvac_mode",
+            {"entity_id": _climate(hass), "hvac_mode": "heat"},
+            blocking=True,
+        )
+    assert start.await_args.args == (VIN, "1234")
     c._cancel_refresh()
     await c.async_shutdown()
 
@@ -192,3 +240,62 @@ async def test_no_spin_field_without_a_heating(hass: HomeAssistant) -> None:
     result = await hass.config_entries.options.async_init(without.entry_id)
     assert CONF_SPIN not in [str(key) for key in result["data_schema"].schema]
     await c.async_shutdown()
+
+
+@pytest.mark.parametrize("spin", ["123", "12345", "12a4", "12 34"])
+async def test_options_reject_an_spin_that_is_not_four_digits(
+    hass: HomeAssistant, spin: str
+) -> None:
+    entry = _entry()
+    c = await _setup(hass, entry, _vehicle())
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_SPIN: spin}
+    )
+    assert result["type"] == "form"
+    assert result["errors"] == {CONF_SPIN: "invalid_spin"}
+    assert entry.options[CONF_SPIN] == "1234"
+    await c.async_shutdown()
+
+
+async def test_options_store_the_spin_without_spaces(hass: HomeAssistant) -> None:
+    entry = _entry()
+    c = await _setup(hass, entry, _vehicle())
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    with patch(GET, new=AsyncMock(return_value=_vehicle())):
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {CONF_SPIN: " 4321 "}
+        )
+        await hass.async_block_till_done()
+    assert result["type"] == "create_entry"
+    assert entry.options[CONF_SPIN] == "4321"
+    await c.async_shutdown()
+
+
+@pytest.mark.parametrize(
+    ("mode", "temperature", "expected"),
+    [
+        (None, None, {"spin": "1234", "durationInSeconds": 600}),
+        (
+            "VENTILATION",
+            21.5,
+            {
+                "spin": "1234",
+                "durationInSeconds": 600,
+                "startMode": "VENTILATION",
+                "targetTemperature": {"value": 21.5, "unit": "CELSIUS"},
+            },
+        ),
+    ],
+)
+async def test_start_request_body_leaves_out_what_is_not_set(
+    mode: str | None, temperature: float | None, expected: dict
+) -> None:
+    api = SkodaApi(None, "key")
+    with patch.object(api, "_request", new=AsyncMock()) as request:
+        await api.start_auxiliary_heating(
+            VIN, "1234", mode=mode, duration_seconds=600, temperature=temperature
+        )
+    request.assert_awaited_once_with(
+        "POST", f"/api/v1/vehicles/{VIN}/auxiliary-heating/start", json=expected
+    )
