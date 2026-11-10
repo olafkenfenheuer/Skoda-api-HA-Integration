@@ -54,7 +54,7 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
 
     _attr_translation_key = "air_conditioning"
     _expected_key = "hvac_mode"
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.TURN_OFF
@@ -120,7 +120,7 @@ class SkodaClimate(SkodaVehicleEntity, ClimateEntity):
         return _STATE_TO_HVAC_ACTION.get(self._state)
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the target cabin temperature."""
         if self._requested_temperature is not None:
             return self._requested_temperature
@@ -199,12 +199,13 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
     """The auxiliary heating of a Škoda vehicle (fuel-operated or electric).
 
     Starting it needs the S-PIN from the integration options. It runs for the time set with
-    the "Auxiliary heating duration" number. The target temperature is sent with the start.
+    the "Auxiliary heating duration" number. A target temperature is only sent with the start if
+    the vehicle reports one or it was set here: not every vehicle accepts it.
     """
 
     _attr_translation_key = "auxiliary_heating"
     _expected_key = "aux_mode"
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.FAN_ONLY]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
@@ -239,7 +240,7 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
         return _AUX_STATE_TO_ACTION.get(self.vehicle.get("auxiliaryHeating", "state"))
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the target cabin temperature."""
         if self._requested_temperature is not None:
             return self._requested_temperature
@@ -277,7 +278,7 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
                 spin,
                 mode=_AUX_START_MODE[hvac_mode],
                 duration_seconds=coordinator.aux_duration_minutes(self.vin) * 60,
-                temperature=self.target_temperature or DEFAULT_TARGET_TEMPERATURE,
+                temperature=self.target_temperature,
             ),
             expect,
         )

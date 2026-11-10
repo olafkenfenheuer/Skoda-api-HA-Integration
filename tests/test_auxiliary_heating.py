@@ -27,13 +27,21 @@ GET = "custom_components.skoda_api_connect.api.SkodaApi.get_vehicle"
 API = "custom_components.skoda_api_connect.api.SkodaApi"
 
 
-def _vehicle(*, state: str = "OFF", operations=("startAuxiliaryHeating", "stopAuxiliaryHeating")):
+def _vehicle(
+    *,
+    state: str = "OFF",
+    operations=("startAuxiliaryHeating", "stopAuxiliaryHeating"),
+    target: bool = True,
+):
+    heating: dict = {"state": state}
+    if target:
+        heating["targetTemperature"] = {"value": 20.0}
     return SkodaVehicle(
         vin=VIN,
         data={
             "name": "Car 1",
             "operations": [{"name": name} for name in operations],
-            "auxiliaryHeating": {"state": state, "targetTemperature": {"value": 20.0}},
+            "auxiliaryHeating": heating,
         },
     )
 
@@ -80,6 +88,23 @@ async def test_start_heating_sends_spin_duration_and_temperature(hass: HomeAssis
     state = hass.states.get(_climate(hass))
     assert state.state == "heat"
     assert state.attributes["pending"] is True
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_no_temperature_is_sent_if_the_vehicle_reports_none(hass: HomeAssistant) -> None:
+    # Not every vehicle takes a target temperature; one that reports none answered with a 500.
+    c = await _setup(hass, _entry(), _vehicle(target=False))
+    with patch(f"{API}.start_auxiliary_heating", new=AsyncMock()) as start:
+        await hass.services.async_call(
+            "climate",
+            "set_hvac_mode",
+            {"entity_id": _climate(hass), "hvac_mode": "heat"},
+            blocking=True,
+        )
+    start.assert_awaited_once_with(
+        VIN, "1234", mode="HEATING", duration_seconds=30 * 60, temperature=None
+    )
     c._cancel_refresh()
     await c.async_shutdown()
 

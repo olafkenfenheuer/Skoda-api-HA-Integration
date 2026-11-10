@@ -102,6 +102,7 @@ def _parse_retry_after(value: str | None) -> timedelta | None:
 
 
 _VEHICLE_PATH_RE = re.compile(r"/vehicles/([^/]+)")
+_VIN_RE = re.compile(r"\b[A-HJ-NPR-Z0-9]{17}\b")
 
 
 @dataclass
@@ -322,7 +323,7 @@ class SkodaApi:
             response.status,
             problem_id or problem_type or "-",
             trace_id or "-",
-            text[:ERROR_BODY_LOG_LENGTH] or detail,
+            _VIN_RE.sub(lambda m: f"...{m.group(0)[-4:]}", text[:ERROR_BODY_LOG_LENGTH]) or detail,
         )
         if response.status >= 500 and trace_id:
             detail = f"{detail} (HTTP {response.status}, trace id {trace_id})"

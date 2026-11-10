@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The auxiliary heating no longer sends a made-up target temperature (21 °C) when it starts: it is only sent if the vehicle reports one or you set it. A petrol Octavia that reports none answered the start with HTTP 500 (issue #32; whether this is the cause is not confirmed yet).
+- The VIN is also shortened in the response text of an error that is written to the log.
+- Home Assistant 2027.11 deprecations: the climate entities use `native_target_temperature` and `_attr_native_temperature_unit` (the values do not change).
+
 ## [0.5.4]
 
 ### Changed

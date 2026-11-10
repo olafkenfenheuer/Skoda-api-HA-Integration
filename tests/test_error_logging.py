@@ -40,6 +40,14 @@ async def test_server_error_keeps_trace_id_and_logs_the_response(caplog) -> None
     assert "/vehicles/...0001/auxiliary-heating/start" in caplog.text
 
 
+async def test_vin_in_the_response_text_is_shortened(caplog) -> None:
+    body = {"instance": PATH, "title": "Internal Server Error", "status": 500}
+    with caplog.at_level(logging.WARNING):
+        await SkodaApi._error_for(_Response(500, body), "POST", PATH)
+    assert VIN not in caplog.text
+    assert "...0001/auxiliary-heating/start" in caplog.text
+
+
 async def test_client_error_message_is_unchanged(caplog) -> None:
     body = {
         "type": "https://public.api.connect.skoda-auto.cz/problems/operation-not-supported",
