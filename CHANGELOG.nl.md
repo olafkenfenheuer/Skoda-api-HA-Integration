@@ -7,6 +7,16 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.7]
+
+### Fixed
+
+- De **standkachel** biedt de modus "alleen ventileren" alleen aan als het voertuig een startmodus meldt (of aan het ventileren is). Een voertuig zonder startmodus kan niet kiezen tussen verwarmen en ventileren: de benzine-Octavia uit issue #32 weigerde `VENTILATION`, en de MyŠkoda-app biedt daar alleen aan en uit. Verwarmen werkt daar sinds 0.5.6.
+
+### Known risk
+
+- Een voertuig dat kan ventileren maar geen startmodus meldt, verliest de modus "alleen ventileren". De API documenteert de startmodus als manier om dat te herkennen, en er is nog geen voertuig gemeld waarop ventileren werkt. Is het jouwe er een, open dan een issue.
+
 ## [0.5.6]
 
 ### Fixed

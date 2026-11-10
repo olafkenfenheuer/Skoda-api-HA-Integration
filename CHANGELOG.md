@@ -7,6 +7,16 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.7]
+
+### Fixed
+
+- The **auxiliary heating** only offers the mode "fan only" (ventilation) if the vehicle reports a start mode (or is ventilating). A vehicle without one cannot choose between heating and ventilation: the petrol Octavia of issue #32 refused `VENTILATION`, and its MyŠkoda app only offers on and off. Heating works there since 0.5.6.
+
+### Known risk
+
+- A vehicle that can ventilate but reports no start mode loses the mode "fan only". The API documents the start mode as the way to tell, and no vehicle has been reported yet where ventilation works. If yours is one, please open an issue.
+
 ## [0.5.6]
 
 ### Fixed
