@@ -7,6 +7,8 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.4]
+
 ### Changed
 
 - Elke foutmelding van de API wordt nu als waarschuwing gelogd: HTTP-status, probleemtype, de tekst van het antwoord (afgekapt op 500 tekens) en de trace-id; het verzoek zelf (met de S-PIN) wordt nooit gelogd en het VIN wordt ingekort. Bij serverfouten (5xx) toont de foutmelding ook de trace-id, waarmee Škoda het mislukte verzoek kan terugvinden (voorgesteld door de melding in issue #32).
