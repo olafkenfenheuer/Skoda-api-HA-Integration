@@ -7,6 +7,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.5]
+
 ### Fixed
 
 - The auxiliary heating no longer sends a made-up target temperature (21 °C) when it starts: it is only sent if the vehicle reports one or you set it. A petrol Octavia that reports none answered the start with HTTP 500 (issue #32; whether this is the cause is not confirmed yet).
