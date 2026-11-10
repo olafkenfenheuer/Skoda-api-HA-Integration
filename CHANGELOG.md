@@ -7,6 +7,13 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.6]
+
+### Fixed
+
+- The **auxiliary heating** only sends the start mode `HEATING` if the vehicle reports a start mode; ventilation still always sends `VENTILATION`. The petrol Octavia of issue #32 reports none and accepted the start without an error, but did not heat. Only the S-PIN is required by the API.
+- The **S-PIN** is checked when you save the options: it must have four digits, and spaces around it are removed. The password field hides typos, and a wrong S-PIN is only refused by the vehicle later, without an error in Home Assistant. An S-PIN that was saved with spaces is also sent without them.
+
 ## [0.5.5]
 
 ### Fixed
