@@ -7,6 +7,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Every error response of the API is now written to the log as a warning: HTTP status, problem type, the response text (cut to 500 characters) and the trace id; the request itself (with the S-PIN) is never logged and the VIN is shortened. For server errors (5xx) the error message also shows the trace id, which Škoda can use to find the failed request (suggested by the report in issue #32).
+
 ## [0.5.3]
 
 ### Fixed
