@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from collections.abc import Mapping
@@ -16,6 +17,7 @@ from .const import API_BASE_URL
 
 _LOGGER = logging.getLogger(__name__)
 
+ERROR_BODY_LOG_LENGTH = 500  # characters of an error response written to the log
 PROBLEM_BASE = f"{API_BASE_URL}/problems/"
 REQUEST_TIMEOUT = ClientTimeout(total=30)
 # Vehicle sections that carry a carCapturedTimestamp, with the name used for them in attributes.
@@ -30,11 +32,19 @@ CAPTURED_SECTIONS = {
 class SkodaApiError(Exception):
     """Base error for the MyŠkoda Public API."""
 
-    def __init__(self, message: str, *, status: int | None = None, problem: str | None = None):
-        """Store the HTTP status and RFC 9457 problem type (the part after /problems/)."""
+    def __init__(
+        self,
+        message: str,
+        *,
+        status: int | None = None,
+        problem: str | None = None,
+        trace_id: str | None = None,
+    ):
+        """Store the HTTP status, RFC 9457 problem type (the part after /problems/) and trace id."""
         super().__init__(message)
         self.status = status
         self.problem = problem
+        self.trace_id = trace_id
 
 
 class SkodaAuthError(SkodaApiError):
@@ -275,7 +285,7 @@ class SkodaApi:
                         raise SkodaApiError(
                             "The MyŠkoda API returned an invalid response", status=response.status
                         ) from err
-                raise await self._error_for(response)
+                raise await self._error_for(response, method, path)
         except (ClientError, TimeoutError) as err:
             raise SkodaConnectionError(f"Cannot reach the MyŠkoda API: {err}") from err
 
@@ -285,10 +295,14 @@ class SkodaApi:
             self.rate_limits[match.group(1)] = info
 
     @staticmethod
-    async def _error_for(response: ClientResponse) -> SkodaApiError:
+    async def _error_for(
+        response: ClientResponse, method: str = "", path: str = ""
+    ) -> SkodaApiError:
         problem: dict[str, Any] = {}
+        text = ""
         try:
-            body = await response.json(content_type=None)
+            text = await response.text()
+            body = json.loads(text)
             if isinstance(body, dict):
                 problem = body
         except (ClientError, ValueError):
@@ -298,7 +312,20 @@ class SkodaApi:
             problem_type.removeprefix(PROBLEM_BASE) if problem_type.startswith(PROBLEM_BASE) else None
         )
         detail = problem.get("detail") or problem.get("title") or f"HTTP {response.status}"
-        kwargs = {"status": response.status, "problem": problem_id}
+        trace_id = response.headers.get("traceid") or None
+        kwargs = {"status": response.status, "problem": problem_id, "trace_id": trace_id}
+        # Never log the request: it carries the S-PIN of the auxiliary heating.
+        _LOGGER.warning(
+            "%s %s -> HTTP %s, problem %s, trace id %s: %s",
+            method,
+            _VEHICLE_PATH_RE.sub(lambda m: f"/vehicles/...{m.group(1)[-4:]}", path),
+            response.status,
+            problem_id or problem_type or "-",
+            trace_id or "-",
+            text[:ERROR_BODY_LOG_LENGTH] or detail,
+        )
+        if response.status >= 500 and trace_id:
+            detail = f"{detail} (HTTP {response.status}, trace id {trace_id})"
 
         if response.status == 401 or problem_id == "api-key-not-authorized":
             return SkodaAuthError(detail, **kwargs)
