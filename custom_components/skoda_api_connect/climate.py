@@ -199,7 +199,8 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
     """The auxiliary heating of a Škoda vehicle (fuel-operated or electric).
 
     Starting it needs the S-PIN from the integration options. It runs for the time set with
-    the "Auxiliary heating duration" number. The target temperature is sent with the start.
+    the "Auxiliary heating duration" number. A target temperature is only sent with the start if
+    the vehicle reports one or it was set here: not every vehicle accepts it.
     """
 
     _attr_translation_key = "auxiliary_heating"
@@ -277,7 +278,7 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
                 spin,
                 mode=_AUX_START_MODE[hvac_mode],
                 duration_seconds=coordinator.aux_duration_minutes(self.vin) * 60,
-                temperature=self.target_temperature or DEFAULT_TARGET_TEMPERATURE,
+                temperature=self.target_temperature,
             ),
             expect,
         )

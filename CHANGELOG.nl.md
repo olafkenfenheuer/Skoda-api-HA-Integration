@@ -7,6 +7,11 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+### Fixed
+
+- De standkachel stuurt bij het starten geen verzonnen doeltemperatuur (21 °C) meer mee: die wordt alleen gestuurd als het voertuig er een meldt of je er een instelt. Een benzine-Octavia die er geen meldt, beantwoordde de start met HTTP 500 (issue #32; of dit de oorzaak is, is nog niet bevestigd).
+- Het VIN wordt ook ingekort in de antwoordtekst van een fout die naar het log wordt geschreven.
+
 ## [0.5.4]
 
 ### Changed
