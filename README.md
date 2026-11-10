@@ -214,8 +214,9 @@ data:
 ### Auxiliary heating
 
 Vehicles with an auxiliary heating (the vehicle lists `startAuxiliaryHeating` and reports its state) get a
-`climate` entity **Auxiliary heating** (off, heat, fan only for ventilation), and a number **Auxiliary
-heating duration** (10 to 60 minutes, default 30). Vehicles without one get neither.
+`climate` entity **Auxiliary heating** (off, heat, and fan only for ventilation if the vehicle reports a start
+mode), and a number **Auxiliary heating duration** (10 to 60 minutes, default 30). Vehicles without one get
+neither.
 
 The API only starts the heating with the **S-PIN** of your MyŠkoda account. Enter it under
 **Configure** (the field only appears if a vehicle has an auxiliary heating). It is stored in Home Assistant

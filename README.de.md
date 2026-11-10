@@ -201,8 +201,9 @@ Fahrzeugs kann also bei 5 beginnen (siehe das Beispiel in der englischen README)
 ### Standheizung
 
 Fahrzeuge mit Standheizung (das Fahrzeug nennt `startAuxiliaryHeating` und meldet ihren Zustand) bekommen
-eine `climate`-Entität **Standheizung** (aus, Heizen, nur Lüften für die Belüftung) und eine Zahl
-**Standheizung: Laufzeit** (10 bis 60 Minuten, Standard 30). Fahrzeuge ohne Standheizung bekommen beides nicht.
+eine `climate`-Entität **Standheizung** (aus, Heizen und, wenn das Fahrzeug einen Startmodus meldet, nur Lüften
+für die Belüftung) und eine Zahl **Standheizung: Laufzeit** (10 bis 60 Minuten, Standard 30). Fahrzeuge ohne
+Standheizung bekommen beides nicht.
 
 Die API startet die Heizung nur mit der **S-PIN** deines MyŠkoda-Kontos. Trage sie unter **Konfigurieren**
 ein (das Feld erscheint nur, wenn ein Fahrzeug eine Standheizung hat). Sie wird wie der API-Schlüssel in
