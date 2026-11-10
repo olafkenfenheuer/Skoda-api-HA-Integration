@@ -1,0 +1,54 @@
+name: Bug report
+description: Something does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please fill in all fields. **Remove your API key, VIN and location from anything you paste.**
+  - type: input
+    id: integration_version
+    attributes:
+      label: Integration version
+      placeholder: "0.5.5"
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.x.x"
+    validations:
+      required: true
+  - type: input
+    id: vehicle
+    attributes:
+      label: Vehicle model and drive type
+      placeholder: "Enyaq 85, Superb iV (PHEV), Octavia 2.0 TSI ..."
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happens?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: Enable debug logging for `custom_components.skoda_api_connect` and paste the relevant lines.
+      render: text
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Settings → Devices & services → Škoda → ⋮ → Download diagnostics. Attach the file or paste the relevant part.

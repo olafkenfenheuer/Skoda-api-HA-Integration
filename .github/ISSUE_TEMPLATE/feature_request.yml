@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a new entity, command or option
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: wish
+    attributes:
+      label: What would you like?
+    validations:
+      required: true
+  - type: textarea
+    id: api
+    attributes:
+      label: API support
+      description: If you know the MyŠkoda API endpoint or field for this, please name it (see https://public.api.connect.skoda-auto.cz/docs).
+  - type: input
+    id: vehicle
+    attributes:
+      label: Vehicle model and drive type

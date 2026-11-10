@@ -1,0 +1,44 @@
+name: Issue triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const text = `${issue.title}\n${issue.body || ""}`.toLowerCase();
+            const labels = new Set();
+            const rules = {
+              "charging": /charg|ladung|laden|wallbox|ac current|ladestrom/,
+              "climate": /climat|heater|heizung|klima|preclimat|vorklima|air.?condition/,
+              "api-error": /internal server error|http 5\d\d|\b50[0-4]\b|rate.?limit|429|forbidden|403|timeout/,
+              "authentication": /api key|s-pin|spin|unauthori|401|reauth|login/,
+              "location": /tracker|gps|position|location|parking alert|geparkt/,
+            };
+            for (const [label, re] of Object.entries(rules)) if (re.test(text)) labels.add(label);
+            if (labels.size) {
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: [...labels] });
+            }
+            const isBug = (issue.labels || []).some(l => l.name === "bug");
+            const missing = [];
+            if (isBug && !/diagnostic/i.test(issue.body || "") ) missing.push("diagnostics download");
+            if (isBug && !/log/i.test(issue.body || "")) missing.push("debug log output");
+            if (missing.length) {
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: ["needs-info"] });
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: issue.number,
+                body: `Thanks for the report! To help debug this, could you add: **${missing.join(", ")}**?\n\n` +
+                      "Enable debug logging for `custom_components.skoda_api_connect`, reproduce the problem, and attach the " +
+                      "diagnostics file (Settings → Devices & services → Škoda → ⋮ → Download diagnostics). " +
+                      "Please remove your API key, VIN and location first.",
+              });
+            }
