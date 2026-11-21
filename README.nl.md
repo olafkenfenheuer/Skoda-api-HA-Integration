@@ -268,7 +268,10 @@ De integratie kan een kritieke melding sturen als een voertuig geparkeerd staat
 - Ramen is niet `CLOSED` (overgeslagen als de API `UNSUPPORTED` meldt, dus geen elektrische ramen)
 
 Een waarde die als `UNKNOWN` wordt gemeld, of een van de andere velden die in het antwoord ontbreekt,
-telt ook als niet beveiligd.
+telt ook als niet beveiligd. Sommige voertuigen melden de vergrendelingsvelden als `UNKNOWN` terwijl
+ze geparkeerd en verder onaangeroerd staan, blijkbaar in diepe slaap; is dat de enige reden, dan
+wordt de melding niet als kritiek verstuurd (zie onder) en doorloopt ze hetzelfde eenmalige wekken
+als een te oude melding.
 
 Om het aan te zetten open je **Configureren** en kies je een of meer **Ontvangers van het
 parkeeralarm**, bijvoorbeeld `notify.mobile_app_mijn_telefoon`. De lijst toont je bestaande
@@ -295,14 +298,20 @@ ook in stille modus en Focus, op Android gebruikt hij het alarmkanaal. Andere no
 een gewone melding. Alle ontvangers krijgen de melding tegelijk, en een ontvanger die faalt houdt de
 andere niet tegen. De tekst van de melding is Engels.
 
+De kritieke push wordt alleen gebruikt als een controle een daadwerkelijk onbeveiligde waarde meldt
+(bijvoorbeeld een open deur of een ontgrendelde auto), nooit als de enige redenen `UNKNOWN` zijn. In
+dat geval krijgt elke ontvanger een gewone melding die zegt dat de vergrendelingsstatus onbekend is,
+in plaats van "Parked, but: …".
+
 Een voertuig kan zich lang niet bij de Škoda-servers melden, en een poll levert dan zijn laatste
-melding, hoe oud ook. Daarom wordt de melding alleen verstuurd op gegevens die het voertuig bij of na het
-begin van het incident meldde (de `carCapturedTimestamp` van de status); een oudere melding weet
+melding, hoe oud ook. Daarom wordt de melding alleen als kritiek verstuurd op gegevens die het
+voertuig bij of na het begin van het incident meldde (de `carCapturedTimestamp` van de status) en
+die een daadwerkelijk onbeveiligde waarde tonen; een oudere of louter `UNKNOWN`-melding weet
 misschien niet dat de auto intussen vergrendeld is. Een net geparkeerd voertuig meldt zich meestal één
 keer en slaapt dan; omdat die melding het incident begint, is ze genoeg voor de melding. Is er aan het eind van de wachttijd geen zulke
 melding, dan wekt de integratie het voertuig één keer per incident, net als de knop **Voertuig
-wakker maken** (twee verzoeken van het quotum), en beslist op de melding die volgt. Het wekken wordt
-Meldt het voertuig zich niet binnen 5 minuten na het wekken, mislukt het wekken of wordt het
+wakker maken** (twee verzoeken van het quotum), en beslist meteen op de melding die volgt, zonder
+verder te wachten. Meldt het voertuig zich niet binnen 5 minuten na het wekken, mislukt het wekken of wordt het
 overgeslagen (in alleen-lezen-modus, tijdens een rate-limit-pauze, als er minder dan 6 verzoeken van
 het uurquotum over zijn en als er geen commando is om het voertuig te wekken: geen
 bekende laadmodus en geen airco, standkachel of ventilatie die het voertuig vermeldt en die niet draait), dan wordt de melding toch verstuurd en eindigt ze met "Not confirmed: last

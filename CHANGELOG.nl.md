@@ -7,6 +7,12 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.9]
+
+### Fixed
+
+- De **parkeermelding** stuurt niet langer een kritieke push die "niet storen" omzeilt wanneer het voertuig de slotstatus als `UNKNOWN` meldt terwijl het geparkeerd staat en verder niet is aangeraakt - sommige voertuigen sturen zo'n melding terwijl ze diep in slaap zijn (issue #41). Een vers rapport met alleen onbekende slotvelden start nu dezelfde eenmalige wekactie als een te oud rapport; de melding die daarna wordt verstuurd is een gewone push die zegt dat de slotstatus onbekend is, in plaats van daadwerkelijk onbeveiligd.
+
 ## [0.5.8]
 
 ### Changed

@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.9]
+
+### Fixed
+
+- The **parking alert** no longer sends a critical, do-not-disturb-bypassing push when the vehicle reports its lock status as `UNKNOWN` while parked and otherwise untouched - some vehicles send such a report while deeply asleep (issue #41). A fresh report with only unknown lock fields now triggers the same single wake-up as a too-old one; the alert, once sent, is a normal push that says the lock status is unknown instead of a genuinely unsecured one.
+
 ## [0.5.8]
 
 ### Changed

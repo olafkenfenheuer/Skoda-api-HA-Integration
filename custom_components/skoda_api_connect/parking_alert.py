@@ -76,6 +76,25 @@ def unsecured_reasons(vehicle: SkodaVehicle) -> list[str]:
     return reasons
 
 
+def _is_confirmed_unsecured(vehicle: SkodaVehicle) -> bool:
+    """Return whether a check reports an actual unsecured value, not just unknown.
+
+    Some vehicles report the lock fields as UNKNOWN, or omit a required one, while
+    parked and otherwise untouched (apparently while deeply asleep). That must not
+    trigger a critical, do-not-disturb-bypassing alert the way an actually open door
+    or unlocked car does.
+    """
+    if not is_parked(vehicle):
+        return False
+    for field_name, _, secured, _ in SECURED_CHECKS:
+        value = vehicle.get("status", "overall", field_name)
+        if value is None:
+            continue
+        if value not in (secured, _UNSUPPORTED, "UNKNOWN"):
+            return True
+    return False
+
+
 def _last_report(stamp: datetime | None) -> str:
     """Describe the last report: its time, plus the date if it was not today."""
     if stamp is None:
@@ -120,6 +139,13 @@ class SkodaParkingAlert:
     mode, rate limit pause, low quota), the wake-up fails or no report follows, the alert
     is sent anyway and says that it is not confirmed: a vehicle that stays silent must
     not keep the alert back for good.
+
+    A confirmed report may still only show the lock fields as UNKNOWN, which some
+    vehicles send while deeply asleep though nothing changed. That is treated the same
+    as a too-old report: it triggers the same single wake-up, and the report that
+    follows is judged at once rather than waiting out the rest of the timeout. If it
+    is still only UNKNOWN, the alert is a normal push (no do-not-disturb bypass) that
+    says the lock status is unknown instead.
 
     Wake-ups and alerts are written to the logbook of the "Parked unsecured" sensor.
     """
@@ -267,13 +293,21 @@ class SkodaParkingAlert:
             # targets added later still get notified.
             return
         captured = vehicle.captured("status")
-        if captured is not None and captured >= incident.since:
-            self._async_alert(vin, confirmed=True)
+        confirmed = captured is not None and captured >= incident.since
+        if confirmed and _is_confirmed_unsecured(vehicle):
+            self._async_alert(vin)
             return
-        # The vehicle may have been secured since without reporting it: wake it once to
-        # get a newer report, which every later poll checks for.
+        # Either the report is too old, or it only shows the lock status as unknown:
+        # the vehicle may have been secured without reporting it, or just not have
+        # reported the lock status yet. Wake it once to get a report that clarifies
+        # this, which every later poll checks for.
         if incident.woken_at is None:
             self._async_wake_once(vin, incident)
+            return
+        if captured is not None and captured >= incident.woken_at:
+            # The one report asked for is in: decide now rather than wait out the
+            # rest of the timeout, confirmed but still not a genuinely unsecured value.
+            self._async_alert(vin)
             return
         deadline = incident.woken_at + WAKE_CONFIRM_TIMEOUT
         delay = (deadline - dt_util.utcnow()).total_seconds()
@@ -283,7 +317,7 @@ class SkodaParkingAlert:
             )
             return
         self._async_log(vin, "did not report after the wake-up")
-        self._async_alert(vin, confirmed=False)
+        self._async_alert(vin)
 
     @callback
     def _async_wake_once(self, vin: str, incident: _Incident) -> None:
@@ -294,7 +328,7 @@ class SkodaParkingAlert:
             blocked = coordinator.wake_blocked_reason(vin)
         if blocked is not None:
             self._async_log(vin, f"was not woken to confirm the parking alert: {blocked}")
-            self._async_alert(vin, confirmed=False)
+            self._async_alert(vin)
             return
         incident.waking = True
         self._entry.async_create_background_task(
@@ -312,7 +346,7 @@ class SkodaParkingAlert:
                 return
             _LOGGER.warning("Could not wake %s for the parking alert: %s", name, err)
             self._async_log(vin, f"could not be woken to confirm the parking alert: {err}")
-            self._async_alert(vin, confirmed=False)
+            self._async_alert(vin)
             return
         except Exception:  # noqa: BLE001
             # Not a failed command: log it here instead of leaving it to the task, and let
@@ -332,7 +366,7 @@ class SkodaParkingAlert:
         self._async_schedule(vin)
 
     @callback
-    def _async_alert(self, vin: str, confirmed: bool) -> None:
+    def _async_alert(self, vin: str) -> None:
         """Send the alert of an open incident on the latest data, and mark it as sent."""
         incident = self._incidents[vin]
         vehicle = self._coordinator.data.vehicles[vin]
@@ -343,18 +377,23 @@ class SkodaParkingAlert:
         self._async_cancel_timer(incident)
         incident.notified = True
         self._async_save()
-        last_report = _last_report(vehicle.captured("status"))
-        message = "Parked, but: " + ", ".join(reasons)
+        captured = vehicle.captured("status")
+        confirmed = captured is not None and captured >= incident.since
+        critical = _is_confirmed_unsecured(vehicle)
+        last_report = _last_report(captured)
+        prefix = "Parked, but: " if critical else "Parked, lock status unknown: "
+        message = prefix + ", ".join(reasons)
+        suffix = "" if critical else ", lock status unknown"
         if confirmed:
-            self._async_log(vin, f"parking alert sent ({last_report})")
+            self._async_log(vin, f"parking alert sent{suffix} ({last_report})")
         else:
             message += f". Not confirmed: {last_report}."
-            self._async_log(vin, f"parking alert sent, not confirmed ({last_report})")
+            self._async_log(vin, f"parking alert sent{suffix}, not confirmed ({last_report})")
         # Not a background task: those are cancelled on unload, which would lose an
         # alert that is already stored as sent.
         self._entry.async_create_task(
             self._hass,
-            self._async_send(targets, vehicle.name, message),
+            self._async_send(targets, vehicle.name, message, critical),
             f"{DOMAIN}_parking_alert_{vin}",
         )
 
@@ -367,16 +406,20 @@ class SkodaParkingAlert:
         name = self._coordinator.data.vehicles[vin].name
         async_log_entry(self._hass, name, message, DOMAIN, entity_id)
 
-    async def _async_send(self, targets: list[str], name: str, message: str) -> None:
+    async def _async_send(
+        self, targets: list[str], name: str, message: str, critical: bool
+    ) -> None:
         title = f"{name} is not secured"
         await asyncio.gather(
-            *(self._async_send_one(target, title, message) for target in targets)
+            *(self._async_send_one(target, title, message, critical) for target in targets)
         )
 
-    async def _async_send_one(self, target: str, title: str, message: str) -> None:
+    async def _async_send_one(
+        self, target: str, title: str, message: str, critical: bool
+    ) -> None:
         domain, _, service = target.partition(".")
         service_data: dict[str, Any] = {"title": title, "message": message}
-        if service.startswith("mobile_app_"):
+        if critical and service.startswith("mobile_app_"):
             service_data["data"] = CRITICAL_PUSH_DATA
         try:
             await self._hass.services.async_call(domain, service, service_data, blocking=True)

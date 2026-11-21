@@ -39,7 +39,11 @@ from custom_components.skoda_api_connect.const import (
 from custom_components.skoda_api_connect.diagnostics import (
     async_get_config_entry_diagnostics,
 )
-from custom_components.skoda_api_connect.parking_alert import _last_report, unsecured_reasons
+from custom_components.skoda_api_connect.parking_alert import (
+    _is_confirmed_unsecured,
+    _last_report,
+    unsecured_reasons,
+)
 
 from .conftest import VIN
 
@@ -71,6 +75,7 @@ def _data(state: str = "PARKED", **overall: str) -> dict:
 
 
 UNSECURED = _data(doors="OPEN", windows="OPEN")
+UNKNOWN_LOCK = _data(doorsLocked="UNKNOWN", locked="UNKNOWN", reliableLockStatus="UNKNOWN")
 
 
 def _entry(grace: int | None = 0, targets: list[str] | None = None) -> MockConfigEntry:
@@ -171,6 +176,65 @@ def test_unsecured_reasons() -> None:
         "Locked: unknown",
         "Windows: unknown",
     ]
+
+
+def test_is_confirmed_unsecured() -> None:
+    def confirmed(data: dict) -> bool:
+        return _is_confirmed_unsecured(SkodaVehicle(vin=VIN, data=data))
+
+    assert confirmed(SECURED) is False
+    assert confirmed(UNSECURED) is True  # doors/windows OPEN: an actual unsecured value
+    assert confirmed(UNKNOWN_LOCK) is False  # all unsecured reasons are only UNKNOWN
+    assert confirmed(_data(locked="NO")) is True  # a real value, even if others are secured
+    assert confirmed(_data("IN_MOTION", doors="OPEN")) is False  # not parked
+    assert confirmed({"status": SECURED["status"]}) is False  # parking state not reported
+    # Missing required fields cannot be confirmed as unsecured either.
+    assert confirmed({"name": "Car 1", "parkingPosition": {"state": "PARKED"}}) is False
+
+
+async def test_mixed_known_and_unknown_reasons_is_critical(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    api, p = await _setup(hass, entry, _data(doors="OPEN", reliableLockStatus="UNKNOWN"))
+    try:
+        # A real unsecured value among the reasons still triggers the critical push,
+        # even mixed with an unknown one.
+        assert len(calls) == 1
+        assert calls[0].data["message"] == "Parked, but: Reliable lock status: UNKNOWN, Doors: OPEN"
+        assert calls[0].data["data"]["push"]["sound"]["critical"] == 1
+    finally:
+        p.stop()
+
+
+async def test_unknown_lock_status_is_not_critical(hass: HomeAssistant) -> None:
+    calls = async_mock_service(hass, "notify", "mobile_app_phone")
+    entry = _entry(targets=[PHONE])
+    logbook = async_capture_events(hass, EVENT_LOGBOOK_ENTRY)
+    data = copy.deepcopy(UNKNOWN_LOCK)
+    data["charging"] = {"settings": {"preferredChargeMode": "MANUAL"}}
+    with patch(SET_MODE, new=AsyncMock()) as set_mode:
+        api, p = await _setup(hass, entry, data, fresh=False)
+        try:
+            # Only unknown reasons, no genuinely unsecured value: wake the vehicle
+            # instead of a critical alert right away, like for stale data.
+            assert calls == []
+            set_mode.assert_awaited_once_with(VIN, "MANUAL")
+
+            # The vehicle reports again, but the lock status stays unknown: a
+            # confirmed report, but still not an actually unsecured one.
+            api.fresh = True
+            await _poll(hass, entry)
+            assert len(calls) == 1
+            assert calls[0].data["message"] == (
+                "Parked, lock status unknown: Reliable lock status: UNKNOWN, "
+                "Doors locked: UNKNOWN, Locked: UNKNOWN"
+            )
+            assert "data" not in calls[0].data  # not critical: no do-not-disturb bypass
+            messages = [event.data["message"] for event in logbook]
+            assert messages[0] == "was woken to confirm that it is parked but not secured"
+            assert messages[1].startswith("parking alert sent, lock status unknown (last report at ")
+        finally:
+            p.stop()
 
 
 async def test_immediate_alert_once_per_incident(hass: HomeAssistant) -> None:
