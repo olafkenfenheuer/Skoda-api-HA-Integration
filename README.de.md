@@ -289,7 +289,10 @@ Die Integration kann eine kritische Benachrichtigung senden, wenn ein Fahrzeug g
 - Fenster ist nicht `CLOSED` (entfällt, wenn die API `UNSUPPORTED` meldet, also keine elektrischen Fensterheber)
 
 Ein als `UNKNOWN` gemeldeter Wert oder ein in der Antwort fehlendes anderes Feld gilt ebenfalls als
-nicht gesichert.
+nicht gesichert. Manche Fahrzeuge melden die Verriegelungsfelder als `UNKNOWN`, während sie geparkt
+und ansonsten unberührt sind, offenbar im Tiefschlaf; ist das der einzige Grund, wird der Alarm
+nicht als kritisch gesendet (siehe unten) und durchläuft dasselbe einmalige Aufwecken wie eine zu
+alte Meldung.
 
 Zum Einschalten öffnest du **Konfigurieren** und wählst einen oder mehrere **Empfänger des
 Parkalarms**, zum Beispiel `notify.mobile_app_mein_telefon`. Die Liste bietet deine vorhandenen
@@ -316,14 +319,20 @@ ertönt er auch im Lautlos- und Fokus-Modus, unter Android nutzt er den Alarm-Ka
 Benachrichtigungsdienste erhalten eine normale Nachricht. Alle Empfänger werden gleichzeitig
 benachrichtigt, und ein fehlerhafter hält die anderen nicht auf. Der Text der Benachrichtigung ist englisch.
 
+Die kritische Push-Nachricht wird nur verwendet, wenn eine Prüfung einen tatsächlich ungesicherten
+Wert meldet (z. B. eine offene Tür oder ein entriegeltes Auto), nie wenn die einzigen Gründe
+`UNKNOWN` sind. In dem Fall erhält jeder Empfänger eine normale Nachricht, die statt „Parked, but:
+…“ meldet, dass der Verriegelungsstatus unbekannt ist.
+
 Ein Fahrzeug kann sich lange nicht bei den Škoda-Servern melden, und eine Abfrage liefert dann
-seine letzte Meldung, egal wie alt. Daher wird der Alarm nur auf Daten gesendet, die das Fahrzeug
-bei oder nach Beginn des Vorfalls gemeldet hat (der `carCapturedTimestamp` des Status); eine ältere Meldung
-weiß womöglich nicht, dass das Auto inzwischen verriegelt wurde. Ein gerade geparktes Fahrzeug meldet
+seine letzte Meldung, egal wie alt. Daher wird der Alarm nur als kritisch auf Daten gesendet, die
+das Fahrzeug bei oder nach Beginn des Vorfalls gemeldet hat (der `carCapturedTimestamp` des Status)
+und die einen tatsächlich ungesicherten Wert zeigen; eine ältere oder rein `UNKNOWN`-Meldung weiß
+womöglich nicht, dass das Auto inzwischen verriegelt wurde. Ein gerade geparktes Fahrzeug meldet
 sich meist einmal und schläft dann; da diese Meldung den Vorfall beginnt, reicht sie für den Alarm. Liegt beim Ende der Wartezeit keine
 solche Meldung vor, weckt die Integration das Fahrzeug einmal pro Vorfall, genauso wie der
-Button **Fahrzeug aufwecken** (zwei Anfragen des Kontingents), und entscheidet anhand der
-folgenden Meldung. Meldet sich das Fahrzeug nicht innerhalb von 5 Minuten nach dem Aufwecken,
+Button **Fahrzeug aufwecken** (zwei Anfragen des Kontingents), und entscheidet sofort anhand der
+folgenden Meldung, statt weiter zu warten. Meldet sich das Fahrzeug nicht innerhalb von 5 Minuten nach dem Aufwecken,
 schlägt das Aufwecken fehl oder entfällt es (im Nur-Lesen-Modus, während einer Ratenlimit-Pause, wenn
 weniger als 6 Anfragen des Stundenkontingents übrig sind, und wenn es keinen Befehl zum Aufwecken gibt:
 kein bekannter Lademodus und keine Klimaanlage, Standheizung oder Belüftung, die das Fahrzeug nennt und

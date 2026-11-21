@@ -297,7 +297,9 @@ The integration can send a critical notification when a vehicle is parked
 - Windows is not `CLOSED` (skipped when the API reports `UNSUPPORTED`, i.e. no electric windows)
 
 A value reported as `UNKNOWN`, or one of the other fields missing from the response, also counts as
-not secured.
+not secured. Some vehicles report the lock fields as `UNKNOWN` while parked and otherwise untouched,
+apparently while deeply asleep; if that is the only reason, the alert is not sent as critical (see
+below) and goes through the same single wake-up as a too-old report.
 
 To turn it on, open **Configure** and pick one or more **Parking alert notification targets**, for
 example `notify.mobile_app_my_phone`. The list offers your existing notify services; you can also
@@ -321,19 +323,25 @@ even in silent mode and Focus, and on Android it uses the alarm stream. Other no
 normal message. All targets are notified at the same time, and a failing one does not stop the
 others. The notification text is in English.
 
+The critical push is only used when a check reports an actually unsecured value (e.g. an open door
+or an unlocked car), never when the only reasons are `UNKNOWN`. In that case every target gets a
+normal message that says the lock status is unknown instead of "Parked, but: …".
+
 A vehicle can stay silent towards the Škoda servers for a long time, and a poll then returns its
-last report, however old. So the alert is only sent on data the vehicle reported (the
-`carCapturedTimestamp` of the status) when or after the incident began; an older report may miss that the
-car was locked meanwhile. A vehicle that was just parked usually reports once and then sleeps; since
-that report starts the incident, it is enough for the alert. If there is no such report when the grace period ends, the integration
-wakes the vehicle once per incident, the same way as the **Wake vehicle** button (two requests of
-the quota), and decides on the report that follows. If the vehicle does not report within 5 minutes
-of the wake-up, the wake-up fails, or it is skipped (in read-only mode, during a rate limit pause, when
-fewer than 6 requests of the hourly quota are left and when there is no command to wake the vehicle with:
-no known charge mode, and no air conditioning, auxiliary heating or ventilation that the vehicle lists and
-that is not running), the alert is sent anyway and ends with "Not confirmed: last report at
-…": a vehicle that stays silent must not hold the alert back for good. Apart from that wake-up the
-alert only reads data the polls already fetched and costs no requests.
+last report, however old. So the alert is only sent as critical on data the vehicle reported (the
+`carCapturedTimestamp` of the status) when or after the incident began, and that reports an actually
+unsecured value; an older, or purely `UNKNOWN`, report may miss that the car was locked meanwhile. A
+vehicle that was just parked usually reports once and then sleeps; since that report starts the
+incident, it is enough for the alert. If there is no such report when the grace period ends, the
+integration wakes the vehicle once per incident, the same way as the **Wake vehicle** button (two
+requests of the quota), and decides on the report that follows at once rather than waiting any
+further. If the vehicle does not report within 5 minutes of the wake-up, the wake-up fails, or it is
+skipped (in read-only mode, during a rate limit pause, when fewer than 6 requests of the hourly
+quota are left and when there is no command to wake the vehicle with: no known charge mode, and no
+air conditioning, auxiliary heating or ventilation that the vehicle lists and that is not running),
+the alert is sent anyway and ends with "Not confirmed: last report at …": a vehicle that stays
+silent must not hold the alert back for good. Apart from that wake-up the alert only reads data the
+polls already fetched and costs no requests.
 
 Each wake-up (or why it was skipped or failed) and each alert is written to the logbook of the
 **Parked unsecured** sensor, so you can see afterwards why an alert came when it did.
