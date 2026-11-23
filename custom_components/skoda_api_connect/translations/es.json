@@ -164,6 +164,9 @@
       "aux_heating_reach": {
         "name": "Calefacción auxiliar: objetivo alcanzado a las"
       },
+      "aux_heating_duration": {
+        "name": "Calefacción auxiliar: duración (vehículo)"
+      },
       "fuel_car_type": {
         "name": "Tipo de vehículo"
       },

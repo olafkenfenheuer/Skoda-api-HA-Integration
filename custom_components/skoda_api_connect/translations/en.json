@@ -164,6 +164,9 @@
       "aux_heating_reach": {
         "name": "Auxiliary heating: target reached at"
       },
+      "aux_heating_duration": {
+        "name": "Auxiliary heating: duration (vehicle)"
+      },
       "fuel_car_type": {
         "name": "Vehicle type"
       },

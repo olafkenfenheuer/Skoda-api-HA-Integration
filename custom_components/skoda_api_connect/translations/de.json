@@ -164,6 +164,9 @@
       "aux_heating_reach": {
         "name": "Standheizung: Ziel erreicht um"
       },
+      "aux_heating_duration": {
+        "name": "Standheizung: Laufzeit (Fahrzeug)"
+      },
       "fuel_car_type": {
         "name": "Fahrzeugtyp"
       },

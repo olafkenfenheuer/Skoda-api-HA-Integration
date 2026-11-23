@@ -39,6 +39,8 @@ class SkodaSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[Vehicle], StateType]
     exists_fn: Callable[[Vehicle], bool] = lambda vehicle: True
     attrs_fn: Callable[[Vehicle], dict[str, Any]] | None = None
+    # Key of the state a command of another entity is expected to cause (see Expectation).
+    expected_key: str | None = None
 
 
 def _battery_percent(vehicle: Vehicle) -> StateType:
@@ -325,6 +327,17 @@ SENSOR_DESCRIPTIONS: tuple[SkodaSensorEntityDescription, ...] = (
         exists_fn=_exists("auxiliaryHeating", "estimatedReachOfTargetTemperatureAt"),
     ),
     SkodaSensorEntityDescription(
+        # Expected from the "Auxiliary heating duration" number as soon as the heating is
+        # started, shown as pending until the vehicle reports its own durationInSeconds.
+        key="aux_heating_duration",
+        translation_key="aux_heating_duration",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        expected_key="aux_heating_duration",
+        value_fn=_path("auxiliaryHeating", "durationInSeconds"),
+        exists_fn=_exists("auxiliaryHeating", "durationInSeconds"),
+    ),
+    SkodaSensorEntityDescription(
         key="fuel_car_type",
         translation_key="fuel_car_type",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -388,10 +401,17 @@ class SkodaSensor(SkodaVehicleEntity, SensorEntity):
         super().__init__(coordinator, vin)
         self.entity_description = description
         self._attr_unique_id = f"{vin}_{description.key}"
+        self._expected_key = description.expected_key
 
     @property
     def native_value(self) -> StateType:
-        """Return the current value, tolerating missing upstream data."""
+        """Return the current value, tolerating missing upstream data.
+
+        If a command of another entity (e.g. starting the auxiliary heating) is expected
+        to change this value, that expected value is shown until the vehicle reports it.
+        """
+        if (expected := self._expected()) is not None:
+            return expected
         try:
             return self.entity_description.value_fn(self.vehicle)
         except (KeyError, TypeError):

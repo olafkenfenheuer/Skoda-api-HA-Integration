@@ -203,6 +203,9 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
     the vehicle reports one or it was set here, and the start mode HEATING only if the vehicle
     reports a start mode: not every vehicle accepts them. Ventilation is only offered if the
     vehicle reports a start mode, and always sends its mode.
+
+    The sent duration is shown by the "Auxiliary heating duration" sensor at once (pending),
+    until the vehicle reports its own durationInSeconds.
     """
 
     _attr_translation_key = "auxiliary_heating"
@@ -284,16 +287,25 @@ class SkodaAuxiliaryHeating(SkodaVehicleEntity, ClimateEntity):
             return
         # Check the S-PIN before anything is sent: a wrong one could lock the S-PIN.
         spin = coordinator.spin()
+        duration_seconds = coordinator.aux_duration_minutes(self.vin) * 60
         await coordinator.async_command(
             self.vin,
             coordinator.api.start_auxiliary_heating(
                 self.vin,
                 spin,
                 mode=self._start_mode(hvac_mode),
-                duration_seconds=coordinator.aux_duration_minutes(self.vin) * 60,
+                duration_seconds=duration_seconds,
                 temperature=self.target_temperature,
             ),
-            expect,
+            (
+                expect,
+                Expectation(
+                    "aux_heating_duration",
+                    duration_seconds,
+                    "auxiliaryHeating",
+                    timedelta(minutes=EXPECTED_CLIMATE_MINUTES),
+                ),
+            ),
         )
 
     def _start_mode(self, hvac_mode: HVACMode) -> str | None:
