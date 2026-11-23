@@ -164,6 +164,9 @@
       "aux_heating_reach": {
         "name": "Standheizung: Zil erreecht um"
       },
+      "aux_heating_duration": {
+        "name": "Standheizung: Lafzäit (Gefier)"
+      },
       "fuel_car_type": {
         "name": "Gefiertyp"
       },

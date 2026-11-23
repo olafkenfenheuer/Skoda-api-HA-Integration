@@ -7,6 +7,12 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.10]
+
+### Added
+
+- Een nieuwe sensor **"Standkachel: looptijd"** toont `durationInSeconds`, de tijd die de standkachel na het starten blijft draaien, zoals gemeld door het voertuig. Bij het starten wordt die duur nu ook direct als verwachte waarde naar deze sensor gestuurd (vanuit de "Standkachel looptijd"-number), op dezelfde manier als de modus al deed, in plaats van te wachten tot het voertuig het meldt.
+
 ## [0.5.9]
 
 ### Fixed

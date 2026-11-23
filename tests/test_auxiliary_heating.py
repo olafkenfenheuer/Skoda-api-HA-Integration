@@ -34,7 +34,7 @@ def _vehicle(
     target: bool = True,
     start_mode: str | None = "HEATING",
 ):
-    heating: dict = {"state": state}
+    heating: dict = {"state": state, "durationInSeconds": 600}
     if target:
         heating["targetTemperature"] = {"value": 20.0}
     if start_mode:
@@ -90,6 +90,29 @@ async def test_start_heating_sends_spin_duration_and_temperature(hass: HomeAssis
     )
     state = hass.states.get(_climate(hass))
     assert state.state == "heat"
+    assert state.attributes["pending"] is True
+    c._cancel_refresh()
+    await c.async_shutdown()
+
+
+async def test_start_heating_shows_the_requested_duration_as_pending(
+    hass: HomeAssistant,
+) -> None:
+    c = await _setup(hass, _entry(), _vehicle())
+    c.set_vehicle_option(VIN, KEY_AUX_DURATION, 45)
+    duration = er.async_get(hass).async_get_entity_id(
+        "sensor", "skoda_api_connect", f"{VIN}_aux_heating_duration"
+    )
+    assert hass.states.get(duration).state == "600"
+    with patch(f"{API}.start_auxiliary_heating", new=AsyncMock()):
+        await hass.services.async_call(
+            "climate",
+            "set_hvac_mode",
+            {"entity_id": _climate(hass), "hvac_mode": "heat"},
+            blocking=True,
+        )
+    state = hass.states.get(duration)
+    assert state.state == str(45 * 60)
     assert state.attributes["pending"] is True
     c._cancel_refresh()
     await c.async_shutdown()

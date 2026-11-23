@@ -164,6 +164,9 @@
       "aux_heating_reach": {
         "name": "Nezávislé topení: cíl dosažen v"
       },
+      "aux_heating_duration": {
+        "name": "Nezávislé topení: doba trvání (vozidlo)"
+      },
       "fuel_car_type": {
         "name": "Typ vozidla"
       },

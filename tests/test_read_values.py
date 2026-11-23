@@ -45,6 +45,7 @@ DATA = {
     "auxiliaryHeating": {
         "state": "OFF",
         "estimatedReachOfTargetTemperatureAt": "2026-11-02T09:00:00Z",
+        "durationInSeconds": 600,
     },
     "fuelStatus": {"carType": "HYBRID"},
     "status": {"detail": {"sunroof": "OPEN", "trunk": "CLOSED", "bonnet": "CLOSED"}},
@@ -81,6 +82,7 @@ def _state(hass: HomeAssistant, domain: str, key: str) -> str | None:
         ("sensor", "fully_charged_at", "2026-11-02T20:00:00+00:00"),
         ("sensor", "air_conditioning_reach", "2026-11-02T08:00:00+00:00"),
         ("sensor", "aux_heating_reach", "2026-11-02T09:00:00+00:00"),
+        ("sensor", "aux_heating_duration", "600"),
         ("sensor", "fuel_car_type", "HYBRID"),
         ("binary_sensor", "charging_care_mode", "on"),
         ("binary_sensor", "vehicle_auto_unlock", "on"),
@@ -138,6 +140,7 @@ async def test_nothing_for_values_the_vehicle_does_not_report(
         ("binary_sensor", "charging_care_mode"),
         ("sensor", "fuel_car_type"),
         ("sensor", "aux_heating_reach"),
+        ("sensor", "aux_heating_duration"),
         ("sensor", "max_charge_current_ac"),
     ):
         assert (

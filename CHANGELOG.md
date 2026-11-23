@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.10]
+
+### Added
+
+- A new **"Auxiliary heating: duration"** sensor shows `durationInSeconds`, the time the auxiliary heating runs for once started, as reported by the vehicle. Starting it now also sends that duration to this sensor as a pending value (from the "Auxiliary heating duration" number) at once, the same way the mode already did, instead of waiting for the vehicle to report it.
+
 ## [0.5.9]
 
 ### Fixed

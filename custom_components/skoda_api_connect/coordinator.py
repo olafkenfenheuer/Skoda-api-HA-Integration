@@ -6,7 +6,7 @@ import asyncio
 import copy
 import logging
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import partial
@@ -568,11 +568,15 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         return min(max(backoff, MIN_RATE_LIMIT_BACKOFF), MAX_RATE_LIMIT_BACKOFF)
 
     async def async_command(
-        self, vin: str, command: Awaitable[None], expect: Expectation | None = None
+        self,
+        vin: str,
+        command: Awaitable[None],
+        expect: Expectation | Iterable[Expectation] | None = None,
     ) -> None:
         """Run a remote command and schedule a single follow-up refresh of that vehicle.
 
-        With ``expect`` the entity shows the expected state at once, until the vehicle
+        With ``expect`` (one ``Expectation``, or several for a command that changes more
+        than one value) the entity shows the expected state at once, until the vehicle
         reports newer data of that section or the expectation expires. A command the API
         rejects raises before that, so nothing is expected then.
 
@@ -594,8 +598,8 @@ class SkodaDataUpdateCoordinator(DataUpdateCoordinator[SkodaData]):
         except SkodaApiError as err:
             raise HomeAssistantError(f"The vehicle did not accept the request: {err}") from err
 
-        if expect is not None:
-            self._expect(vin, expect)
+        for expectation in (expect,) if isinstance(expect, Expectation) else expect or ():
+            self._expect(vin, expectation)
         self._force.add(vin)
         if self._cancel_refresh:
             self._cancel_refresh()

@@ -164,6 +164,9 @@
       "aux_heating_reach": {
         "name": "Standkachel: doel bereikt om"
       },
+      "aux_heating_duration": {
+        "name": "Standkachel: looptijd (voertuig)"
+      },
       "fuel_car_type": {
         "name": "Voertuigtype"
       },

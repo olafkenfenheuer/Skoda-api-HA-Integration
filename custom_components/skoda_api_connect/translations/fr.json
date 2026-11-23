@@ -164,6 +164,9 @@
       "aux_heating_reach": {
         "name": "Chauffage auxiliaire : cible atteinte à"
       },
+      "aux_heating_duration": {
+        "name": "Chauffage auxiliaire : durée (véhicule)"
+      },
       "fuel_car_type": {
         "name": "Type de véhicule"
       },
