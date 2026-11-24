@@ -125,6 +125,75 @@ async def test_fully_charged_at_only_while_charging(
     await coordinator.async_shutdown()
 
 
+async def test_air_conditioning_reach_appears_once_the_vehicle_starts_reporting_it(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    data = copy.deepcopy(DATA)
+    del data["airConditioning"]["estimatedReachOfTargetTemperatureAt"]
+    coordinator = await _setup(hass, mock_entry, data)
+    assert (
+        er.async_get(hass).async_get_entity_id(
+            "sensor", "skoda_api_connect", f"{VIN}_air_conditioning_reach"
+        )
+        is None
+    )
+
+    with patch(GET, new=AsyncMock(return_value=SkodaVehicle(vin=VIN, data=DATA))):
+        coordinator._last_fetch.clear()
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+
+    assert _state(hass, "sensor", "air_conditioning_reach") == "2026-11-02T08:00:00+00:00"
+    await coordinator.async_shutdown()
+
+
+async def test_charging_care_mode_appears_once_the_vehicle_starts_reporting_it(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    data = copy.deepcopy(DATA)
+    del data["charging"]["settings"]["chargingCareMode"]
+    coordinator = await _setup(hass, mock_entry, data)
+    assert (
+        er.async_get(hass).async_get_entity_id(
+            "binary_sensor", "skoda_api_connect", f"{VIN}_charging_care_mode"
+        )
+        is None
+    )
+
+    with patch(GET, new=AsyncMock(return_value=SkodaVehicle(vin=VIN, data=DATA))):
+        coordinator._last_fetch.clear()
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+
+    assert _state(hass, "binary_sensor", "charging_care_mode") == "on"
+    await coordinator.async_shutdown()
+
+
+async def test_charge_mode_select_appears_once_the_vehicle_reports_charge_modes(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    data = copy.deepcopy(DATA)
+    data["charging"]["settings"]["availableChargeModes"] = []
+    coordinator = await _setup(hass, mock_entry, data)
+    assert (
+        er.async_get(hass).async_get_entity_id(
+            "select", "skoda_api_connect", f"{VIN}_charge_mode"
+        )
+        is None
+    )
+
+    reported = copy.deepcopy(DATA)
+    reported["charging"]["settings"]["availableChargeModes"] = ["MANUAL", "TIMER"]
+    reported["charging"]["settings"]["preferredChargeMode"] = "MANUAL"
+    with patch(GET, new=AsyncMock(return_value=SkodaVehicle(vin=VIN, data=reported))):
+        coordinator._last_fetch.clear()
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+
+    assert _state(hass, "select", "charge_mode") == "MANUAL"
+    await coordinator.async_shutdown()
+
+
 async def test_nothing_for_values_the_vehicle_does_not_report(
     hass: HomeAssistant, mock_entry: MockConfigEntry
 ) -> None:

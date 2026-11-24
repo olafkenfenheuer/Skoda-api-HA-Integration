@@ -371,11 +371,14 @@ async def async_setup_entry(
 ) -> None:
     """Set up Škoda API Connect sensors from a config entry."""
     coordinator = entry.runtime_data
+    added: dict[str, set[str]] = {}
     entities: list[SkodaSensor] = []
     for vin, vehicle in coordinator.data.vehicles.items():
+        added[vin] = set()
         for description in SENSOR_DESCRIPTIONS:
             if description.exists_fn(vehicle):
                 entities.append(SkodaSensor(coordinator, vin, description))
+                added[vin].add(description.key)
         entities.append(SkodaApiStatusSensor(coordinator, vin))
         entities.append(SkodaLastPollSensor(coordinator, vin))
         entities.append(SkodaCarLastSeenSensor(coordinator, vin))
@@ -384,6 +387,28 @@ async def async_setup_entry(
         entities.append(SkodaApiKeyExpirySensor(coordinator, vin))
         entities.append(SkodaPollIntervalSensor(coordinator, vin))
     async_add_entities(entities)
+
+    def _add_newly_reported_sensors() -> None:
+        """Add optional sensors as soon as the vehicle starts reporting their field.
+
+        `exists_fn` is otherwise only checked once above: a field like
+        `estimatedReachOfTargetTemperatureAt` is absent while climatisation is off, so its
+        sensor would stay missing (and any previous state stuck as unavailable) even once the
+        vehicle starts reporting it, unless checked again here on every update.
+        """
+        new_entities: list[SkodaSensor] = []
+        for vin, vehicle in coordinator.data.vehicles.items():
+            already_added = added.setdefault(vin, set())
+            for description in SENSOR_DESCRIPTIONS:
+                if description.key in already_added:
+                    continue
+                if description.exists_fn(vehicle):
+                    new_entities.append(SkodaSensor(coordinator, vin, description))
+                    already_added.add(description.key)
+        if new_entities:
+            async_add_entities(new_entities)
+
+    entry.async_on_unload(coordinator.async_add_listener(_add_newly_reported_sensors))
 
 
 class SkodaSensor(SkodaVehicleEntity, SensorEntity):

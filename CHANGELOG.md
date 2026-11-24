@@ -7,6 +7,12 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.5.11]
+
+### Fixed
+
+- Some optional sensors, binary sensors and controls - **target temperature reached at** (climate and auxiliary heating), **battery care target**, **charging care mode** and **charge mode** - only applied their check once, when the integration was set up or reloaded. If the vehicle did not report the underlying field at that exact moment (e.g. climatisation was off, or the vehicle briefly stopped reporting a charging setting), the entity was never created and stayed unavailable forever, even once the vehicle reported it again. These entities are now added as soon as the vehicle starts reporting the field, without needing a reload.
+
 ## [0.5.10]
 
 ### Added

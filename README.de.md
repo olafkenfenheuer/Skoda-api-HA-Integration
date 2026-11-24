@@ -144,6 +144,12 @@ Integration die zuletzt bekannten Daten mit ihrem alten Zeitstempel, statt sie z
 Entitäten dieses Teils nach einem Neustart von Home Assistant im ungünstigen Moment fehlen. Nicht unterstützte
 oder deaktivierte Teile werden nicht aufgefüllt.
 
+Manche Entitäten hängen an einem einzelnen Feld, das das Fahrzeug selbst nur manchmal meldet, ohne dass die API
+dafür einen Fehler meldet (z. B. "Zieltemperatur erreicht um" nur während die Klimatisierung/Standheizung aktiv
+heizt oder kühlt, oder "Lademodus" nur solange das Fahrzeug seine verfügbaren Lademodi meldet). Eine solche
+Entität wird angelegt, sobald das Fahrzeug das Feld erstmals meldet - auch wenn das beim Neustart von Home
+Assistant oder beim Neuladen der Integration, das die anderen Entitäten angelegt hat, noch nicht der Fall war.
+
 ### Ladeprofile
 
 Ein Ladeprofil ist ein gespeicherter Ladestandort der MyŠkoda-App. Bei Fahrzeugen, die die Operation

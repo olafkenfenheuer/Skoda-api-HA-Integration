@@ -224,12 +224,36 @@ async def async_setup_entry(
 ) -> None:
     """Set up Škoda API Connect binary sensors from a config entry."""
     coordinator = entry.runtime_data
-    async_add_entities(
-        SkodaBinarySensor(coordinator, vin, description)
-        for vin, vehicle in coordinator.data.vehicles.items()
-        for description in BINARY_SENSOR_DESCRIPTIONS
-        if description.exists_fn(vehicle)
-    )
+    added: dict[str, set[str]] = {}
+    entities: list[SkodaBinarySensor] = []
+    for vin, vehicle in coordinator.data.vehicles.items():
+        added[vin] = set()
+        for description in BINARY_SENSOR_DESCRIPTIONS:
+            if description.exists_fn(vehicle):
+                entities.append(SkodaBinarySensor(coordinator, vin, description))
+                added[vin].add(description.key)
+    async_add_entities(entities)
+
+    def _add_newly_reported_sensors() -> None:
+        """Add optional binary sensors once the vehicle starts reporting their field.
+
+        `exists_fn` is otherwise only checked once above: a field the vehicle temporarily
+        omits (e.g. charging care mode) would stay missing, and any previous state stuck as
+        unavailable, even once the vehicle reports it again, unless checked again here.
+        """
+        new_entities: list[SkodaBinarySensor] = []
+        for vin, vehicle in coordinator.data.vehicles.items():
+            already_added = added.setdefault(vin, set())
+            for description in BINARY_SENSOR_DESCRIPTIONS:
+                if description.key in already_added:
+                    continue
+                if description.exists_fn(vehicle):
+                    new_entities.append(SkodaBinarySensor(coordinator, vin, description))
+                    already_added.add(description.key)
+        if new_entities:
+            async_add_entities(new_entities)
+
+    entry.async_on_unload(coordinator.async_add_listener(_add_newly_reported_sensors))
 
 
 class SkodaBinarySensor(SkodaVehicleEntity, BinarySensorEntity):

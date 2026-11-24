@@ -7,6 +7,12 @@ Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De ind
 
 ## [Unreleased]
 
+## [0.5.11]
+
+### Fixed
+
+- Sommige optionele sensoren, binaire sensoren en bedieningselementen - **doeltemperatuur bereikt om** (klimaat en standkachel), **batterijbesparingsdoel**, **spaarzaam laden** en **laadmodus** - werden maar één keer gecontroleerd, bij het instellen of herladen van de integratie. Als het voertuig het onderliggende veld op dat exacte moment niet meldde (bijv. de klimaatregeling stond uit, of het voertuig stopte even met het melden van een laadinstelling), werd de entiteit nooit aangemaakt en bleef permanent niet beschikbaar, ook al meldde het voertuig het later weer. Deze entiteiten worden nu toegevoegd zodra het voertuig het veld begint te melden, zonder dat een herlaad nodig is.
+
 ## [0.5.10]
 
 ### Added

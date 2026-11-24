@@ -35,11 +35,13 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Škoda API Connect charge limit number entity from a config entry."""
     coordinator = entry.runtime_data
+    has_charge_limit: set[str] = {
+        vin for vin, vehicle in coordinator.data.vehicles.items() if _has_charge_limit(vehicle)
+    }
     async_add_entities(
         [
             SkodaChargeLimitNumber(coordinator, vin)
-            for vin, vehicle in coordinator.data.vehicles.items()
-            if _has_charge_limit(vehicle)
+            for vin in has_charge_limit
         ]
         + [
             SkodaPollIntervalNumber(entry, coordinator, vin, kind)
@@ -79,6 +81,26 @@ async def async_setup_entry(
             in (profile.get("settings", {}).get("minBatteryStateOfCharge") or {})
         ]
     )
+
+    def _add_charge_limit_once_reported() -> None:
+        """Add the charge limit number once the vehicle reports a target charge again.
+
+        `_has_charge_limit` is otherwise only checked once above: the vehicle can temporarily
+        stop reporting `targetStateOfChargeInPercent` (seen alongside other `charging.settings`
+        fields disappearing together), which would leave the entity missing - and any previous
+        state stuck as unavailable - even once it reports a target charge again, unless checked
+        again here.
+        """
+        new_entities = [
+            SkodaChargeLimitNumber(coordinator, vin)
+            for vin, vehicle in coordinator.data.vehicles.items()
+            if vin not in has_charge_limit and _has_charge_limit(vehicle)
+        ]
+        has_charge_limit.update(e.vin for e in new_entities)
+        if new_entities:
+            async_add_entities(new_entities)
+
+    entry.async_on_unload(coordinator.async_add_listener(_add_charge_limit_once_reported))
 
 
 class SkodaChargeLimitNumber(SkodaVehicleEntity, NumberEntity):
