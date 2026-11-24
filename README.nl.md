@@ -128,6 +128,12 @@ gegevens met hun oude tijdstempel in plaats van ze te laten vallen: anders zoude
 ontbreken na een herstart van Home Assistant op het verkeerde moment. Niet-ondersteunde of uitgeschakelde delen
 worden niet aangevuld.
 
+Sommige entiteiten horen bij één enkel veld dat het voertuig zelf soms wel en soms niet meldt, zonder dat de API
+daarbij een fout meldt (bijv. "doeltemperatuur bereikt om" alleen terwijl de klimaatregeling/standkachel actief
+verwarmt of koelt, of "laadmodus" alleen zolang het voertuig zijn beschikbare laadmodi meldt). Zo'n entiteit
+wordt toegevoegd zodra het voertuig het veld voor het eerst meldt - ook als dat nog niet zo was bij de herstart
+van Home Assistant of het herladen van de integratie die de andere entiteiten heeft aangemaakt.
+
 ### Laadprofielen
 
 Een laadprofiel is een opgeslagen laadlocatie van de MyŠkoda-app. Voor voertuigen die de operatie

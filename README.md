@@ -141,6 +141,12 @@ keeps the last known data, with its old timestamp, instead of dropping it: other
 would be missing after a Home Assistant restart that happens at the wrong moment. Unsupported or disabled
 parts are not filled in.
 
+Some entities only apply to a single field that the vehicle itself reports sometimes, without the API
+reporting an error for it (e.g. "target temperature reached at" only while climatisation is actively
+heating/cooling, or "charge mode" only while the vehicle lists its available charge modes). Such an entity is
+added as soon as the vehicle starts reporting that field, even if it did not yet at the Home Assistant restart
+or integration reload that created the other entities.
+
 ### Charging profiles
 
 A charging profile is a saved charging location of the MyŠkoda app. For vehicles that list the operation

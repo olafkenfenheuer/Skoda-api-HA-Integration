@@ -38,3 +38,28 @@ async def test_charge_limit_sensor_missing(hass: HomeAssistant, mock_entry: Mock
         await hass.config_entries.async_setup(mock_entry.entry_id)
         await hass.async_block_till_done()
     assert _entity_id(hass, "sensor") is None
+
+
+async def test_charge_limit_entities_appear_once_the_vehicle_reports_a_target(
+    hass: HomeAssistant, mock_entry: MockConfigEntry
+) -> None:
+    vehicle = make_vehicle()
+    vehicle.data["charging"].pop("settings", None)
+    mock_entry.add_to_hass(hass)
+    with patch(GET, new=AsyncMock(return_value=vehicle)):
+        await hass.config_entries.async_setup(mock_entry.entry_id)
+        await hass.async_block_till_done()
+    coordinator = mock_entry.runtime_data
+    assert _entity_id(hass, "sensor") is None
+    assert _entity_id(hass, "number") is None
+
+    reported = make_vehicle()
+    reported.data["charging"]["settings"] = {"targetStateOfChargeInPercent": 80}
+    with patch(GET, new=AsyncMock(return_value=reported)):
+        coordinator._last_fetch.clear()
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+
+    assert hass.states.get(_entity_id(hass, "sensor")).state == "80"
+    assert float(hass.states.get(_entity_id(hass, "number")).state) == 80
+    await coordinator.async_shutdown()

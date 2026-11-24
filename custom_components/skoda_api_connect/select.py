@@ -22,10 +22,12 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Škoda API Connect charge mode select from a config entry."""
     coordinator = entry.runtime_data
+    has_charge_mode: set[str] = set()
     entities: list[SelectEntity] = []
     for vin, vehicle in coordinator.data.vehicles.items():
         if _has_charge_modes(vehicle):
             entities.append(SkodaChargeModeSelect(coordinator, vin))
+            has_charge_mode.add(vin)
         if vehicle.lists("updateChargingProfile"):
             entities.extend(
                 SkodaProfileMaxCurrentSelect(
@@ -34,6 +36,24 @@ async def async_setup_entry(
                 for profile in vehicle.charging_profiles()
             )
     async_add_entities(entities)
+
+    def _add_charge_mode_select_once_reported() -> None:
+        """Add the charge mode select once the vehicle reports available charge modes again.
+
+        `_has_charge_modes` is otherwise only checked once above: the vehicle can temporarily
+        stop reporting `availableChargeModes` (seen empty for a while), which would leave the
+        entity missing - and any previous state stuck as unavailable - even once it reports
+        charge modes again, unless checked again here.
+        """
+        new_entities: list[SelectEntity] = []
+        for vin, vehicle in coordinator.data.vehicles.items():
+            if vin not in has_charge_mode and _has_charge_modes(vehicle):
+                new_entities.append(SkodaChargeModeSelect(coordinator, vin))
+                has_charge_mode.add(vin)
+        if new_entities:
+            async_add_entities(new_entities)
+
+    entry.async_on_unload(coordinator.async_add_listener(_add_charge_mode_select_once_reported))
 
 
 class SkodaChargeModeSelect(SkodaVehicleEntity, SelectEntity):
