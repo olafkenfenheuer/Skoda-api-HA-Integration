@@ -30,7 +30,7 @@ Default branch: `main`. Unofficial project - not affiliated with Škoda Auto.
   - `brand/icon.png` - icon shown by Home Assistant 2026.3+
 - `blueprints/automation/skoda_api_connect/` - the blueprint to change a charging profile with safeguards (imported by URL, not installed by HACS); `docs/images/` - screenshots for the README (blank out names, VINs and addresses)
 - `tests/` - pytest suite using `pytest-homeassistant-custom-component` (see `pytest.ini`)
-- `README.md` / `README.de.md` / `README.nl.md`, `CHANGELOG.md` / `CHANGELOG.nl.md`
+- `README.md` / `README.de.md` / `README.nl.md`, `CHANGELOG.md` / `CHANGELOG.de.md` / `CHANGELOG.nl.md`
 
 ## Commands
 
@@ -75,7 +75,8 @@ python -m compileall -q custom_components           # quick syntax check
   `carCapturedTimestamp` of `section`, or after its `ttl`. Do not add it for settings stored only in Home Assistant.
 - Changing user-facing strings: update **all eight** translation files and copy `en.json` to
   `strings.json`.
-- Keep READMEs and changelogs in sync (English is the source; German README, Dutch README/CHANGELOG).
-  Bump `version` in `manifest.json` and add a `CHANGELOG` entry for user-visible changes.
+- Keep READMEs and changelogs in sync (English is the source; German and Dutch README/CHANGELOG, i.e.
+  `README.de.md`/`CHANGELOG.de.md` and `README.nl.md`/`CHANGELOG.nl.md`). Bump `version` in `manifest.json`
+  and add a `CHANGELOG` entry (in all three languages) for user-visible changes.
 - Write code in the existing style: type hints, `from __future__ import annotations`, small
   `SkodaEntityDescription`-style value/exists functions for sensors.

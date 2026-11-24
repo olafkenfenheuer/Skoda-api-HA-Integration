@@ -397,7 +397,7 @@ Einen Überblick über Code-Aufbau und Konventionen gibt [CLAUDE.md](CLAUDE.md).
 
 ## Changelog
 
-Die Versionshinweise findest du in [CHANGELOG.md](CHANGELOG.md) (Englisch).
+Die Versionshinweise findest du in [CHANGELOG.de.md](CHANGELOG.de.md).
 
 ## Haftungsausschluss
 
