@@ -1,6 +1,6 @@
 # Changelog
 
-[🇬🇧 English](CHANGELOG.md) | [🇳🇱 Nederlands](CHANGELOG.nl.md)
+[🇬🇧 English](CHANGELOG.md) | [🇩🇪 Deutsch](CHANGELOG.de.md) | [🇳🇱 Nederlands](CHANGELOG.nl.md)
 
 Alle relevante wijzigingen aan deze integratie staan hier gedocumenteerd. De indeling volgt
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
